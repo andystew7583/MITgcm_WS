@@ -1,12 +1,8 @@
 %%%
-%%% Surfaceforcing.m
+%%% force.m
+%%% 
+%%% Helper function that interpolates AMPS data onto model grid.
 %%%
-%%% Function to take polar wrf data and create 12 month climatology, interpolates for
-%%% each data variable
-%%%
-%%% Input will be PolarWrf data, size of grize lat/lon of designated grid
-%%% (highest res of polar wrf ) xxxxxx
-
 function [sfc_forcing,F] = force(datafile,lon,lat,W_LO,W_LA,F)
 
   % Interpolate U Grd 

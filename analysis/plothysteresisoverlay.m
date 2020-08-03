@@ -38,6 +38,8 @@ green = [73,156,40]/256;
 %%%% [plotting with 3 yaxes]
 figure(1)
 clf
+set(gcf,'Position',[406         165        1184         817]);
+
 one = subplot(2,1,1)
 %%%%changing line properties (colors)
 b=[0, 0.4470, 0.7410];
@@ -54,7 +56,7 @@ plot(w_s(7),datawtemp(7),'-sk','LineWidth',3,'MarkerSize',15,'Markerfacecolor','
 p6 = plot(c_s,datactemp,'-o','Color',purp,'LineWidth',2,'MarkerSize',10,'Markerfacecolor','b');
 hold on
 plot(c_s(7),datactemp(7),'-sk','LineWidth',3,'MarkerSize',15,'Markerfacecolor','k');
-ylabel('\begin{tabular}{c} Melt-Weighted \\ T$_{Cavity}$\end{tabular}','interpreter','latex','fontsize',14,'color',purp);
+ylabel('\begin{tabular}{c} Melt-Weighted Bottom Cavity \\ Temperature $\theta_{\mathrm{cavity}}$ $(^\circ\mathrm{C})$\end{tabular}','interpreter','latex','fontsize',14,'color',purp);
 set(gca,'Ycolor',purp);
 hold on
 
@@ -69,10 +71,10 @@ plot(w_s(7),datawshimelt(7),'-sk','LineWidth',3,'MarkerSize',15,'Markerfacecolor
 p4 = plot(c_s,datacshimelt,'-o','Color',green,'LineWidth',2,'MarkerSize',10,'Markerfacecolor','b');
 hold on
 plot(c_s(7),datacshimelt(7),'-sk','LineWidth',3,'MarkerSize',15,'Markerfacecolor','k');
-ylabel('Integrated FRIS Melt','interpreter','latex','fontsize',14,'Color',green);
+ylabel('Integrated FRIS Melt (Gt/yr)','interpreter','latex','fontsize',14,'Color',green);
 set(gca,'Ycolor',green);
 
-b=title('\begin{tabular}{c} Wind Perturbation ($\chi$) vs Melt-Weighted FRIS Bottom Cavity Temperature ($^\circ$C) \\ and Integrated Shelf Ice Melt (Gt) \end{tabular}','FontSize',15,'interpreter','latex');
+% b=title('\begin{tabular}{c} Wind Perturbation ($\chi$) vs Melt-Weighted FRIS Bottom Cavity Temperature ($^\circ$C) \\ and Integrated Shelf Ice Melt (Gt) \end{tabular}','FontSize',15,'interpreter','latex');
 
 % xlabel('Wind Perturbation ($\chi$)','interpreter','latex','fontsize',14);
 hold on;
@@ -82,6 +84,9 @@ text(1.15,1100,'\textbf{a}','fontsize',18,'interpreter','latex');
 % h(1) = plot(NaN,NaN,'or','MarkerFaceColor','r');
 % h(2) = plot(NaN,NaN,'ob','MarkerFaceColor','b');
 % legend(h, {'Initial Warm FRIS Cavity','Initial Cold FRIS Cavity'},'location','north','interpreter','latex','fontsize',13);
+
+set(gca,'Position',[0.1300    0.5838    0.7750    0.3812]);
+
 
 subplot(2,1,2)
 % hlines{3}(1).LineStyle = '--';
@@ -117,10 +122,12 @@ plot(c_s(7),datac(7),'-sk','MarkerSize',15,'Markerfacecolor','k');
 %%%legend
 hold on;
 
-title('Wind Perturbation ($\chi$) vs Melt-Weighted FRIS Bottom Cavity Salinity (psu)','interpreter','latex','FontSize',20);
-ylabel('\begin{tabular}{c} Melt-Weighted \\ S$_{Cavity}$ \end{tabular}','interpreter','latex','fontsize',14,'color','k');
+% title('Wind Perturbation ($\chi$) vs Melt-Weighted FRIS Bottom Cavity Salinity (psu)','interpreter','latex','FontSize',20);
+ylabel('\begin{tabular}{c} Melt-Weighted Bottom Cavity \\ Salinity S$_{\mathrm{cavity}}$ (psu) \end{tabular}','interpreter','latex','fontsize',14,'color','k');
 xlabel('Wind Perturbation ($\chi$)','interpreter','latex','fontsize',14);
 text(1.15,34.3,'\textbf{b}','fontsize',18,'interpreter','latex');
 
-legend([p1,p2],{'Initial FRESH FRIS Cavity','Initial REF FRIS Cavity'},'location','north','interpreter','latex','fontsize',13);
+legend([p1,p2],{'Initialized from FRESH','Initialized from REF'},'location','north','interpreter','latex','fontsize',13);
 set(gca,'fontsize',13)
+
+set(gca,'Position',[0.1300    0.1100    0.7750    0.3812]);

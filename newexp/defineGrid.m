@@ -1,14 +1,45 @@
+%%%
 %%% defineGrid.m
 %%%
 %%% Defines a Weddell Sea model grid for MITgcm.
+%%%
 
-
+%%% Choose resolution
+res_fac = 6;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% MPI parameters %%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-nPx = 16; %%% no. of processors in x-direction
-nPy = 8; %%% no. of processors in y-direction
+
+%%% N.B. nPx_max and nPy_max are used to define the grid size, ensuring
+%%% that the grid can be split into nPx_max x nPy_max processors. This
+%%% allows smaller nPx and nPy (divisors of nPx_max and nPy_max) to be
+%%% selected without modifying the grid size.
+switch (res_fac)
+  case 3
+    nPx_max = 16; %%% max. no. of processors in x-direction
+    nPy_max = 8; %%% max. no. of processors in y-direction
+    nPx = 16; %%% no. of processors in x-direction
+    nPy = 8; %%% no. of processors in y-direction
+  case 6
+    nPx_max = 36; %%% max. no. of processors in x-direction
+    nPy_max = 48; %%% max. no. of processors in y-direction
+    nPx = 18; %%% no. of processors in x-direction
+    nPy = 12; %%% no. of processors in y-direction
+%     nPx = 36; %%% no. of processors in x-direction
+%     nPy = 48; %%% no. of processors in y-direction
+%     nPx = 9; %%% no. of processors in x-direction
+%     nPy = 6; %%% no. of processors in y-direction
+  case 12
+    nPx_max = 36; %%% max. no. of processors in x-direction
+    nPy_max = 48; %%% max. no. of processors in y-direction
+    nPx = 18; %%% no. of processors in x-direction
+    nPy = 12; %%% no. of processors in y-direction
+%     nPx = 36; %%% no. of processors in x-direction
+%     nPy = 48; %%% no. of processors in y-direction
+%     nPx = 9; %%% no. of processors in x-direction
+%     nPy = 6; %%% no. of processors in y-direction
+end
 
 
 
@@ -25,18 +56,25 @@ months = 12;
 %%%% Option for finer grid %%
 FinerVerticalGrid = 0;
 
-
-%%%option to print tides
-tides = 0;
 %%%% which directory to use
 gendir = '/data3';
 
-%%%%% option for higher resolution optimization
-higherres = 0;
+%%% Name under which to store this grid
+switch (res_fac)
+  case 3
+    grid_name = 'one_third';
+  case 6
+    grid_name = 'one_sixth';
+  case 12
+    grid_name = 'one_twelfth';
+  case 24
+    grid_name = 'one_twentyfourth';
+end
 
 
-%%%%% Option to Use SOSE initial conditions
-SOSE = 1;
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% DOMAIN LIMITS %%%%%%%%%%
@@ -79,6 +117,7 @@ Nyears = 9;
 Nmonths = 108;
 
 %%%% Finding if current year is a leap year
+%%% N.B. only works because we happen to be using the period 2007-2015
 Ndays = 0;
 is_leap_year = zeros(Nyears,1);
 for i=1:Nyears
@@ -91,13 +130,15 @@ for i=1:Nyears
 end
 
 
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Grid size of the desired run
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-Nx = (xmax-xmin)*3;
-Nx = floor(Nx/nPx)*nPx;
+Nx = (xmax-xmin)*res_fac;
+Nx = floor(Nx/nPx_max)*nPx_max;
 
 %%% Physical parameters
 g = 9.81; %%% Gravity
@@ -108,7 +149,7 @@ Pa1dbar = 1e4; %%% Pascals in 1 decibar
 
 %%% Grid cell thickness constraints
 hFacMin = 0.1;
-hFacMinDr = 0;
+hFacMinDr = 10;
 
 %%% Domain lengths
 Lx = xmax-xmin;
@@ -169,7 +210,7 @@ while (yval < ymax)
 end
 
 %%% Second pass - adjust number of grid points to be a multiple of nPy
-Ny = floor((length(dmyg)/nPy))*nPy;
+Ny = floor((length(dmyg)/nPy_max))*nPy_max;
 dmyg = dmyg(1:Ny);
 
 %%% Third pass - resize dmyg so that its total length is equal to the
@@ -194,13 +235,15 @@ sNy = (Ny)/nPy;  %%% no. of y-gridpoints per tile
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%% Grid for EXF Interpolation (Default will be from 1/6th degree
+%%%%%%%%%% Grid for EXF Interpolation (Default will be from 1/3rd degree
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %%% Grid sizes
+EXF_nPx = 16; %%% Need to be defined to make sure EXF grid matches the grid 
+EXF_nPy = 8; %%% used to generate the surface forcing dataset
 EXF_Nx = (xmax-xmin)*3;
-EXF_Nx = floor(EXF_Nx/nPx)*nPx;
+EXF_Nx = floor(EXF_Nx/EXF_nPx)*EXF_nPx;
 
 
 
@@ -232,7 +275,7 @@ while (EXF_yval < ymax)
 end
 
 %%% Second pass - adjust number of grid points to be a multiple of nPy
-EXF_Ny = floor((length(EXF_dmyg)/nPy))*nPy;
+EXF_Ny = floor((length(EXF_dmyg)/EXF_nPy))*EXF_nPy;
 EXF_dmyg = EXF_dmyg(1:EXF_Ny);
 
 %%% Third pass - resize dmyg so that its total length is equal to the
@@ -246,13 +289,23 @@ EXF_dmyc = EXF_ymc(1:EXF_Ny) - EXF_ymc([EXF_Ny 1:EXF_Ny-1]);
 EXF_yumg = EXF_ymc;
 
 
+
+
+%%% Meshgrid for interpolating surface fields
+
+[EXF_XMC,EXF_YMC] = meshgrid(EXF_xmc,EXF_ymc);
+
+
+
+
+
+
    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Vertical grid%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if FinerVerticalGrid == 1
-
 
     z0 = 0;
     z1 = 250;
@@ -275,18 +328,22 @@ if FinerVerticalGrid == 1
 end
 if FinerVerticalGrid == 0
     z0 = 0;
-    z1 = 250;
+    z1 = 500;
+%     z1 = 250;
     z2 = 1800;
     z3 = 4000;
     z4 = 5000;
-    dz0 = 1;
+    dz0 = 3;
+%     dz0 = 1;
     dz1 = 15; 
     dz2 = 30;
     dz3 = 80;
     dz4 = 150;
     dz5 = 220;
-    N1 = 20; 
-    N2 = 69;
+%     N1 = 10;
+    N1 = 20;
+    N2 = 59;
+%     N2 = 69;
     N3 = 35;
     N4 = 10;
     N5 = 4;
@@ -340,15 +397,11 @@ mrf = zzf';
 Nr = Nz;
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%% MESHGRIDS FOR INTERPOLATION %%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if higherres ==0  %%dont want to load SOSE/ecco2 if going to higher resolution
-    if SOSE == 1
-    
-        load sosegrid.mat
-    end
-end
+
+
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%% TWIST FUNCTION %%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -362,11 +415,7 @@ end
 % %Meshgrid for V Velocity
      [XVMG,YVMG] = meshgrid(xvmg,yvmg);
 %     
-if SOSE == 1
-%%%Meshgrid for original vertical grid of 42 levels with SOSE RC
-    [XM3C,YM3C,R3C] = meshgrid(xmc,ymc,RC);
-end
-% 
+
 % %Creating meshgrid for interpolation of new grid vertical level (tracers)
     [Xm3C,Ym3C,RM3C] = meshgrid(xmc,ymc,mrc);
 %  
@@ -459,6 +508,7 @@ OBEslFile = 'OBEslFile.bin';
 OBWslFile = 'OBWslFile.bin';
 OBNslFile = 'OBNslFile.bin';
 
+
  
 AngleSN = zeros(size(XMC));
 AngleCS = ones(size(XMC));
@@ -473,43 +523,13 @@ AngleCS = ones(size(XMC));
 
 %Input file path
 
-inputfolder = '/data3/MITgcm_WS/newexp/differentResolutions/ardbeg_tempplus10';
-
-%%%%%%% Tides %%%%%%%%%
-
-if tides ==1 
-    addpath ../newexp_utils
-
-    data = XMC';
-    writeDataset(data,fullfile(inputfolder,'XMC.bin'),ieee,prec);
-    clear data;
-
-    data = YMC';
-    writeDataset(data,fullfile(inputfolder,'YMC.bin'),ieee,prec);
-    clear data2;
-    
-    data = XUMG';
-    writeDataset(data,fullfile(inputfolder,'XUMG.bin'),ieee,prec);
-    clear data;
-
-    data = YUMG';
-    writeDataset(data,fullfile(inputfolder,'YUMG.bin'),ieee,prec);
-    clear data;
-
-    data = zzf;
-    writeDataset(data,fullfile(inputfolder,'zzf.bin'),ieee,prec);
-    clear data;
-
-
-
-    data = AngleCS;
-    writeDataset(data,fullfile(inputfolder,'AngleCS.bin'),ieee,prec);
-    clear data;
-
-    data = AngleSN;
-    writeDataset(data,fullfile(inputfolder,'AngleSN.bin'),ieee,prec);
-    clear data;
+inputfolder = './DEFAULTS/input';
+inputconfigdir = ['./InputConfigs/' grid_name];
+if (~exist(inputconfigdir))
+  mkdir(inputconfigdir);
 end
+
+
 
 
 

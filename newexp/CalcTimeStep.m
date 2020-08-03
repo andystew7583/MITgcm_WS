@@ -145,6 +145,6 @@ deltaT = round(nanmin(nanmin(deltaT)));
 deltaT = .8*deltaT;
 
 %%% Write to file
-fid = fopen('TIME_STEP','w');
+fid = fopen(fullfile(inputconfigdir,'TIME_STEP'),'w');
 fprintf(fid,'%d',deltaT);
 fclose(fid);

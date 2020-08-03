@@ -30,8 +30,11 @@ function write_data_exf (dirname,EXF_PARM,listterm,realfmt)
     
     %%% Write section header
     %fprintf(fid,['# ',titles{nparam},'\r\n']);
-    fprintf(fid,[' &EXF_NML_0',num2str(nparam),'\r\n']); 
-    
+    if (nparam ~= 5)
+      fprintf(fid,[' &EXF_NML_0',num2str(nparam),'\r\n']); 
+    else
+      fprintf(fid,[' &EXF_NML_OBCS\r\n']); 
+    end    
 
     %%% Write each parameter out to the 'data' file
     nextparmlist = EXF_PARM{nparam};

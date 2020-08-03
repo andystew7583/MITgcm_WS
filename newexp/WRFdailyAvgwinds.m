@@ -1,8 +1,10 @@
-function [avgdatawinds,F,iszero] = WRFdailyAvgwinds (years,months,days,griddir,varname,ncname,F,err_val)
-  %%% get our grid to interpolate onto
- 
-  load('XMC');
-  load('YMC');
+%%%
+%%% WRFdailyAvg.m
+%%%
+%%% Helper function that averages AMPS data over a single day and interpolates it onto the model grid.
+%%% This version is tailored to wind fields.
+%%%
+function [avgdatawinds,F,iszero] = WRFdailyAvgwinds (years,months,days,griddir,varname,ncname,F,err_val,XMC,YMC)
   
   Weddell_Lon = XMC';
   Weddell_Lat = YMC';
@@ -14,8 +16,8 @@ function [avgdatawinds,F,iszero] = WRFdailyAvgwinds (years,months,days,griddir,v
   if (years<2008) || (years==2008 && months <=10)        
                
     %%% Grid for current time period
-    LA=ncread('/data1/MITgcm_WS/data/PolarWrf/2006_LAT.nc','LAT');
-    LO=ncread('/data1/MITgcm_WS/data/PolarWrf/2006_LON.nc','LON');        
+    LA=ncread('/data3/MITgcm_WS/data/PolarWrf/2006_LAT.nc','LAT');
+    LO=ncread('/data3/MITgcm_WS/data/PolarWrf/2006_LON.nc','LON');        
          
     %%% Calculate daily average
     avgdatawinds = 0*LA;    
@@ -50,8 +52,8 @@ function [avgdatawinds,F,iszero] = WRFdailyAvgwinds (years,months,days,griddir,v
   if (years==2008 && months >=11) || (years >=2009 && years <=2012)
               
     %%% Grid for current time period
-    LA=ncread('/data1/MITgcm_WS/data/PolarWrf/2008_LAT.nc','LAT');
-    LO=ncread('/data1/MITgcm_WS/data/PolarWrf/2008_LON.nc','LON');
+    LA=ncread('/data3/MITgcm_WS/data/PolarWrf/2008_LAT.nc','LAT');
+    LO=ncread('/data3/MITgcm_WS/data/PolarWrf/2008_LON.nc','LON');
     
     %%% Calculate daily average
     avgdatawinds = 0*LA;    
@@ -85,8 +87,8 @@ function [avgdatawinds,F,iszero] = WRFdailyAvgwinds (years,months,days,griddir,v
                            
   if (years >=2013)
     %%% Grid for current time period
-    LA=ncread('/data1/MITgcm_WS/data/PolarWrf/2013_LAT.nc','LAT');
-    LO=ncread('/data1/MITgcm_WS/data/PolarWrf/2013_LON.nc','LON');
+    LA=ncread('/data3/MITgcm_WS/data/PolarWrf/2013_LAT.nc','LAT');
+    LO=ncread('/data3/MITgcm_WS/data/PolarWrf/2013_LON.nc','LON');
     
     %%% Calculate daily average
     avgdatawinds = 0*LA;    

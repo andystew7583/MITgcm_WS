@@ -1,5 +1,8 @@
-%%% Defining topography 
-%%% Also setting intial conditions for ice shelf 
+%%%
+%%% topog.m
+%%%
+%%% Defines topography and ice shelf draft for MITgcm_WS.
+%%% 
 
 
 
@@ -8,21 +11,22 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%    
 
 % Getting our grid
-
 run defineGrid.m
 
 %%% Gaussian kernel smoothing width (in grid points)
-gauss_width = 0; %%% Original width 1.5
-gauss_width_shelfice = 0;
-min_ice_thickness = 10; %%% Minimum shelf ice thickness in m
-% gauss_width = 4;
+do_smooth = true;
+smooth_ice_face = false;
+gauss_width = 4;
 
-%%% Set true to smooth water column thickness
-smooth_depth_only = false;
+%%% Minimum water column thickness
+min_thickness = 50;
+
+%%% Minimum ice draft to qualify as an ice shelf
+min_ice_thickness = 10;
 
 %%% Set true to remove coastal embayment in SW Weddell Sea, which is prone
 %%% to spurious build-up of ice
-remove_embayment = true;
+remove_embayment = false;
 embayment_lat = -74; %%% Max latitude to search for the SW embayment. Original was -74.2.
 
 
@@ -38,12 +42,12 @@ addpath ../newexp_utils
 
 
 %Reading in grid from RTOPO dataset
-
 RTOPO_latitude = ncread(fullfile(datadir,'RTOPO.nc'),'lat');
 RTOPO_longitude = ncread(fullfile(datadir,'RTOPO.nc'),'lon');
 RTOPO_bathymetry = ncread(fullfile(datadir,'RTOPO.nc'),'bathy');
 RTOPO_ice = ncread(fullfile(datadir,'RTOPO.nc'),'draft');
 RTOPO_elev = ncread(fullfile(datadir,'RTOPO.nc'),'height');
+
 %%% Remove superfluous additional longitude value
 RTOPO_longitude = RTOPO_longitude(1:end-1);
 RTOPO_bathymetry = RTOPO_bathymetry(1:end-1,:);
@@ -51,13 +55,12 @@ RTOPO_ice = RTOPO_ice(1:end-1,:);
 RTOPO_elev = RTOPO_elev(1:end-1,:);
 
 %%% Do the twist
-RTOPO_bathymetry = Tweddell(RTOPO_longitude,RTOPO_latitude,RTOPO_bathymetry);
-RTOPO_ice = Tweddell(RTOPO_longitude,RTOPO_latitude,RTOPO_ice);
-RTOPO_elev = Tweddell(RTOPO_longitude,RTOPO_latitude,RTOPO_elev);
+% RTOPO_bathymetry = Tweddell(RTOPO_longitude,RTOPO_latitude,RTOPO_bathymetry);
+% RTOPO_ice = Tweddell(RTOPO_longitude,RTOPO_latitude,RTOPO_ice);
+% RTOPO_elev = Tweddell(RTOPO_longitude,RTOPO_latitude,RTOPO_elev);
 
 
 %Scaling bathymetry to fit area of interest as defined by scaled lat/lon
-
 lonidx = find(RTOPO_longitude >= xmin & RTOPO_longitude <= xmax);
 latidx = find(RTOPO_latitude <= ymax & RTOPO_latitude >= ymin);
 newbathy = RTOPO_bathymetry(lonidx,latidx);
@@ -97,6 +100,103 @@ RTOPO_longitude=RTOPO_longitude(RTOPO_longitude >= xmin & RTOPO_longitude <= xma
 MDepth=interp2(LO,LA,double(newbathy)',XMC,YMC,'nearest');
 Mice_draft = interp2(LO,LA,double(Model_draft)',XMC,YMC,'nearest');
 Mice_elev = interp2(LO,LA,double(Model_elev)',XMC,YMC,'nearest');
+Mthickness = Mice_draft-MDepth;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%%%
+%%% Topographic smoothing (new version)
+%%%
+
+%%% Grids for smoothing
+% XMC_smooth = repmat(xmc,[1 Ny]);
+% YMC_smooth = repmat(ymc,[Nx 1]);
+% DXG_smooth = repmat(dmxg,[1 Ny]);
+% DYG_smooth = repmat(dmyg,[Nx 1]);
+
+
+
+
+
+
+%%% Smooth sea floor
+if (do_smooth)
+  
+  
+  %%% Grids for smoothing
+  XMC_smooth = repmat((1:Nx)',[1 Ny]);
+  YMC_smooth = repmat((1:Ny),[Nx 1]);
+  DXG_smooth = ones(Nx,Ny);
+  DYG_smooth = ones(Nx,Ny);
+
+  Depth_smooth = smooth2D(XMC_smooth,YMC_smooth,DXG_smooth,DYG_smooth,MDepth',gauss_width);
+
+  %%% Smooth water column thickness where ice is present and thickness is
+  %%% nonzero
+  % % Mthickness_tmp = Mthickness';
+  % Mthickness_tmp = Mice_draft' - Depth_smooth;
+  % Mthickness_tmp(Mthickness'==0) = NaN;
+  % Mthickness_tmp(Mice_draft'==0) = NaN;
+  % Mthickness_smooth = smooth2D(XMC_smooth,YMC_smooth,DXG_smooth,DYG_smooth,Mthickness_tmp,gauss_width);
+  % Mthickness_smooth(Mthickness'==0) = 0;
+  % Mthickness_smooth(Mice_draft'==0) = -Depth_smooth(Mice_draft'==0);
+  % 
+  % %%% Reconstruct ice draft using smooth thickness and bathymetry
+  % Smooth_Mice = Depth_smooth + Mthickness_smooth;
+
+  %%% Smooth ice draft
+  Mice_draft_tmp = Mice_draft';
+  if (~smooth_ice_face)
+    Mice_draft_tmp(Mice_draft'==0) = NaN;
+    Mice_draft_tmp(Mthickness'==0) = NaN;
+  end
+  Smooth_Mice = smooth2D(XMC_smooth,YMC_smooth,DXG_smooth,DYG_smooth,Mice_draft_tmp,gauss_width);
+  Smooth_Mice(Mthickness'==0) = Depth_smooth(Mthickness'==0);
+  if (smooth_ice_face)
+    Smooth_Mice(Smooth_Mice>-min_ice_thickness) = 0;
+  else
+    Smooth_Mice(Mice_draft'==0) = Mice_draft(Mice_draft==0)';
+  end
+
+else
+  
+  Smooth_Mice = Mice_draft';
+  Depth_smooth = MDepth';
+  
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -132,9 +232,8 @@ end
 for i=1:Nx
   for j=1:Ny
     if (XMC(j,i)<WAP_lon(j))
-      MDepth(j,i) = 0;
-      Mice_draft(j,i) = 0;
-%       Mice_draft(j,i) = MDepth(j,i);
+      Depth_smooth(i,j) = 0;
+      Smooth_Mice(i,j) = 0;
     end
   end
 end
@@ -142,126 +241,126 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% GAUSSIAN KERNAL REGRESSION %%%%%%%%%%%%%%%%%%%%%%% 
+% TOPOGRAPHIC SMOOTHING (OBSOLETE CODE) %%%%%%%%%%%%%%%%%%%%%%% 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-XMC_smooth = repmat((1:Nx),[Ny 1]);
-YMC_smooth = repmat((1:Ny)',[1 Nx]);
-
-
-if (smooth_depth_only)
-  
-  %%% Apply smoothing filter
-  if (gauss_width > 0)
-    Depth_smooth = smooth2D(XMC_smooth',YMC_smooth',MDepth',gauss_width,gauss_width)';    
-  else
-    Depth_smooth = MDepth;
-  end
-    
-  %%% No smoothing under ice shelves  
-  Depth_smooth(Mice_draft<0 | MDepth>=0) = MDepth(Mice_draft<0 | MDepth>=0);  
-  Depth_smooth = Depth_smooth';  
-  Smooth_Mice = Mice_draft';
-  
-else
-
-  %%% VERSION 1 - SMOOTH ICE AND BATHYMETRY SEPARATELY %%%
-  
-%   %%% Smoothing bathymetry
-%   if (gauss_width > 0)
-%     Depth_smooth = smooth2D(XMC_smooth',YMC_smooth',MDepth',gauss_width,gauss_width)';
-%     Depth_smooth = Depth_smooth';
-%   else
-%     Depth_smooth = MDepth';
-%   end
+% XMC_smooth = repmat((1:Nx),[Ny 1]);
+% YMC_smooth = repmat((1:Ny)',[1 Nx]);
+% 
+% 
+% if (smooth_depth_only)
 %   
+%   %%% Apply smoothing filter
+%   if (gauss_width > 0)
+%     Depth_smooth = smooth2D(XMC_smooth',YMC_smooth',MDepth',gauss_width,gauss_width)';    
+%   else
+%     Depth_smooth = MDepth;
+%   end
+%     
+%   %%% No smoothing under ice shelves  
+%   Depth_smooth(Mice_draft<0 | MDepth>=0) = MDepth(Mice_draft<0 | MDepth>=0);  
+%   Depth_smooth = Depth_smooth';  
+%   Smooth_Mice = Mice_draft';
+%   
+% else
+% 
+%   %%% VERSION 1 - SMOOTH ICE AND BATHYMETRY SEPARATELY %%%
+%   
+% %   %%% Smoothing bathymetry
+% %   if (gauss_width > 0)
+% %     Depth_smooth = smooth2D(XMC_smooth',YMC_smooth',MDepth',gauss_width,gauss_width)';
+% %     Depth_smooth = Depth_smooth';
+% %   else
+% %     Depth_smooth = MDepth';
+% %   end
+% %   
+% %   %%%%%%% Smoothing Ice Draft
+% %   if (gauss_width_shelfice > 0) 
+% %     Smooth_Mice = smooth2D(XMC_smooth',YMC_smooth',Mice_draft',gauss_width_shelfice,gauss_width_shelfice)';
+% %     Smooth_Mice = Smooth_Mice';
+% %   else
+% %     Smooth_Mice = Mice_draft';
+% %   end
+% 
+% 
+% %%% VERSION 2 - SMOOTH BATHYMETRY AND WATER COLUMN THICKNESS %%%
+% 
+% %   %%% Smoothing bathymetry
+% %   if (gauss_width > 0)
+% %     Depth_smooth = smooth2D(XMC_smooth',YMC_smooth',MDepth',gauss_width,gauss_width)';
+% %     Depth_smooth = Depth_smooth';
+% %   else
+% %     Depth_smooth = MDepth';
+% %   end
+% %   
+% %   %%% Thickness of water column between smoothed sea floor and unsmoothed
+% %   %%% ice draft
+% %   thickness = Mice_draft - Depth_smooth';
+% %   
+% %   %%%%%%% Smoothing water column thickness
+% %   if (gauss_width_shelfice > 0) 
+% %     thickness_smooth = smooth2D(XMC_smooth',YMC_smooth',thickness',gauss_width_shelfice,gauss_width_shelfice)';
+% %     thickness_smooth = thickness_smooth';
+% %   else
+% %     thickness_smooth = thickness_smooth';
+% %   end
+% %   
+% %   %%% Now reconstruct ice shelf draft from smoothed water column thickness
+% %   Smooth_Mice = Depth_smooth + thickness_smooth;
+% 
+%   
+%   %%% VERSION 3 - SMOOTH ICE AND WATER COLUMN THICKNESS %%%
+%   
+%   %%% First, remove all ice draft above sea level to remove errors where
+%   %%% ocean meets land with ice, but there is no ice shelf
+%   Mice_draft_noland = Mice_draft;
+%   Mice_draft_noland(Mice_draft_noland > 0) = 0;
+% 
 %   %%%%%%% Smoothing Ice Draft
 %   if (gauss_width_shelfice > 0) 
-%     Smooth_Mice = smooth2D(XMC_smooth',YMC_smooth',Mice_draft',gauss_width_shelfice,gauss_width_shelfice)';
+%     Smooth_Mice = smooth2D(XMC_smooth',YMC_smooth',Mice_draft_noland',gauss_width_shelfice,gauss_width_shelfice)';
 %     Smooth_Mice = Smooth_Mice';
 %   else
-%     Smooth_Mice = Mice_draft';
+%     Smooth_Mice = Mice_draft_noland';
 %   end
-
-
-%%% VERSION 2 - SMOOTH BATHYMETRY AND WATER COLUMN THICKNESS %%%
-
-%   %%% Smoothing bathymetry
-%   if (gauss_width > 0)
-%     Depth_smooth = smooth2D(XMC_smooth',YMC_smooth',MDepth',gauss_width,gauss_width)';
-%     Depth_smooth = Depth_smooth';
-%   else
-%     Depth_smooth = MDepth';
-%   end
+%     
+%   %%% Eliminate points with very thin ice shelves
+%   Smooth_Mice(Smooth_Mice>=-min_ice_thickness) = 0;
 %   
-%   %%% Thickness of water column between smoothed sea floor and unsmoothed
-%   %%% ice draft
-%   thickness = Mice_draft - Depth_smooth';
+%   %%% Thickness of water column between smoothed ice shelf and unsmoothed
+%   %%% sea floor
+%   thickness = Smooth_Mice' - MDepth;
 %   
 %   %%%%%%% Smoothing water column thickness
 %   if (gauss_width_shelfice > 0) 
 %     thickness_smooth = smooth2D(XMC_smooth',YMC_smooth',thickness',gauss_width_shelfice,gauss_width_shelfice)';
 %     thickness_smooth = thickness_smooth';
 %   else
-%     thickness_smooth = thickness_smooth';
-%   end
+%     thickness_smooth = thickness';
+%   end  
+%   thickness_smooth(thickness_smooth<0) = 0; %%% Can't have negative thickness
 %   
-%   %%% Now reconstruct ice shelf draft from smoothed water column thickness
-%   Smooth_Mice = Depth_smooth + thickness_smooth;
-
-  
-  %%% VERSION 3 - SMOOTH ICE AND WATER COLUMN THICKNESS %%%
-  
-  %%% First, remove all ice draft above sea level to remove errors where
-  %%% ocean meets land with ice, but there is no ice shelf
-  Mice_draft_noland = Mice_draft;
-  Mice_draft_noland(Mice_draft_noland > 0) = 0;
-
-  %%%%%%% Smoothing Ice Draft
-  if (gauss_width_shelfice > 0) 
-    Smooth_Mice = smooth2D(XMC_smooth',YMC_smooth',Mice_draft_noland',gauss_width_shelfice,gauss_width_shelfice)';
-    Smooth_Mice = Smooth_Mice';
-  else
-    Smooth_Mice = Mice_draft_noland';
-  end
-    
-  %%% Eliminate points with very thin ice shelves
-  Smooth_Mice(Smooth_Mice>=-min_ice_thickness) = 0;
-  
-  %%% Thickness of water column between smoothed ice shelf and unsmoothed
-  %%% sea floor
-  thickness = Smooth_Mice' - MDepth;
-  
-  %%%%%%% Smoothing water column thickness
-  if (gauss_width_shelfice > 0) 
-    thickness_smooth = smooth2D(XMC_smooth',YMC_smooth',thickness',gauss_width_shelfice,gauss_width_shelfice)';
-    thickness_smooth = thickness_smooth';
-  else
-    thickness_smooth = thickness';
-  end  
-  thickness_smooth(thickness_smooth<0) = 0; %%% Can't have negative thickness
-  
-  %%% Now reconstruct bathymetry from smoothed water column thickness
-  Depth_smooth = Smooth_Mice - thickness_smooth;
-
-end
-
-
-%%%%%% Anywhere that the original ice draft was above land, set equal to
-%%%%%% zero in smoothed version.
-% Smooth_Mice(Mice_draft'>=0) = 0;
-  
-%%%%%% Remove points where depth or ice draft lie above the surface
-Depth_smooth(Depth_smooth>0) = 0;
-Smooth_Mice(Smooth_Mice>0) = 0;
-
-%%%%%% Smoothed Ice draft and Smoothed bathymetry match
-%%%%%% where the original draft minus the bathymetry equals zero.
-Smooth_Mice((Mice_draft-MDepth)'==0) = Depth_smooth((Mice_draft-MDepth)'==0);
-
-%%% Avoid negative water column thicknesses
-Smooth_Mice(Smooth_Mice-Depth_smooth < 0) = Depth_smooth(Smooth_Mice-Depth_smooth < 0);
+%   %%% Now reconstruct bathymetry from smoothed water column thickness
+%   Depth_smooth = Smooth_Mice - thickness_smooth;
+% 
+% end
+% 
+% 
+% %%%%%% Anywhere that the original ice draft was above land, set equal to
+% %%%%%% zero in smoothed version.
+% % Smooth_Mice(Mice_draft'>=0) = 0;
+%   
+% %%%%%% Remove points where depth or ice draft lie above the surface
+% Depth_smooth(Depth_smooth>0) = 0;
+% Smooth_Mice(Smooth_Mice>0) = 0;
+% 
+% %%%%%% Smoothed Ice draft and Smoothed bathymetry match
+% %%%%%% where the original draft minus the bathymetry equals zero.
+% Smooth_Mice((Mice_draft-MDepth)'==0) = Depth_smooth((Mice_draft-MDepth)'==0);
+% 
+% %%% Avoid negative water column thicknesses
+% Smooth_Mice(Smooth_Mice-Depth_smooth < 0) = Depth_smooth(Smooth_Mice-Depth_smooth < 0);
 
 
 
@@ -327,6 +426,12 @@ end
 
 Smooth_Mice(Smooth_Mice-Depth_smooth < 0) = Depth_smooth(Smooth_Mice-Depth_smooth < 0);
 
+
+
+
+
+
+%%% Calculate hFacC based on MITgcm algorithm
 hFacC = zeros(Nx,Ny,Nz);
 for k=1:Nz  
   hFacMnSz = max( hFacMin, min(hFacMinDr/dz(k),1) );
@@ -406,6 +511,10 @@ while (found_cells)
   
 end
 
+
+
+
+
 %%%%% Remove isolated wet grid cells at ice shelf base
 
 found_cells = true;
@@ -440,7 +549,7 @@ while (found_cells)
         end
       end        
       
-      if (make_dry)
+      if (make_dry)        
         Smooth_Mice(i,j) = zzf(kidx+1);
         hFacC(i,j,kidx) = 0;
         found_cells = true;
@@ -454,6 +563,36 @@ end
 %%% If we have created negative depths then remove them
 
 Smooth_Mice(Smooth_Mice-Depth_smooth < 0) = Depth_smooth(Smooth_Mice-Depth_smooth < 0);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%%%
+%%% Eliminate areas below minimum water column thickness
+%%%
+
+thickness_smooth = Smooth_Mice - Depth_smooth;
+Depth_smooth(thickness_smooth < min_thickness) = Smooth_Mice(thickness_smooth < min_thickness);
+
+
+
+
+
+
+
+
 
 
 
@@ -474,22 +613,20 @@ Smooth_Mice(Smooth_Mice-Depth_smooth < 0) = Depth_smooth(Smooth_Mice-Depth_smoot
 
 %%% Write to files
 
-data = Depth_smooth;
-writeDataset(data,fullfile(inputfolder,bathyFile),ieee,prec);
-clear data
+addpath ../newexp_utils
 
+data = Depth_smooth;
+writeDataset(data,fullfile(inputconfigdir,bathyFile),ieee,prec);
+clear data
 
 data = Smooth_Mice;
-writeDataset(data,fullfile(inputfolder,SHELFICEtopoFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,SHELFICEtopoFile),ieee,prec);
 clear data
 
-tides =1;
-if tides ==1
-    addpath ../newexp_utils
-    data = hFacC;
-    writeDataset(data,fullfile(inputfolder,'hFacC.bin'),ieee,prec);
-    clear data;
-end
+data = hFacC;
+writeDataset(data,fullfile(inputconfigdir,'hFacC.bin'),ieee,prec);
+clear data;
+
 
 
 

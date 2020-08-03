@@ -79,103 +79,103 @@ exppath13w =  '/data3/MITgcm_WS/experiments/s_hist46_w_minus40';
 
 %%%% Load Salinity and Temperature
 
-% 
-% tmin = 12*86400*360;
-% tmax = 19*86400*360;
-% %
-% %
-% thetawc = readIters(exppath1w,'THETA',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
-% saltwc = readIters(exppath1w,'SALT',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
-% tmin = 10*86400*360;
-% tmax = 19*86400*360;
-% thetawcplus10 = readIters(exppath5w,'THETA',dumpIters_4,deltaT_4,tmin,tmax,Nx,Ny,Nr);
-% saltwcplus10 = readIters(exppath5w,'SALT',dumpIters_4,deltaT_4,tmin,tmax,Nx,Ny,Nr);
-% 
-% tmin = 28*86400*360;
-% tmax = 37*86400*360;
-% thetawcplus20 = readIters(exppath2w,'THETA',dumpIters2,deltaT2,tmin,tmax,Nx,Ny,Nr);
-% saltwcplus20 = readIters(exppath2w,'SALT',dumpIters2,deltaT2,tmin,tmax,Nx,Ny,Nr);
-% tmin = 19*86400*360;
-% tmax = 27*86400*360;
-% thetawcplus15 = readIters(exppath10w,'THETA',dumpIters_4,deltaT_4,tmin,tmax,Nx,Ny,Nr);
-% saltwcplus15 = readIters(exppath10w,'SALT',dumpIters_4,deltaT_4,tmin,tmax,Nx,Ny,Nr);
-% 
-% tmin = 10*86400*360;
-% tmax = 19*86400*360;
-% thetawcplus5 = readIters(exppath11w,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-% saltwcplus5 = readIters(exppath11w,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-% 
-% thetawcminus5 = readIters(exppath9w,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-% saltwcminus5 = readIters(exppath9w,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-% 
-% thetawcminus20 = readIters(exppath8w,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-% saltwcminus20 = readIters(exppath8w,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-% 
-% thetawcminus30 = readIters(exppath12w,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-% saltwcminus30 = readIters(exppath12w,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-% 
-% thetawcminus10 = readIters(exppath7w,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-% saltwcminus10 = readIters(exppath7w,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-% 
-% 
-% tmin = 9*86400*360;
-% tmax = 18*86400*360;
-% thetawcminus50 = readIters(exppath4w,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-% saltwcminus50 = readIters(exppath4w,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-% 
-% tmin = 9*86400*360;
-% tmax = 18*86400*360;
-% thetawcminus40 = readIters(exppath13w,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-% saltwcminus40 = readIters(exppath13w,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+
+tmin = 12*86400*360;
+tmax = 19*86400*360;
+%
+%
+thetawc = readIters(exppath1w,'THETA',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
+saltwc = readIters(exppath1w,'SALT',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
+tmin = 10*86400*360;
+tmax = 19*86400*360;
+thetawcplus10 = readIters(exppath5w,'THETA',dumpIters_4,deltaT_4,tmin,tmax,Nx,Ny,Nr);
+saltwcplus10 = readIters(exppath5w,'SALT',dumpIters_4,deltaT_4,tmin,tmax,Nx,Ny,Nr);
+
+tmin = 28*86400*360;
+tmax = 37*86400*360;
+thetawcplus20 = readIters(exppath2w,'THETA',dumpIters2,deltaT2,tmin,tmax,Nx,Ny,Nr);
+saltwcplus20 = readIters(exppath2w,'SALT',dumpIters2,deltaT2,tmin,tmax,Nx,Ny,Nr);
+tmin = 19*86400*360;
+tmax = 27*86400*360;
+thetawcplus15 = readIters(exppath10w,'THETA',dumpIters_4,deltaT_4,tmin,tmax,Nx,Ny,Nr);
+saltwcplus15 = readIters(exppath10w,'SALT',dumpIters_4,deltaT_4,tmin,tmax,Nx,Ny,Nr);
+
+tmin = 10*86400*360;
+tmax = 19*86400*360;
+thetawcplus5 = readIters(exppath11w,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+saltwcplus5 = readIters(exppath11w,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+
+thetawcminus5 = readIters(exppath9w,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+saltwcminus5 = readIters(exppath9w,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+
+thetawcminus20 = readIters(exppath8w,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+saltwcminus20 = readIters(exppath8w,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+
+thetawcminus30 = readIters(exppath12w,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+saltwcminus30 = readIters(exppath12w,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+
+thetawcminus10 = readIters(exppath7w,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+saltwcminus10 = readIters(exppath7w,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
 
 
 tmin = 9*86400*360;
 tmax = 18*86400*360;
-thetawc = readIters(exppath5,'THETA',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
-saltwc = readIters(exppath5,'SALT',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
-
-
-
-thetawcplus10 = readIters(exppath2,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-saltwcplus10 = readIters(exppath2,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-
-thetawcplus20 = readIters(exppath3,'THETA',dumpIters_4,deltaT_4,tmin,tmax,Nx,Ny,Nr);
-saltwcplus20 = readIters(exppath3,'SALT',dumpIters_4,deltaT_4,tmin,tmax,Nx,Ny,Nr);
-
-
-thetawcplus15 = readIters(exppath13,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-saltwcplus15 = readIters(exppath13,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-
-
-thetawcplus5 = readIters(exppath4,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-saltwcplus5= readIters(exppath4,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-
-thetawcminus5 = readIters(exppath7,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-saltwcminus5 = readIters(exppath7,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-
-thetawcminus20 = readIters(exppath9,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-saltwcminus20 = readIters(exppath9,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-
-tmin = 9*86400*360;
-tmax = 16*86400*360;
-thetawcminus30 = readIters(exppath11,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-saltwcminus30 = readIters(exppath11,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+thetawcminus50 = readIters(exppath4w,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+saltwcminus50 = readIters(exppath4w,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
 
 tmin = 9*86400*360;
 tmax = 18*86400*360;
-thetawcminus10 = readIters(exppath10,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-saltwcminus10 = readIters(exppath10,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+thetawcminus40 = readIters(exppath13w,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+saltwcminus40 = readIters(exppath13w,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
 
-
-tmin = 21*86400*360;
-tmax = 29*86400*360;
-thetawcminus50 = readIters(exppath1,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-saltwcminus50 = readIters(exppath1,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
-
-tmin = 21*86400*360;
-tmax = 30*86400*360;
-thetawcminus40 = readIters(exppath12,'THETA',dumpIters2,deltaT2,tmin,tmax,Nx,Ny,Nr);
-saltwcminus40 = readIters(exppath12,'SALT',dumpIters_2,deltaT2,tmin,tmax,Nx,Ny,Nr);
+% 
+% tmin = 9*86400*360;
+% tmax = 18*86400*360;
+% thetawc = readIters(exppath5,'THETA',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
+% saltwc = readIters(exppath5,'SALT',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
+% 
+% 
+% 
+% thetawcplus10 = readIters(exppath2,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+% saltwcplus10 = readIters(exppath2,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+% 
+% thetawcplus20 = readIters(exppath3,'THETA',dumpIters_4,deltaT_4,tmin,tmax,Nx,Ny,Nr);
+% saltwcplus20 = readIters(exppath3,'SALT',dumpIters_4,deltaT_4,tmin,tmax,Nx,Ny,Nr);
+% 
+% 
+% thetawcplus15 = readIters(exppath13,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+% saltwcplus15 = readIters(exppath13,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+% 
+% 
+% thetawcplus5 = readIters(exppath4,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+% saltwcplus5= readIters(exppath4,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+% 
+% thetawcminus5 = readIters(exppath7,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+% saltwcminus5 = readIters(exppath7,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+% 
+% thetawcminus20 = readIters(exppath9,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+% saltwcminus20 = readIters(exppath9,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+% 
+% tmin = 9*86400*360;
+% tmax = 16*86400*360;
+% thetawcminus30 = readIters(exppath11,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+% saltwcminus30 = readIters(exppath11,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+% 
+% tmin = 9*86400*360;
+% tmax = 18*86400*360;
+% thetawcminus10 = readIters(exppath10,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+% saltwcminus10 = readIters(exppath10,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+% 
+% 
+% tmin = 21*86400*360;
+% tmax = 29*86400*360;
+% thetawcminus50 = readIters(exppath1,'THETA',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+% saltwcminus50 = readIters(exppath1,'SALT',dumpIters_3,deltaT_3,tmin,tmax,Nx,Ny,Nr);
+% 
+% tmin = 21*86400*360;
+% tmax = 30*86400*360;
+% thetawcminus40 = readIters(exppath12,'THETA',dumpIters2,deltaT2,tmin,tmax,Nx,Ny,Nr);
+% saltwcminus40 = readIters(exppath12,'SALT',dumpIters_2,deltaT2,tmin,tmax,Nx,Ny,Nr);
 
                 thetawc_n = zeros(Nx,Ny,Nr);
                 thetawcplus20_n=zeros(Nx,Ny,Nr);
@@ -297,8 +297,14 @@ thetawcplus10_n=thetawcplus10_n(~thetawcplus10_n==0);
 saltwcplus15_n=saltwcplus15_n(~saltwcplus15_n==0);
 thetawcplus15_n=thetawcplus15_n(~thetawcplus15_n==0);
 
+
+
+
+
+
 figure(1)
 clf
+set(gcf,'Position',[382         308        1277         600]);
 cmap = lines((11));
 set(gca,'FontSize',15);
 hold on
@@ -311,24 +317,24 @@ s3=scatter(saltwcminus30_n(1:5:end),thetawcminus30_n(1:5:end),5,cmap(11,:),'fill
 hold on
 % s4=scatter(saltwcminus20,thetawcminus20,10,cmap(2,:),'filled');
 hold on;
-s5=scatter(saltwcminus10_n(1:5:end),thetawcminus10_n(1:5:end),5,cmap(3,:),'filled');
+s5=scatter(saltwcminus10_n(1:5:end),thetawcminus10_n(1:5:end),5,cmap(8,:),'filled');
 hold on
 % s6=scatter(saltwcminus5,thetawcminus5,10,cmap(4,:),'filled');
 hold on
-s7=scatter(saltwc_n(1:5:end),thetawc_n(1:5:end),5,cmap(1,:),'filled');
+s7=scatter(saltwc_n(1:5:end),thetawc_n(1:5:end),5,[0 0 0],'filled');
 hold on;
 % s8=scatter(saltwcplus5,thetawcplus5,10,cmap(7,:),'filled');
 hold on
 s9=scatter(saltwcplus10_n( 1:5:end),thetawcplus10_n(1:5:end),5,cmap(6,:),'filled');
 hold on
-s10=scatter(saltwcplus15_n(1:5:end),thetawcplus15_n(1:5:end),5,cmap(8,:),'filled');
+s10=scatter(saltwcplus15_n(1:5:end),thetawcplus15_n(1:5:end),5,cmap(7,:),'filled');
 hold on
 s11=scatter(saltwcplus20_n(1:5:end),thetawcplus20_n(1:5:end),5,cmap(5,:),'filled');
 hold on
 
 hold on
-title('Temperature/Salinity in FRIS Cavity, ``Warm" FRIS Initialization Experiments', 'interpreter','latex','Fontsize',17);
-xlabel('Salinity (psu)','interpreter','latex');
+title('Temperature/Salinity in FRIS Cavity, Experiments Initialized from REF', 'interpreter','latex','Fontsize',17);
+% xlabel('Salinity (psu)','interpreter','latex');
 ylabel('Temperature ($^\circ$C)','interpreter','latex');
 xlim([33.7 35]);
 ylim([-3 .5]);
@@ -357,10 +363,11 @@ hold on
 clabel(C,f)
 set(gca,'fontsize',17);
 
-load starred
+load SavedFiles/starred
 z = -1.8*ones(6,1);
 k3 = plot(33:38,z,'k:','linewidth',2);
 hold on
 
 h = legend([s1,s2,s3,s5,s7,s9,s10,s11,k3],{'-50\%','-40\%','-30\%','-10\%','Control','+10\%','+15\%','+20\%','Freezing Temperature($^\circ$C)'},'interpreter','latex');
 set(h,'FontSize',13);
+text(33.65,-3.3,'\textbf{a}','fontsize',14,'interpreter','latex')

@@ -7,7 +7,7 @@ loadexp;
 
 %%% Frequency of diagnostic output
 dumpFreq = abs(diag_frequency(15));
-deltaT = 440;
+% deltaT = 440;
 nIter0 = 0;
 nDumps = round(nTimeSteps*deltaT/dumpFreq);
 dumpIters = round((1:nDumps)*dumpFreq/deltaT);
@@ -16,8 +16,10 @@ nDumps = length(dumpIters);
 
 %%%% Load Salinity and Temperature
 
-tmin = 10;
-tmax = 19;
+% tmin = 10;
+% tmax = 19;
+tmin = 9;
+tmax = 18;
 %%%number of months pertaining to these timeframes
 d_s = tmin*12;
 d_f = tmax*12;

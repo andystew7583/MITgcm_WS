@@ -1,4 +1,5 @@
-%%%v%%%%%loadexp.m
+%%%
+%%% loadexp.m
 %%%
 %%% Loads an experiment's parameters into memory. The variables 'expname'
 %%% and 'expdir' must be set prior to running this script. This is a bit
@@ -22,15 +23,18 @@ exppath = fullfile(expdir,expname);
 inputpath = fullfile(exppath,'input');
 resultspath = fullfile(exppath,'results');
 
-% days = 11200;
-days_start = 8*0;
-days_end = 3287;%477*8;
 %%% Path to MITgcm matlab scripts
 addpath ../utils/matlab/
 
-
 %%% Load parameters used for this experiment
 run(fullfile(inputpath,'params.m'));
+
+
+
+%%%
+%%% GRID
+%%%
+
 %%% Grid dimensions (not specified explicitly in params.m)
 Nx = length(delX);
 Ny = length(delY);
@@ -42,14 +46,62 @@ Ly = sum(delY);
 H = sum(delR);
 
 
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% ATMOSPHERIC FORCING CYCLE %%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Beginning Data from 2007  ( first full year we have)
+base_year = 2006;
+start_year = 2007;
+endyr = 2015;
+
+start_month = 1;
+end_month = 12;
+
+%%%%  total years, months
+Nmon = 12;
+Nyears = 9;
+Nmonths = 108;
+
+%%%% Finding if current year is a leap year
+%%% N.B. only works because we happen to be using the period 2007-2015
+Ndays = 0;
+is_leap_year = zeros(Nyears,1);
+for i=1:Nyears
+  if (mod(i+2,4)==0) %%% At i=2, the year is 2008, e.g.
+    is_leap_year(i) = 1;
+    Ndays = Ndays + 366;
+  else
+    Ndays = Ndays + 365;
+  end
+end
+
+%%% Useful measures of time
+t1day = 86400;
+t1year = Ndays*t1day/Nyears;
+t1month = t1year/12;
+
+days_start = 1;
+days_end = Ndays;
+
+
+
+
+
 %%% Modify to ensure we catch all the time steps in the event that the
 %%% simulation has been restarted
-
-
 startTime = nIter0*deltaT;
-endTime = 6307272000000;
-% endTime = 851472200;
-nTimeSteps = nIter0 + ceil((endTime-startTime)/deltaT);
+nTimeSteps = ceil((endTime-startTime)/deltaT);
+
+
+
+
+
 
 %%% Other physical parameters
 rho0 = 1000;
@@ -58,22 +110,26 @@ Cp = 4e3;
 
 atmos_forcing = 0;
 open_boundaries = 1;
-initialconditions = 1;
+initialconditions = 0;
 tides = 1;
 
 
 %%% Load data files
 
+fid = fopen(fullfile(inputpath,'bathyFile.bin'),'r','b');
+    bathy = fread(fid,[Nx Ny],'real*8');
+    fclose(fid);
+
+    fid = fopen(fullfile(inputpath,SHELFICEtopoFile),'r','b');
+    SHELFICEtopo = fread(fid,[Nx Ny],'real*8');
+    fclose(fid);
+    
+    
+    
+    
+
 if open_boundaries ==1
 
-    fid = fopen(fullfile(inputpath,OBNaFile),'r','b');
-    OBNa = fread(fid,[Nx 12],'real*8');
-    fclose(fid);
-
-    fid = fopen(fullfile(inputpath,OBNhFile),'r','b');
-    OBNh = fread(fid,[Nx 12],'real*8');
-    fclose(fid);
-% 
     OBEt = zeros(Ny,Nr,12);
     fid = fopen(fullfile(inputpath,OBEtFile),'r','b');
     for k=1:12
@@ -148,6 +204,69 @@ if open_boundaries ==1
         OBEa(:,k) = fread(fid,Ny,'real*8');
     end
     fclose(fid);
+    
+    OBNh = zeros(Nx,12);
+    fid = fopen(fullfile(inputpath,OBNhFile),'r','b');
+    for k=1:12
+        OBNh(:,k) = fread(fid,[Nx],'real*8');
+    end
+    fclose(fid);
+    
+    OBEh = zeros(Ny,12);
+    fid = fopen(fullfile(inputpath,OBEhFile),'r','b');
+    for k=1:12
+        OBEh(:,k) = fread(fid,Ny,'real*8');
+    end
+    fclose(fid);
+    
+    OBNuice = zeros(Nx,12);
+    fid = fopen(fullfile(inputpath,OBNuiceFile),'r','b');
+    for k=1:12
+        OBNuice(:,k) = fread(fid,[Nx],'real*8');
+    end
+    fclose(fid);
+    
+    OBEuice = zeros(Ny,12);
+    fid = fopen(fullfile(inputpath,OBEuiceFile),'r','b');
+    for k=1:12
+        OBEuice(:,k) = fread(fid,Ny,'real*8');
+    end
+    fclose(fid);
+    
+    OBNvice = zeros(Nx,12);
+    fid = fopen(fullfile(inputpath,OBNviceFile),'r','b');
+    for k=1:12
+        OBNvice(:,k) = fread(fid,[Nx],'real*8');
+    end
+    fclose(fid);
+    
+    OBEvice = zeros(Ny,12);
+    fid = fopen(fullfile(inputpath,OBEviceFile),'r','b');
+    for k=1:12
+        OBEvice(:,k) = fread(fid,Ny,'real*8');
+    end
+    fclose(fid);
+    
+    OBEam = zeros(Ny,10);
+    fid = fopen(fullfile(inputpath,OBEamFile),'r','b');
+    for k=1:10
+        OBEam(:,k) = fread(fid,Ny,'real*8');
+    end
+    fclose(fid);
+%     
+%     OBNeta = zeros(Nx,12);
+%     fid = fopen(fullfile(inputpath,OBNetaFile),'r','b');
+%     for k=1:12
+%         OBNeta(:,k) = fread(fid,[Nx],'real*8');
+%     end
+%     fclose(fid);
+%     
+%     OBEeta = zeros(Ny,12);
+%     fid = fopen(fullfile(inputpath,OBEetaFile),'r','b');
+%     for k=1:12
+%         OBEeta(:,k) = fread(fid,Ny,'real*8');
+%     end
+%     fclose(fid);
 end
 
 
@@ -203,76 +322,85 @@ if initialconditions ==1
     fid = fopen(fullfile(inputpath,SHELFICEloadAnomalyFile),'r','b');
     SHELFICEloadAnomaly = fread(fid,[Nx Ny],'real*8');
     fclose(fid);
-% 
-    fid = fopen(fullfile(inputpath,'bathyFile.bin'),'r','b');
-    bathy = fread(fid,[Nx Ny],'real*8');
+    
+    fid = fopen(fullfile(inputpath,HeffFile),'r','b');
+    SIHeffInit = fread(fid,[Nx Ny],'real*8');
     fclose(fid);
-
-    fid = fopen(fullfile(inputpath,SHELFICEtopoFile),'r','b');
-    SHELFICEtopo = fread(fid,[Nx Ny],'real*8');
+    
+    fid = fopen(fullfile(inputpath,AreaFile),'r','b');
+    SIAreaInit = fread(fid,[Nx Ny],'real*8');
+    fclose(fid);
+    
+    fid = fopen(fullfile(inputpath,uIceFile),'r','b');
+    SIUvelInit = fread(fid,[Nx Ny],'real*8');
+    fclose(fid);
+    
+    fid = fopen(fullfile(inputpath,vIceFile),'r','b');
+    SIVvelInit = fread(fid,[Nx Ny],'real*8');
     fclose(fid);
 end
 
 
 if atmos_forcing ==1
-    uwind = zeros(Nx,Ny,3287);
+  
+    EXF_Nx = atemp_nlon;
+    EXF_Ny = atemp_nlat;
+    
+    uwind = zeros(EXF_Nx,EXF_Ny,length(days_start:days_end));
     fid = fopen(fullfile(inputpath,uwindfile),'r','b');
-    for k=1:3287
-        uwind(:,:,k) = fread(fid,[Nx Ny],'real*8');
+    for k=1:days_start:days_end
+        uwind(:,:,k) = fread(fid,[EXF_Nx EXF_Ny],'real*8');
     end
     fclose(fid);
 
-
-    vwind = zeros(Nx,Ny,length(days_start:days_end));
+    vwind = zeros(EXF_Nx,EXF_Ny,length(days_start:days_end));
     fid = fopen(fullfile(inputpath,vwindfile),'r','b');
     for k=days_start:days_end
-        vwind(:,:,k-days_start+1) = fread(fid,[Nx Ny],'real*8');
+        vwind(:,:,k-days_start+1) = fread(fid,[EXF_Nx EXF_Ny],'real*8');
     end
     fclose(fid);
 
-    temp = zeros(Nx,Ny,length(days_start:days_end));
+    atemp = zeros(EXF_Nx,EXF_Ny,length(days_start:days_end));
     fid = fopen(fullfile(inputpath,atempfile),'r','b');
     for k=days_start:days_end
-        temp(:,:,k-days_start+1) = fread(fid,[Nx Ny],'real*8');
+        atemp(:,:,k-days_start+1) = fread(fid,[EXF_Nx EXF_Ny],'real*8');
     end
     fclose(fid);
 
-    lw = zeros(Nx,Ny,length(days_start:days_end));
+    lw = zeros(EXF_Nx,EXF_Ny,length(days_start:days_end));
     fid = fopen(fullfile(inputpath,lwdownfile),'r','b');
-    for k=days_start:days_end
-        lw(:,:,k-days_start+1) = fread(fid,[Nx Ny],'real*8');
+    for k=days_start:days_end      
+        lw(:,:,k-days_start+1) = fread(fid,[EXF_Nx EXF_Ny],'real*8');
     end
     fclose(fid);
 
-    sw = zeros(Nx,Ny,length(days_start:days_end));
+    sw = zeros(EXF_Nx,EXF_Ny,length(days_start:days_end));
     fid = fopen(fullfile(inputpath,swdownfile),'r','b');
     for k=days_start:days_end
-        sw(:,:,k-days_start+1) = fread(fid,[Nx Ny],'real*8');
+        sw(:,:,k-days_start+1) = fread(fid,[EXF_Nx EXF_Ny],'real*8');
     end
     fclose(fid);
 
-    precip = zeros(Nx,Ny,length(days_start:days_end));
+    precip = zeros(EXF_Nx,EXF_Ny,length(days_start:days_end));
     fid = fopen(fullfile(inputpath,precipfile),'r','b');
     for k=days_start:days_end
-        precip(:,:,k-days_start+1) = fread(fid,[Nx Ny],'real*8');
+        precip(:,:,k-days_start+1) = fread(fid,[EXF_Nx EXF_Ny],'real*8');
     end
     fclose(fid);
 
-    apressure = zeros(Nx,Ny,length(days_start:days_end));
-    fid = fopen(fullfile(inputpath,pressure),'r','b');
+    apressure = zeros(EXF_Nx,EXF_Ny,length(days_start:days_end));
+    fid = fopen(fullfile(inputpath,apressurefile),'r','b');
     for k=days_start:days_end
-        apressure(:,:,k-days_start+1) = fread(fid,[Nx Ny],'real*8');
+        apressure(:,:,k-days_start+1) = fread(fid,[EXF_Nx EXF_Ny],'real*8');
     end
     fclose(fid);
 
-    aq = zeros(Nx,Ny,12);
+    aq = zeros(EXF_Nx,EXF_Ny,length(days_start:days_end));
     fid = fopen(fullfile(inputpath,aqhfile),'r','b');
-    for k=1:12
-        aq(:,:,k) = fread(fid,[Nx Ny],'real*8');
+    for k=1:days_start:days_end
+        aq(:,:,k) = fread(fid,[EXF_Nx EXF_Ny],'real*8');
     end
-    fclose(fid);
-    
-    
+    fclose(fid); 
     
 end
 
@@ -316,6 +444,10 @@ hFacC = rdmds(fullfile(resultspath,'hFacC'));
 zz = RC;
 xx = XC(:,1);
 yy = YC(1,:);
+
+% run ../newexp/defineGrid;
+% xx = XMC(:,1);
+% yy = YMC(1,:);
 
 % 
 

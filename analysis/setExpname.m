@@ -8,13 +8,38 @@ gendir = '/data3/';
 basedir = fullfile(gendir,'MITgcm_WS/experiments');
 
 expdir = basedir;
+% expname = 'hires_seq_onethird';
+% expname = 'hires_seq_onethird_strongwinds';
+% expname = 'hires_seq_onethird_loGamT';
+% expname = 'hires_seq_onethird_ECCObdry';
+% expname = 'hires_seq_onethird_modbdry';
+% expname = 'hires_seq_onethird_pyc1000';
+% expname = 'hires_seq_onethird_SIbdryfix';
+% expname = 'hires_seq_onethird_SIbdryfix_pyc1000_fixSIdrag';
+% expname = 'hires_seq_onethird_SIbdryfix_pyc1000_fixSIdrag_fixSIsponge';
+% expname = 'hires_seq_onethird_albFix_ERArad_pyc500';
+% expname = 'hires_seq_onethird_noslip_loGamT';
+% expname = 'hires_seq_onesixth';
+% expname = 'hires_seq_onesixth_restart_hifreq';
+% expname = 'hires_seq_onesixth_modbdries';
+% expname = 'hires_seq_onesixth_albFix_ERArad_pyc500';
+% expname = 'hires_seq_onesixth_loDeltaT';
+% expname = 'hires_seq_onesixth_DeltaT60_2';
+% expname = 'hires_seq_onesixth_fixNorthBdy_2';
+% expname = 'hires_seq_onesixth_smoothtopog_tildes_6';
+% expname = 'hires_seq_onesixth_iceflux2_iceAHconst_gammaFrict';
+% expname = 'hires_seq_onesixth_iceflux2_iceAHconst_gammaFrict_ERAsw_tempoff';
+% expname = 'hires_seq_onesixth_modbdrystrat';
+% expname = 'hires_seq_onesixth_modbdrystrat_wind1.5';
+expname = 'hires_seq_onetwelfth';
 
 
+%%% Julia's control experiments
+% expname = 'n_34452';
 
 %%% wind experiments
-
 % 
-expname = 'n_34452';
+% expname = 'n_34452';
 % expname = 'n_342';
 % expname = 'a_34_20boundary';
 % expname = 'a_3445_20boundary';

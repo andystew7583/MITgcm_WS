@@ -204,19 +204,20 @@ melt_mean = melt_mean/mean_cntr;
 
 figure(1);
 clf
+set(gcf,'Position',[  406         432        1169         550]);
 c =(jet(100));
 set(gca,'FontSize',16);
 % t1 = plot(tt(1:meltlen),-melttot_exp1(1:meltlen),'color',c(5,:),'Linewidth',1.5);
 % hold on 
 % t2 = plot(tt(1:meltlen),-melttot_exp2(1:meltlen),'color',c(20,:),'Linewidth',1.5);
 hold on
-t3 = plot(tt(1:meltlen),-melttot_exp3(1:meltlen),'color',c(10,:),'Linewidth',.5);
+t3 = plot(tt(1:meltlen),-melttot_exp3(1:meltlen),'o-','color',c(10,:),'Linewidth',1,'MarkerSize',4);
 hold on
-t4 = plot(tt(1:meltlen),-melttot_exp4(1:meltlen),'color',c(30,:),'Linewidth',.5);
+t4 = plot(tt(1:meltlen),-melttot_exp4(1:meltlen),'s-','color',c(30,:),'Linewidth',1,'MarkerSize',4);
 hold on
-t5 = plot(tt(1:meltlen),-melttot_exp5(1:meltlen),'color',c(75,:),'Linewidth',.5);
+t5 = plot(tt(1:meltlen),-melttot_exp5(1:meltlen),'v-','color',c(75,:),'Linewidth',1,'MarkerSize',4);
 hold on
-t6 = plot(tt(1:meltlen),-melttot_exp6(1:meltlen),'color',c(90,:),'Linewidth',.5);
+t6 = plot(tt(1:meltlen),-melttot_exp6(1:meltlen),'^-','color',c(90,:),'Linewidth',1,'MarkerSize',4);
 hold on
 % t7 = plot(tt(1:meltlen),-melttot_exp7(1:meltlen),'color',c(90,:),'Linewidth',1.5);
 % hold on
@@ -225,11 +226,11 @@ hold on
 % % t10 = plot(tt(1:meltlen),-melttot_exp10(1:meltlen),'color',c(110,:),'Linewidth',1.5);
 
 
-axis([0 25 0 950]);
-
-xlabel('t (years)','interpreter','latex');
-ylabel('Integrated Shelf Ice Melt (Gt/yr)','interpreter','latex');
-title('Integrated FRIS Melt (Gt)', 'interpreter','latex','fontsize',16);
+axis([0 25 0 1000]);
+set(gca,'Position',[0.0984    0.1108    0.8563    0.8165]);
+xlabel('Time (years)','interpreter','latex');
+ylabel('Gt/yr','interpreter','latex');
+title('Integrated FRIS Melt', 'interpreter','latex','fontsize',16);
 % h1 = line([0 0],[1 2000]);
 % h2 = line([2 2],[1 2000]);
 % c = patch([0 2 2 0],[1 1 2000 2000],[.5 .5 .5]);
@@ -241,4 +242,5 @@ z = 124*ones(40,1);
 k3 = plot(0:39,z,'k:','linewidth',2);
 hold on
 l = legend([t4,t3,t5,t6,k3],{'REF, No Zonal Wind','REF, Merid -50$\%$','FRESH, Temp -30$^\circ$C','FRESH, Merid +20$\%$','Observed'},'interpreter','latex','location','northwest','fontsize',12);
-
+set(l,'Position',[0.2287    0.7667    0.1739    0.1855]);
+box on;

@@ -58,7 +58,7 @@ msk = NaN(Nx,Ny);
   end
 
 msk_shade =0*msk;
-msk_alpha = 60*msk;
+msk_alpha = .15*msk;
 
 
 
@@ -91,6 +91,7 @@ end
 %%% Set up the figure
 figure(2);
 clf;
+set(gcf,'Position',[ 477         225        1075         724]);
 scrsz = get(0,'ScreenSize');
 fontsize = 14;
 
@@ -129,7 +130,7 @@ title(c,'Depth(m)','interpreter','latex','fontsize',16);
 hold on;
 h = pcolorm(YC,XC,msk_shade);
 set(h,'FaceAlpha','flat');
-set(h,'AlphaDataMapping','direct');
+set(h,'AlphaDataMapping','none');
 set(h,'AlphaData',msk_alpha);
 set(h,'facecolor','k');
 % shading flat;

@@ -41,35 +41,27 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   t1hour = 60*t1min;
   %%% hours in one day
   t1day = 24*t1hour;
-  t1year = 365*t1day;
-  
-  
-  
-  %%%%%%%%%%%%%%%% Total simulation time %%%%%%%%%
-  num_years = 18; 
-  
-    
-  simTime = 0;
-  for i = 1:num_years
-    if (is_leap_year(mod(i,Nyears)))
-      t1year = 366*t1day;
-      simTime = t1year +simTime;
-    else
-      t1year = 365*t1day;
-      simTime = t1year +simTime;
-    end
-  end
-  
- 
-  
-  
- 
   %%% Metres in one kilometre
   m1km = 1000;
   
   %%% Model grid is defined externally
-  
   run defineGrid.m   
+  
+  
+  
+  %%%%%%%%%%%%%%%% Total simulation time %%%%%%%%%
+  Nyears = 9;  
+  simTime = 0;
+  for i = 1:Nyears
+    if (is_leap_year(mod(i-1,length(is_leap_year))+1))      
+      simTime = simTime + 366*t1day;
+    else      
+      simTime = simTime + 365*t1day;
+    end
+  end
+  t1year = simTime/Nyears;
+  t1month = t1year/12;
+  
   
   
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -78,8 +70,9 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
     
   
   %%% Simulation parameters
-%     nIter0 = 232200; %%% Initial iteration after 2 years (480 Timestep)
-  nIter0 = 0; %%% Initial iteration
+%   nIter0 = 0; %%% Initial iteration for brand new runs
+  nIter0 = 1; %%% Initial iteration for pickup runs
+%   nIter0 = 1183320;
 
 
 
@@ -90,23 +83,16 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   viscA4Grid = 0.1; %%% Grid-dependent biharmonic viscosity
   %%%%viscC4Leith=2.15;
   %%%%viscC4Leithd=2.15; %%%%% Modified Leith non-dimensional viscosity factor 
-  viscAr = 0; %%% Vertical viscosity
+  viscAr = 3e-4; %%% Vertical viscosity
   diffKhT = 0; %%% Horizontal temp diffusion
   diffKrT = 0; %%% Vertical temp diffusion   
- 
-  
-  %%% Parameters related to periodic forcing
-  periodicExternalForcing = false;
-  externForcingCycle = t1year;
-  nForcingPeriods = 50;
-  if (~periodicExternalForcing)
-    nForcingPeriods = 1;   
-  end
-  externForcingPeriod = externForcingCycle/nForcingPeriods;  
   
   %%% PARM01
   %%% momentum scheme
   %%% viscosity  
+  
+  parm01.addParm('implicSurfPress',0.6,PARM_REAL);
+  parm01.addParm('implicDiv2DFlow',0.6,PARM_REAL);
   parm01.addParm('viscAr',viscAr,PARM_REAL);
   parm01.addParm('viscA4',viscA4,PARM_REAL);
   parm01.addParm('viscAh',viscAh,PARM_REAL);
@@ -164,8 +150,8 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %%% file IO stuff
   parm01.addParm('readBinaryPrec',64,PARM_INT);
   parm01.addParm('useSingleCpuIO',true,PARM_BOOL);
-  parm01.addParm('debugLevel',-1,PARM_INT);
-%   parm01.addParm('debugLevel',5,PARM_INT);
+%   parm01.addParm('debugLevel',-1,PARM_INT);
+  parm01.addParm('debugLevel',2,PARM_INT);
 
 %%%%% Vertical advection
   parm01.addParm('vectorInvariantMomentum',true,PARM_BOOL);
@@ -199,20 +185,16 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
 %   parm03.addParm('chkptFreq',0.01*t1year,PARM_REAL);
 %   parm03.addParm('chkptFreq',0.1*t1year,PARM_REAL);
 %   parm03.addParm('pChkptFreq',1*t1year,PARM_REAL);
-  parm03.addParm('chkptFreq',30*t1day,PARM_REAL);
-  parm03.addParm('pChkptFreq',30*t1day,PARM_REAL);
+  parm03.addParm('chkptFreq',t1month,PARM_REAL);
+  parm03.addParm('pChkptFreq',t1year,PARM_REAL);
+%   parm03.addParm('pChkptFreq',t1month,PARM_REAL);
   parm03.addParm('taveFreq',0,PARM_REAL);
   parm03.addParm('dumpFreq',0,PARM_REAL);
   parm03.addParm('monitorFreq',t1year,PARM_REAL);
   parm03.addParm('cAdjFreq',0,PARM_REAL);
   parm03.addParm('dumpInitAndLast',true,PARM_BOOL);
   parm03.addParm('pickupStrictlyMatch',false,PARM_BOOL);
-  if (periodicExternalForcing)
-    parm03.addParm('periodicExternalForcing',periodicExternalForcing,PARM_BOOL);
-    parm03.addParm('externForcingPeriod',externForcingPeriod,PARM_REAL);
-    parm03.addParm('externForcingCycle',externForcingCycle,PARM_REAL);
-  end
-  
+
   %%% PARM04
   parm04.addParm('usingCartesianGrid',false,PARM_BOOL);
   parm04.addParm('usingSphericalPolarGrid',true,PARM_BOOL);    
@@ -254,6 +236,10 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   h(1,:) = 0;
   SHELFICEtopo(:,1) = 0;
   SHELFICEtopo(1,:) = 0;
+  
+  %%% Eliminate any spurious openings at the northern boundary
+  idx_obcs_n = find(h(:,end)>=0,1,'last');
+  h(1:idx_obcs_n,end) = 0;
  
   %%% Overwrite bathymetry data file
   data = h;
@@ -352,23 +338,28 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
     %%%%%%%%% SEA ICE  %%%%%%%%%%%%
     %%%%%%%% PARAMETERS %%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Oringinal albedos from llc_1/48th  other values from llc_2160
+% Oringinal albedos from llc_1/48th  other values from llc_2160 or 
+%%% Revised albedos from SOSE
 % 
   SEAICEwriteState   = true;
   SEAICEuseDYNAMICS  = true;
   SEAICE_multDim     = 7;
 %   SEAICE_dryIceAlb   = 0.8783;
-  SEAICE_dryIceAlb   = 0.8509;
+%   SEAICE_dryIceAlb   = 0.8509;
+  SEAICE_dryIceAlb   = 0.92;
 %   SEAICE_wetIceAlb   = 0.7869;
-  SEAICE_wetIceAlb   = 0.7284;
+%   SEAICE_wetIceAlb   = 0.7284;
+  SEAICE_wetIceAlb   = 0.80;
 %   SEAICE_drySnowAlb  = 0.9482;
-  SEAICE_drySnowAlb  = 0.7754;
+%   SEAICE_drySnowAlb  = 0.7754;
+  SEAICE_drySnowAlb  = 0.96;
 %   SEAICE_wetSnowAlb  = 0.8216;
-  SEAICE_wetSnowAlb  = 0.7753;
-  SEAICE_waterDrag   = .0055399;
+%   SEAICE_wetSnowAlb  = 0.7753;
+  SEAICE_wetSnowAlb  = 0.83;
+  SEAICE_waterDrag   = 5.5399;
   SEAICE_drag        = 0.002;
 %   HO                 = 0.1;
-  HO                 = .05;
+  HO                 = .5;
 %%%% test .1,.5
 
   SEAICE_no_slip          = false;
@@ -387,13 +378,13 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   MIN_TICE                = -40;
   SEAICE_area_reg         = 0.15;
   SEAICE_hice_reg         = 0.1;
-  IMAX_TICE               = 6;
+  IMAX_TICE               = 10;
   SEAICE_EPS		      = 1.0e-8;
 %   SEAICE_EPS              = 2.0e-9;
   SEAICE_doOpenWaterMelt  = true;
   SEAICE_areaLossFormula  = 1;
   SEAICE_wetAlbTemp       = 0.0;
-  SEAICE_saltFrac         = 0.3;
+  SEAICE_saltFrac         = 0.0;
   SEAICE_frazilFrac       = 0.003;
 %  SEAICE_frazilFrac       = 0.01;
 %   SEAICE_frazilFrac       = 1.0;
@@ -482,11 +473,12 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
  
   SHELFICEloadAnomalyFile = 'SHELFICEloadAnomalyFile.bin';
   SHELFICEtopoFile = 'SHELFICEtopoFile.bin';
-  SHELFICEuseGammaFrict = false;
+  SHELFICEuseGammaFrict = true;
   SHELFICEboundaryLayer = false;
   SHELFICEconserve = false;
-  SHELFICEheatTransCoeff = .0005;
+%   SHELFICEheatTransCoeff = .0005;
 %   SHELFICEheatTransCoeff = .0001;
+  SHELFICEheatTransCoeff = 0;
 
   
   
@@ -533,7 +525,9 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   obcs_parm01 = parmlist;
   obcs_parm02 = parmlist;
   obcs_parm03 = parmlist;
-  OBCS_PARM = {obcs_parm01,obcs_parm02,obcs_parm03};  
+  obcs_parm04 = parmlist;
+  obcs_parm05 = parmlist;
+  OBCS_PARM = {obcs_parm01,obcs_parm02,obcs_parm03,obcs_parm04,obcs_parm05};  
   
   
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -550,10 +544,10 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   tidalPeriod=[44714, 43200, 45570, 43082, 86164, 92950, 86637, 96726,1180300,2380706];
 %   tidalPeriod=[44714, 43200, 45570, 43082, 86164, 92950, 86637];
 
-  OBNamFile= 'OBNamFile';
-  OBNphFile= 'OBNphFile';
-  OBEamFile= 'OBEamFile';
-  OBEphFile= 'OBEphFile';
+  OBNamFile= 'OBNamFile.bin';
+  OBNphFile= 'OBNphFile.bin';
+  OBEamFile= 'OBEamFile.bin';
+  OBEphFile= 'OBEphFile.bin';
   
   
   
@@ -577,7 +571,7 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
     OB_Ieast = -1*ones(1,Ny);
 %     OB_Iwest = 1*ones(1,Ny);
     OB_Jnorth = -1*ones(1,Nx);
-
+  OB_Jnorth(1:idx_obcs_n) = 0;
 
      
   obcs_parm01.addParm('useOrlanskiNorth',useOrlanskiNorth,PARM_BOOL);
@@ -591,6 +585,8 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
 
 
     useOBCSsponge = true;
+    useSeaiceSponge = true;
+    
 %     useOBCSsponge = false;
 
     useOBCSprescribe = true;
@@ -612,8 +608,8 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
     OBEvFile = 'OBEvFile.bin';
 %     OBWvFile = 'OBWvFile.bin';
 
-%     OBNetaFile = 'OBNetaFile.bin';
-%     OBEetaFile = 'OBEetaFile.bin';
+    OBNetaFile = 'OBNetaFile.bin';
+    OBEetaFile = 'OBEetaFile.bin';
 %     OBWetaFile = 'OBWetaFile.bin';
 
     OBNaFile = 'OBNaFile.bin';
@@ -642,7 +638,8 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
 %     OBWviceFile = 'OBWviceFile.bin';
 
 
-  obcs_parm01.addParm('useOBCSsponge',useOBCSsponge,PARM_BOOL);  
+  obcs_parm01.addParm('useOBCSsponge',useOBCSsponge,PARM_BOOL);
+  obcs_parm01.addParm('useSeaiceSponge',useSeaiceSponge,PARM_BOOL);
   obcs_parm01.addParm('useOBCSprescribe',useOBCSprescribe,PARM_BOOL);  
 
   obcs_parm01.addParm('OBNtFile',OBNtFile,PARM_STR);  
@@ -690,8 +687,8 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %%% Enforces mass conservation across the northern boundary by adding a
   %%% barotropic inflow/outflow
   useOBCSbalance = true;
-  OBCS_balanceFacN = 0; 
-  OBCS_balanceFacE = 1;
+  OBCS_balanceFacN = 1; 
+  OBCS_balanceFacE = 0;
 %   OBCS_balanceFacS = 0;
 %   OBCS_balanceFacW = -1;
   obcs_parm01.addParm('useOBCSbalance',useOBCSbalance,PARM_BOOL);  
@@ -749,7 +746,7 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
     Vrelaxobcsbound = 43200;
     
 %%%%%% sponge thickness
-    spongethickness = 20;
+    spongethickness = round(10*res_fac/3);
 %     spongethickness = 5;
 
  
@@ -759,8 +756,34 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   obcs_parm03.addParm('Vrelaxobcsbound',Vrelaxobcsbound,PARM_REAL);
 
   obcs_parm03.addParm('spongethickness',spongethickness,PARM_INT);
+  
 
 
+  
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%%%% Sea ice Sponge Parms (OBCS_PARM05) %%%%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  
+  
+  seaiceSpongeThickness = spongethickness;
+  Arelaxobcsinner = Urelaxobcsinner;
+  Arelaxobcsbound = Urelaxobcsbound;
+  Hrelaxobcsinner = Urelaxobcsinner;
+  Hrelaxobcsbound = Urelaxobcsbound;
+  SLrelaxobcsinner = Urelaxobcsinner;
+  SLrelaxobcsbound = Urelaxobcsbound;
+  SNrelaxobcsinner = Urelaxobcsinner;
+  SNrelaxobcsbound = Urelaxobcsbound;  
+  
+  obcs_parm05.addParm('Arelaxobcsinner',Arelaxobcsinner,PARM_REAL);
+  obcs_parm05.addParm('Arelaxobcsbound',Arelaxobcsbound,PARM_REAL); 
+  obcs_parm05.addParm('Hrelaxobcsinner',Hrelaxobcsinner,PARM_REAL);
+  obcs_parm05.addParm('Hrelaxobcsbound',Hrelaxobcsbound,PARM_REAL); 
+  obcs_parm05.addParm('SLrelaxobcsinner',SLrelaxobcsinner,PARM_REAL);
+  obcs_parm05.addParm('SLrelaxobcsbound',SLrelaxobcsbound,PARM_REAL); 
+  obcs_parm05.addParm('SNrelaxobcsinner',SNrelaxobcsinner,PARM_REAL);
+  obcs_parm05.addParm('SNrelaxobcsbound',SNrelaxobcsbound,PARM_REAL); 
+  obcs_parm05.addParm('seaiceSpongeThickness',seaiceSpongeThickness,PARM_INT);
 
   
   
@@ -885,7 +908,7 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
 %  	useRelativeWind   = false;
     repeatPeriod      = 283996800;
 %     repeatPeriod = 31536000;
-%     exf_offset_atemp =  273.16;
+    exf_offset_atemp =  273.16;
     
     
 %%%runoff from ERA is in hours, need to convert to seconds
@@ -952,39 +975,43 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
 %     runoffstartdate2 = 000000;
 %     runoffperiod = 2592000.0;
 %    runoffperiod        = 10800.0;
+
+   EXF_dmxg = EXF_dmxg*(sum(EXF_dmxg)/sum(EXF_dmxg(1:end-1)));
+   EXF_dmyg = EXF_dmyg*(sum(EXF_dmyg)/sum(EXF_dmyg(1:end-1)));
+   
  
    precip_lon0 = xmin;
    precip_lon_inc = EXF_dmxg(1);
    precip_lat0 = ymin;
-   precip_lat_inc = EXF_dmyg;
+   precip_lat_inc = EXF_dmyg(1:end-1);
    precip_nlon = EXF_Nx;
    precip_nlat = EXF_Ny;
    
    atemp_lon0 = xmin;
    atemp_lon_inc = EXF_dmxg(1);
    atemp_lat0 = ymin;
-   atemp_lat_inc = EXF_dmyg;
+   atemp_lat_inc = EXF_dmyg(1:end-1);
    atemp_nlon = EXF_Nx;
    atemp_nlat = EXF_Ny;
    
    apressure_lon0 = xmin;
    apressure_lon_inc = EXF_dmxg(1);
    apressure_lat0 = ymin;
-   apressure_lat_inc = EXF_dmyg;
+   apressure_lat_inc = EXF_dmyg(1:end-1);
    apressure_nlon = EXF_Nx;
    apressure_nlat = EXF_Ny;
     
    aqh_lon0 = xmin;
    aqh_lon_inc = EXF_dmxg(1);
    aqh_lat0 = ymin;
-   aqh_lat_inc = EXF_dmyg;
+   aqh_lat_inc = EXF_dmyg(1:end-1);
    aqh_nlon = EXF_Nx;
    aqh_nlat = EXF_Ny;
    
    uwind_lon0 = xmin;
    uwind_lon_inc = EXF_dmxg(1);
    uwind_lat0 = ymin;
-   uwind_lat_inc = EXF_dmyg;
+   uwind_lat_inc = EXF_dmyg(1:end-1);
    uwind_nlon = EXF_Nx;
    uwind_nlat = EXF_Ny;
    
@@ -992,21 +1019,21 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
    vwind_lon0 = xmin;
    vwind_lon_inc = EXF_dmxg(1);
    vwind_lat0 = ymin;
-   vwind_lat_inc = EXF_dmyg;
+   vwind_lat_inc = EXF_dmyg(1:end-1);
    vwind_nlon = EXF_Nx;
    vwind_nlat = EXF_Ny;
    
    swdown_lon0 = xmin;
    swdown_lon_inc = EXF_dmxg(1);
    swdown_lat0 = ymin;
-   swdown_lat_inc = EXF_dmyg;
+   swdown_lat_inc = EXF_dmyg(1:end-1);
    swdown_nlon = EXF_Nx;
    swdown_nlat = EXF_Ny;
    
    lwdown_lon0 = xmin;
    lwdown_lon_inc = EXF_dmxg(1);
    lwdown_lat0 = ymin;
-   lwdown_lat_inc = EXF_dmyg;
+   lwdown_lat_inc = EXF_dmyg(1:end-1);
    lwdown_nlon = EXF_Nx;
    lwdown_nlat = EXF_Ny;
 
@@ -1069,7 +1096,7 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   EXF_NML_01.addParm('useExfCheckRange',useExfCheckRange,PARM_BOOL);
   EXF_NML_01.addParm('useRelativeWind',useRelativeWind,PARM_BOOL);
   EXF_NML_01.addParm('repeatPeriod',repeatPeriod,PARM_REAL);
-%   EXF_NML_03.addParm('exf_offset_atemp',exf_offset_atemp,PARM_REAL);
+  EXF_NML_03.addParm('exf_offset_atemp',exf_offset_atemp,PARM_REAL);
 %   EXF_NML_03.addParm('exf_inscal_runoff',exf_inscal_runoff,PARM_REAL);
   
   
@@ -1265,8 +1292,8 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %%%%% RELAXATION PARAMETERS %%%%%
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-  useRBCtemp = false;
-  useRBCsalt = false;
+  useRBCtemp = true;
+  useRBCsalt = true;
   useRBCuVel = false;
   useRBCvVel = false;
 %   tauRelaxT = 60*t1day;
@@ -1286,7 +1313,7 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%      
   
   %%% Restore salinity everywhere under ice shelves to ISW salinity
-  salt_ISW = 34;
+  salt_ISW = 34.5;
 %   salt_ISW = 34;
   salt_relax = salt_ISW*ones(Nx,Ny,Nr);
   
@@ -1393,27 +1420,36 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   
   diag_fields_avg = ...
   { ...
-    'PHIBOT','oceFWflx','oceSflux','oceQnet'...
-    'KPPhbl','MXLDEPTH','KPPdiffT','KPPdiffS'...
-    'UVEL','VVEL','WVEL'...
-    'THETA', ... 
+    'UVEL','VVEL','WVEL'...      
+    'THETA' ... 
     'SALT','ETAN' ... 
-    'SIfu','SIfv','SIsigI','SIsigII','SIqnet','SIempmr','SIheff','SIarea','SItices' ... %%ice diagnostics
-    'SIdAbATO','SIdAbATC','SIdAbOCN'... %%%SI area change
-    'SIdHbATO','SIdHbATC','SIdHbOCN','SIdHbFLO'... %%%SI thickness change
-    'SIuice','SIvice'...
-    'UVELSQ','VVELSQ','WVELSQ'... %%% For Kinetic Energy
-    'UV_VEL_Z','WU_VEL','WV_VEL'... %%% Momentum fluxes
-    'UVELSLT','VVELSLT','WVELSLT', ... %%% Salt fluxes
-    'UVELTH','VVELTH','WVELTH', ... %%% Temperature fluxes  
+    'SIheff','SIarea','SIhsnow','SItices','SIhsalt' ... %%ice diagnostics
+    'SIuice','SIvice' ...
+    'oceFWflx','oceSflux','oceQnet','oceTAUX','oceTAUY','TFLUX','SFLUX'...
     'SHIfwFlx','SHIhtFlx','SHIUDrag','SHIVDrag' ...
-    'PHIHYD','SFLUX','TFLUX' ... 
-    'DFrI_TH','DFrI_SLT' ...
-    'EXFtaux','EXFtauy'...
+    'EXFtaux','EXFtauy','EXFlwnet','EXFswnet','EXFlwdn','EXFswdn','EXFqnet','EXFhs','EXFhl','EXFevap','EXFpreci','EXFatemp' ...
+    'SIqnet','SIqsw','SIatmQnt','SItflux','SIaaflux','SIhl','SIqneto','SIqneti','SIempmr','SIatmFW','SIsnPrcp','SIactLHF','SIacSubl'
   };
+
+%     'KPPhbl','MXLDEPTH','KPPdiffT','KPPdiffS'...
+
+%     'SIfu','SIfv','SIsigI','SIsigII','SIqnet','SIempmr','SItices',...
+    
+%     'SIdAbATO','SIdAbATC','SIdAbOCN'... %%%SI area change
+%     'SIdHbATO','SIdHbATC','SIdHbOCN','SIdHbFLO'... %%%SI thickness change
+    
+%     'UVELSQ','VVELSQ','WVELSQ'... %%% For Kinetic Energy
+%     'UV_VEL_Z','WU_VEL','WV_VEL'... %%% Momentum fluxes
+%     'UVELSLT','VVELSLT','WVELSLT', ... %%% Salt fluxes
+%     'UVELTH','VVELTH','WVELTH', ... %%% Temperature fluxes  
+
+%     'PHIHYD','SFLUX','TFLUX' ... 
+%     'DFrI_TH','DFrI_SLT' ...
+
   
   numdiags_avg = length(diag_fields_avg);  
-  diag_freq_avg = Ndays/(12*Nyears)*t1day; %%% Approximately monthly output
+  diag_freq_avg = t1month; %%% Approximately monthly output
+%   diag_freq_avg = 10*deltaT;
 %   diag_freq_avg = 30*t1day;
 %   diag_freq_avg = .0417*t1day;
 %  diag_freq_avg = 5*t1year;
@@ -1436,16 +1472,21 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   end
   
   diag_fields_inst = ...
-  {...  
-    'UVEL','VVEL','WVEL'...
-    }; 
+  {...      
+%     'UVEL','VVEL','WVEL'...      
+%     'THETA' ... 
+%     'SALT','ETAN' ... 
+%     'SIheff','SIarea' ... %%ice diagnostics
+%     'SIuice','SIvice' ...
+%     'PHIBOT','oceFWflx','oceSflux','oceQnet'...
+%     'SHIfwFlx','SHIhtFlx','SHIUDrag','SHIVDrag' ...
+  }; 
   
-  numdiags_inst = length(diag_fields_inst);  
-  diag_freq_avg = Ndays/(12*Nyears)*t1day; %%% Approximately monthly output
+  numdiags_inst = length(diag_fields_inst);    
 %   diag_freq_inst = 0.1*t1year;
 %    diag_freq_inst = .0417*t1day;
 %   diag_freq_inst = 30*t1day;
-%   diag_freq_inst = deltaT;
+  diag_freq_inst = 10*deltaT;
   diag_phase_inst = 0;
   
   for n=1:numdiags_inst    

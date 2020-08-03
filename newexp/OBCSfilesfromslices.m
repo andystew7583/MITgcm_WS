@@ -17,262 +17,67 @@ addpath ../newexp_utils
 addpath ../utils/matlab
 
 
-%%%% setting min salinity 
-min_salt_true =1;
-min_salt = 34.15;
+%%%% Setting min salinity at eastern boundary
+min_salt_EB = true;
+min_salt_NB = true;
+min_salt = 34;
+% min_salt = 34.15;
+
+%%% Eastern boundary continental shelf properties
+set_shelf_properties = 1;
+shelf_salt = 34;
+% shelf_salt = 34.15;
+bathy_max = -400; %%% Limits of bathymetry at eastern boundary over which
+bathy_min = -600; %%% to feather modification of shelf temperature
+% bathy_max = -600; %%% Limits of bathymetry at eastern boundary over which
+% bathy_min = -1200; %%% to feather modification of shelf temperature
+
+%%% Set true to modify boundary sea ice concentrations
+mod_bdry_iceflux = false;
+mod_bdry_icethic = false;
+mod_bdry_iceconc = false;
+
+%%% Shifting pycnocline at eastern boundary
+shift_pyc = 1;
+shift_lat_min = -70;
+shift_lat_max = -68.5;
+shift_depth_max = 200;
+
+
+
+
+
+
 
 %%%%% Input file path for OBCS SOSE generated files
+OBCS_storage_dir = './OBCS';
 
-input = '/data1/MITgcm_WS/newexp/OBCS';
+%%% Load monthy-binned SOSE boundary data from .mat file
+load(fullfile(OBCS_storage_dir,'OBCS.mat'));
 
 
-%%%%%% Changing XC,YC of SOSE to match OBCS files
 
 
-idx1 = find(XC(:,1)>=180);
-idx2 = find(XC(:,1)<180);
-idx3 = find(XG(:,1)>=180);
-idx4 = find(XG(:,1)<180);
-XC = [XC(idx1,:)-360 ; XC(idx2,:)];
-YC = [YC(idx1,:) ; YC(idx2,:)];
-XG = [XG(idx3,:)-360 ; XG(idx4,:)];
-YG = [YG(idx3,:) ; YG(idx4,:)];
 
-% idx5 = find(XC(:,1)>-83 & XC(:,1) <-3);
-idx5 = find(XC(:,1)>-83 & XC(:,1) <21);
-idx6 = find(YC(1,:)>-84 & YC(1,:)<-64);
 
-XC = XC(idx5,idx6);
-YC = YC(idx5,idx6);
+%%%
+%%% read in bathymetry and shelf ice
+%%%
 
-XG = XG(idx5,idx6);
-YG = YG(idx5,idx6);
-
-hFacC = [hFacC(idx1,:,:) ; hFacC(idx2,:,:)];
-hFacW = [hFacW(idx1,:,:) ; hFacW(idx2,:,:)];
-hFacS = [hFacS(idx1,:,:) ; hFacS(idx2,:,:)];
-
-hFacC = hFacC(idx5,idx6,:); 
-hFacW = hFacW(idx5,idx6,:);
-hFacS = hFacS(idx5,idx6,:); 
-
-
-% X_num = 738;
-X_num = 624;
-Y_num = 84;
-
-%%% Load respective OBCS files
-
-fid = fopen(fullfile(input,'SIThicktwenty.bin'),'r','b');
-SIThick = fread(fid,[X_num*Y_num,216],'real*8'); 
-fclose(fid);
-
-SIThick = reshape(SIThick,X_num,Y_num,216);
-
-
-
-fid = fopen(fullfile(input,'Areatwenty.bin'),'r','b');
-SIArea = fread(fid,[X_num*Y_num,1080],'real*8'); 
-fclose(fid);
-
-SIArea = reshape(SIArea,X_num,Y_num,1080);
-
-
-
-fid = fopen(fullfile(input,'uIcetwenty.bin'),'r','b');
-SIUvel = fread(fid,[X_num*Y_num,360],'real*8'); 
-fclose(fid);
-
-SIUvel = reshape(SIUvel,X_num,Y_num,360);
-
-
-
-fid = fopen(fullfile(input,'vIcetwenty.bin'),'r','b');
-SIVvel = fread(fid,[X_num*Y_num,360],'real*8'); 
-fclose(fid);
-
-SIVvel = reshape(SIVvel,X_num,Y_num,360);
-
-
-
-fid = fopen(fullfile(input,'Theta.bin'),'r','b');
-Theta = fread(fid,[600*108,42*216],'real*8'); 
-fclose(fid);
-
-Theta = reshape(Theta,600,108,42,216);
-
-
-fid = fopen(fullfile(input,'Theta_northtwenty.bin'),'r','b');
-Theta_north = fread(fid,[X_num*1,42*216],'real*8'); 
-fclose(fid);
-
-Theta_north = reshape(Theta_north,X_num,1,42,216);
-
-
-fid = fopen(fullfile(input,'Theta_easttwenty.bin'),'r','b');
-Theta_east = fread(fid,[Y_num*1,42*216],'real*8'); 
-fclose(fid);
-
-Theta_east = reshape(Theta_east,1,Y_num,42,216);
-
-
-fid = fopen(fullfile(input,'Theta_westtwenty.bin'),'r','b');
-Theta_west = fread(fid,[Y_num*1,42*216],'real*8'); 
-fclose(fid);
-
-Theta_west = reshape(Theta_west,1,Y_num,42,216);
-
-
-
-fid = fopen(fullfile(input,'Salt_northtwenty.bin'),'r','b');
-Salt_north = fread(fid,[X_num*1,42*216],'real*8'); 
-fclose(fid);
-
-Salt_north = reshape(Salt_north,X_num,1,42,216);
-
-
-fid = fopen(fullfile(input,'Salt_easttwenty.bin'),'r','b');
-Salt_east = fread(fid,[Y_num*1,42*216],'real*8'); 
-fclose(fid);
-
-Salt_east = reshape(Salt_east,1,Y_num,42,216);
-
-
-
-fid = fopen(fullfile(input,'Uvel_northtwenty.bin'),'r','b');
-Uvel_north = fread(fid,[X_num*1,42*216],'real*8'); 
-fclose(fid);
-
-Uvel_north = reshape(Uvel_north,X_num,1,42,216);
-
-
-fid = fopen(fullfile(input,'Uvel_easttwenty.bin'),'r','b');
-Uvel_east = fread(fid,[Y_num*1,42*216],'real*8'); 
-fclose(fid);
-
-Uvel_east = reshape(Uvel_east,1,Y_num,42,216);
-
-
-
-
-fid = fopen(fullfile(input,'Vvel_northtwenty.bin'),'r','b');
-Vvel_north = fread(fid,[X_num*1,42*216],'real*8'); 
-fclose(fid);
-
-Vvel_north = reshape(Vvel_north,X_num,1,42,216);
-
-
-fid = fopen(fullfile(input,'Vvel_easttwenty.bin'),'r','b');
-Vvel_east = fread(fid,[Y_num*1,42*216],'real*8'); 
-fclose(fid);
-
-Vvel_east = reshape(Vvel_east,Y_num,1,42,216);
-
-
-
-fid = fopen(fullfile(input,'SIThick_northtwenty.bin'),'r','b');
-SIThick_north = fread(fid,[X_num*1,216],'real*8'); 
-fclose(fid);
-
-SIThick_north = reshape(SIThick_north,X_num,1,216);
-
-fid = fopen(fullfile(input,'SIThick_easttwenty.bin'),'r','b');
-SIThick_east = fread(fid,[Y_num*1,216],'real*8'); 
-fclose(fid);
-
-SIThick_east = reshape(SIThick_east,1,Y_num,216);
-
-
-
-fid = fopen(fullfile(input,'Area_northtwenty.bin'),'r','b');
-SIArea_north = fread(fid,[X_num*1,1080],'real*8'); 
-fclose(fid);
-
-SIArea_north = reshape(SIArea_north,X_num,1,1080);
-
-fid = fopen(fullfile(input,'Area_easttwenty.bin'),'r','b');
-SIArea_east = fread(fid,[Y_num*1,1080],'real*8'); 
-fclose(fid);
-
-SIArea_east = reshape(SIArea_east,1,Y_num,1080);
-
-
-
-fid = fopen(fullfile(input,'uIce_northtwenty.bin'),'r','b');
-SIUvel_north = fread(fid,[X_num*1,360],'real*8'); 
-fclose(fid);
-
-SIUvel_north = reshape(SIUvel_north,X_num,1,360);
-
-fid = fopen(fullfile(input,'uIce_easttwenty.bin'),'r','b');
-SIUvel_east = fread(fid,[Y_num*1,360],'real*8'); 
-fclose(fid);
-
-SIUvel_east = reshape(SIUvel_east,1,Y_num,360);
-
-
-
-
-fid = fopen(fullfile(input,'vIce_northtwenty.bin'),'r','b');
-SIVvel_north = fread(fid,[X_num*1,360],'real*8'); 
-fclose(fid);
-
-SIVvel_north = reshape(SIVvel_north,X_num,1,360);
-
-fid = fopen(fullfile(input,'vIce_easttwenty.bin'),'r','b');
-SIVvel_east = fread(fid,[Y_num*1,360],'real*8'); 
-fclose(fid);
-
-SIVvel_east = reshape(SIVvel_east,1,Y_num,360);
-
-
-fid = fopen(fullfile(input,'vIce_westtwenty.bin'),'r','b');
-SIVvel_west = fread(fid,[1*Y_num,360],'real*8'); 
-fclose(fid);
-
-SIVvel_west = reshape(SIVvel_west,1,Y_num,360);
-
-
-
-%%%%%%------->
-%%%% read in bathymetry and shelf ice
-
-
-fid = fopen(fullfile(inputfolder,bathyFile),'r','b');
+fid = fopen(fullfile(inputconfigdir,bathyFile),'r','b');
 h = fread(fid,[Nx Ny],'real*8'); 
 fclose(fid);
 
-fid = fopen(fullfile(inputfolder,SHELFICEtopoFile),'r','b');
+fid = fopen(fullfile(inputconfigdir,SHELFICEtopoFile),'r','b');
 icedraft = fread(fid,[Nx Ny],'real*8'); 
 fclose(fid);
 
-
-hydrogTheta = zeros(Nx,Ny,Nr);
-fid = fopen(fullfile(inputfolder,hydrogThetaFile),'r','b');
-for k=1:Nr
-     hydrogTheta(:,:,k) = fread(fid,[Nx Ny],'real*8');
-end
-fclose(fid);
-
 hFacC = zeros(Nx,Ny,Nr);
-fid = fopen(fullfile(inputfolder,'hFacC.bin'),'r','b');
+fid = fopen(fullfile(inputconfigdir,'hFacC.bin'),'r','b');
 for k=1:Nr
      hFacC(:,:,k) = fread(fid,[Nx Ny],'real*8');
 end
 fclose(fid);
-
-hydrogSalt = zeros(Nx,Ny,Nr);
-fid = fopen(fullfile(inputfolder,hydrogSaltFile),'r','b');
-for k=1:Nr
-      hydrogSalt(:,:,k) = fread(fid,[Nx Ny],'real*8');
-end
-fclose(fid);
-
-salt_e = squeeze(hydrogSalt(end,:,:));
-theta_e = squeeze(hydrogTheta(end,:,:));
-
-clear hydrogSalt
-clear hydrogTheta
 
 
 icedraft_east = icedraft(end,:);
@@ -285,34 +90,14 @@ clear h icedraft
 
 
 
+
+
 %%%%%%%%% SOSE POINTS %%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
-SOSElonC = XC(:,1);
-SOSElatC= YC(1,:);
 
+load('sosegrid.mat','XC','YC','RC');
+[SOSElonC,SOSElatC] = switchLons (XC,YC,xmin,xmax,ymin,ymax);
 
-%%%%%% for velocity points ----> 
-SOSElonG= XG(:,1);
-SOSElatG= YG(1,:);
-
-Theta_north = squeeze(Theta_north);
-Salt_north = squeeze(Salt_north);
-Uvel_north = squeeze(Uvel_north);
-Vvel_north = squeeze(Vvel_north);
-SIThick_north = squeeze(SIThick_north);
-SIArea_north = squeeze(SIArea_north);
-SIUvel_north = squeeze(SIUvel_north);
-SIVvel_north = squeeze(SIVvel_north);
-
-
-
-
-
-
-
-% % % % % % % % % meshgrids for 2D interp
-[XS,YS]=meshgrid(SOSElonC,SOSElatC);
-[WW,KK]=meshgrid(xmc,ymc);
 
 [XX,ZZ] = meshgrid(SOSElonC,RC);
 [YY,ZY] = meshgrid(SOSElatC,RC);
@@ -325,75 +110,30 @@ SIVvel_north = squeeze(SIVvel_north);
 [YM,GR] = meshgrid(ymc,mrc);
 
 
-NumRec = 216;
-%%%%Getting total number of months
-years = NumRec/72;
-months = NumRec/18;
-DPY = 365;
-DPM = 6;
-YDPM = 18;
-DM = 30;
+
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%% Northern Boundary Interp %%%
 
-%%%%%%%%% Temperature
+OBNt = interpBdyData2(squeeze(theta_obcs_north),XX,ZZ,XM,ZM);
+OBNs = interpBdyData2(squeeze(salt_obcs_north),XX,ZZ,XM,ZM);
+OBNu = interpBdyData2(squeeze(uvel_obcs_north),XX,ZZ,XM,ZM);
+OBNv = interpBdyData2(squeeze(vvel_obcs_north),XX,ZZ,XM,ZM);
 
-OBNt = NaN(Nx,Nz,NumRec);
-Theta_north(Theta_north==0)=NaN;
-TN_temp = zeros(size(Theta_north,1),size(Theta_north,2));
-for i = 1:size(Theta_north,3)
-    TN_temp = Theta_north(:,:,i);
-    OBNt(:,:,i) = interp2(XX,ZZ,TN_temp',XM',ZM');
-    OBNt(:,:,i) = inpaint_nans(OBNt(:,:,i),4);
-end
-
-OBNt = reshape(OBNt,size(OBNt,1),size(OBNt,2),DPM,months,years);
-OBNt = squeeze(nanmean(nanmean(OBNt,3),5));
-
-OBNs = NaN(Nx,Nz,NumRec);
-Salt_north(Salt_north==0)=NaN;
-SN_temp = zeros(size(Salt_north,1),size(Salt_north,2));
-for i = 1:size(Salt_north,3)
-    SN_temp = Salt_north(:,:,i);
-    OBNs(:,:,i) = interp2(XX,ZZ,SN_temp',XM',ZM');
-    OBNs(:,:,i) = inpaint_nans(OBNs(:,:,i),4);
-end
-
-OBNs = reshape(OBNs,size(OBNs,1),size(OBNs,2),DPM,months,years);
-OBNs = squeeze(nanmean(nanmean(OBNs,3),5));
-
-
-if min_salt_true ==1
-
-    OBNs(OBNs<min_salt) = min_salt;
-end
+landidx = find(squeeze(salt_obcs_north(:,:,1,1))==0);
+OBNeta = interpBdyData1(squeeze(PHIHYD_obcs_north(:,:,1,:)/g),SOSElonC,xmc,landidx);
+OBNh = interpBdyData1(squeeze(SIThick_obcs_north),SOSElonC,xmc,landidx);
+OBNa = interpBdyData1(squeeze(SIArea_obcs_north),SOSElonC,xmc,landidx);
+OBNuice = interpBdyData1(squeeze(SIUvel_obcs_north),SOSElonC,xmc,landidx);
+OBNvice = interpBdyData1(squeeze(SIVvel_obcs_north),SOSElonC,xmc,landidx);
+OBNsl = 0*OBNh;
 
 
 
-OBNu = NaN(Nx,Nz,NumRec);
-Uvel_north(Uvel_north==0)=NaN;
-UN_temp = zeros(size(Uvel_north,1),size(Uvel_north,2));
-for i = 1:size(Uvel_north,3)
-    UN_temp = Uvel_north(:,:,i);
-    OBNu(:,:,i) = interp2(XX,ZZ,UN_temp',XM',ZM');
-    OBNu(:,:,i) = inpaint_nans(OBNu(:,:,i),4);
-end
 
-OBNu = reshape(OBNu,size(OBNu,1),size(OBNu,2),DPM,months,years);
-OBNu = squeeze(nanmean(nanmean(OBNu,3),5));
-
-OBNv = NaN(Nx,Nz,NumRec);
-Vvel_north(Vvel_north==0)=NaN;
-VN_temp = zeros(size(Vvel_north,1),size(Vvel_north,2));
-for i = 1:size(Vvel_north,3)
-    VN_temp = Vvel_north(:,:,i);
-    OBNv(:,:,i) = interp2(XX,ZZ,VN_temp',XM',ZM');
-    OBNv(:,:,i) = inpaint_nans(OBNv(:,:,i),4);
-end
-
-OBNv = reshape(OBNv,size(OBNv,1),size(OBNv,2),DPM,months,years);
-OBNv = squeeze(nanmean(nanmean(OBNv,3),5));
 
 
 
@@ -401,127 +141,32 @@ OBNv = squeeze(nanmean(nanmean(OBNv,3),5));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%% Eastern Boundary Interp %%%
 
-%%%%%%%%%
-%%%%% Try 2 - Use isobath to delineate depth of stratification
-OBEt = NaN(Ny,Nz,NumRec);
-Theta_east = squeeze(Theta_east);
-Theta_east(Theta_east==0)=NaN;
-TE_temp = zeros(size(Theta_east,1),size(Theta_east,2));
-for i = 1:size(Theta_east,3)
-    TE_temp = Theta_east(:,:,i);
-    OBEt(:,:,i) = interp2(YY,ZY,TE_temp',YM',GR');
- 
-        for j=1:Ny
-            for k = 1:Nr
-                 Pressure = -rho0*g*zz(1);
-
-                 if bathy_east(j)>=-400
-                     OBEt(j,k,i) = .0901 - .0575*salt_e(j,1) - (7.61e-4 *(Pressure/Pa1dbar));
-
-                 else
-
-                      OBEt(j,k,i) = OBEt(j,k,i);
-                     
-                 end
-            end
-        end
-    OBEt(:,:,i) = inpaint_nans(OBEt(:,:,i),4);
-end
-
-OBEt = reshape(OBEt,size(OBEt,1),size(OBEt,2),DPM,months,years);
-OBEt = squeeze(nanmean(nanmean(OBEt,3),5));
+OBEt = interpBdyData2(squeeze(theta_obcs_east),YY,ZY,YM,GR);
+OBEs = interpBdyData2(squeeze(salt_obcs_east),YY,ZY,YM,GR);
+OBEu = interpBdyData2(squeeze(uvel_obcs_east),YY,ZY,YM,GR);
+OBEv = interpBdyData2(squeeze(vvel_obcs_east),YY,ZY,YM,GR);
 
 
-
-OBEs = NaN(Ny,Nz,NumRec);
-Salt_east = squeeze(Salt_east);
-hFacC_e = squeeze(hFacC(end,:,:));
-Salt_east(Salt_east==0)=NaN;
-SE_temp = zeros(size(Salt_east,1),size(Salt_east,2));
-for i = 1:size(Salt_east,3)
-    SE_temp = Salt_east(:,:,i);
-    OBEs(:,:,i) = interp2(YY,ZY,SE_temp',YM',GR');
-        for j=1:Ny
-
-           for k = 1:Nr
-                 if  bathy_east(j) >= -400
-                        OBEs(j,k,i) = 34.5;
-                     else
-                        OBEs(j,k,i) = OBEs(j,k,i);
-                      
-                 end
-           end
-
-        end
-    OBEs(:,:,i) = inpaint_nans(OBEs(:,:,i),4);
-%     
-    
-end
-
-OBEs = reshape(OBEs,size(OBEs,1),size(OBEs,2),DPM,months,years);
-OBEs = squeeze(nanmean(nanmean(OBEs,3),5));
+landidx = find(squeeze(salt_obcs_east(:,:,1,1))==0);
+OBEeta = interpBdyData1(squeeze(PHIHYD_obcs_east(:,:,1,:)/g),SOSElatC,ymc,landidx);
+OBEh = interpBdyData1(squeeze(SIThick_obcs_east),SOSElatC,ymc,landidx);
+OBEa = interpBdyData1(squeeze(SIArea_obcs_east),SOSElatC,ymc,landidx);
+OBEuice = interpBdyData1(squeeze(SIUvel_obcs_east),SOSElatC,ymc,landidx);
+OBEvice = interpBdyData1(squeeze(SIVvel_obcs_east),SOSElatC,ymc,landidx);
+OBEsl = 0*OBEh;
 
 
-if min_salt_true ==1
+OBCS_data_dir_snow = '../data/SOSEdata/13-17';
+XC = ncread('../data/SOSEdata/13-17/SIhsnow.nc','XC'); %%% 2013-2017 solution is on a different grid
+YC = ncread('../data/SOSEdata/13-17/SIhsnow.nc','YC');
+XC = repmat(XC,[1 length(YC)]);
+YC = repmat(YC',[size(XC,1) 1]);
+[SOSElonC,SOSElatC] = switchLons (XC,YC,xmin,xmax,ymin,ymax);
+landidx = 1:find(max(squeeze(SIHsnow_obcs_east),2)>0,1,'first')-1;
+OBEsn = interpBdyData1(squeeze(SIHsnow_obcs_east),SOSElatC,ymc,landidx);
+landidx = 1:find(max(squeeze(SIHsnow_obcs_north),2)>0,1,'first')-1;
+OBNsn = interpBdyData1(squeeze(SIHsnow_obcs_north),SOSElonC,xmc,landidx);
 
-    OBEs(OBEs<min_salt) = min_salt;
-end
-
-
-
-%%%%% Try 4: set temperature-dependent salinity at the
-%%%%% boundaries...salinities of 34, temperatures will be sfc freezing
-%%%%% temperature
-
-    for j = 1:Ny
-        for k = 1:Nr
-            for i = 1:12
-                if OBEs(j,k,i)==min_salt
-                    OBEt(j,k,i) = .0901 - .0575*34.15 - (7.61e-4 *(Pressure/Pa1dbar));
-                end
-            end
-        end
-    end
-    
-
-    for j = 1:Nx
-        for k = 1:Nr
-            for i = 1:12
-                if OBNs(j,k,i)==min_salt
-                    OBNt(j,k,i) = .0901 - .0575*34.15 - (7.61e-4 *(Pressure/Pa1dbar));
-                end
-            end
-        end
-    end
-
-
-
-OBEu = NaN(Ny,Nz,NumRec);
-Uvel_east = squeeze(Uvel_east);
-Uvel_east(Uvel_east==0)=NaN;
-UE_temp = zeros(size(Uvel_east,1),size(Uvel_east,2));
-for i = 1:size(Uvel_east,3)
-    UE_temp = Uvel_east(:,:,i);
-    OBEu(:,:,i) = interp2(YY,ZY,UE_temp',YM',GR');
-    OBEu(:,:,i) = inpaint_nans(OBEu(:,:,i),4);
-end
-
-OBEu = reshape(OBEu,size(OBEu,1),size(OBEu,2),DPM,months,years);
-OBEu = squeeze(nanmean(nanmean(OBEu,3),5));
-
-
-OBEv = NaN(Ny,Nz,NumRec);
-Vvel_east = squeeze(Vvel_east);
-Vvel_east(Vvel_east==0)=NaN;
-VE_temp = zeros(size(Vvel_east,1),size(Vvel_east,2));
-for i = 1:size(Vvel_east,3)
-    VE_temp = Vvel_east(:,:,i);
-    OBEv(:,:,i) = interp2(YY,ZY,VE_temp',YM',GR');
-    OBEv(:,:,i) = inpaint_nans(OBEv(:,:,i),4);
-end
-
-OBEv = reshape(OBEv,size(OBEv,1),size(OBEv,2),DPM,months,years);
-OBEv = squeeze(nanmean(nanmean(OBEv,3),5));
 
 
 
@@ -529,207 +174,137 @@ OBEv = squeeze(nanmean(nanmean(OBEv,3),5));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%% Western Boundary Interp %%%
 
-%%%%%%%%% Temperature
+% OBWt = interpBdyData2(squeeze(theta_obcs_west),YY,ZY,YM,GR);
+% OBWs = interpBdyData2(squeeze(salt_obcs_west),YY,ZY,YM,GR);
+% OBWu = interpBdyData2(squeeze(uvel_obcs_west),YY,ZY,YM,GR);
+% OBWv = interpBdyData2(squeeze(vvel_obcs_west),YY,ZY,YM,GR);
 
-% OBWt = NaN(Ny,Nz,NumRec);
-% Theta_west = squeeze(Theta_west);
-% Theta_west(Theta_west==0)=NaN;
-% TW_temp = zeros(size(Theta_west,1),size(Theta_west,2));
-% for i = 1:size(Theta_west,3)
-%     TW_temp = Theta_west(:,:,i);
-%     OBWt(:,:,i) = interp2(YY,ZY,TW_temp',YM',GR');
-%     OBWt(:,:,i) = inpaint_nans(OBWt(:,:,i),4);
-% end
-% 
-% 
-% OBWt = reshape(OBWt,size(OBWt,1),size(OBWt,2),DPM,months,years);
-% OBWt = squeeze(nanmean(nanmean(OBWt,3),5));
-% 
-% 
-% OBWs = NaN(Ny,Nz,NumRec);
-% Salt_west = squeeze(Salt_west);
-% Salt_west(Salt_west==0)=NaN;
-% SW_temp = zeros(size(Salt_west,1),size(Salt_west,2));
-% for i = 1:size(Salt_west,3)
-%     SW_temp = Salt_west(:,:,i);
-%     OBWs(:,:,i) = interp2(YY,ZY,SW_temp',YM',GR');
-%     OBWs(:,:,i) = inpaint_nans(OBWs(:,:,i),4);
-% end
-% 
-% OBWs = reshape(OBWs,size(OBWs,1),size(OBWs,2),DPM,months,years);
-% OBWs = squeeze(nanmean(nanmean(OBWs,3),5));
-% 
-% 
-% OBWu = NaN(Ny,Nz,NumRec);
-% Uvel_west = squeeze(Uvel_west);
-% Uvel_west(Uvel_west==0)=NaN;
-% UW_temp = zeros(size(Uvel_west,1),size(Uvel_west,2));
-% for i = 1:size(Uvel_west,3)
-%     UW_temp = Uvel_west(:,:,i);
-%     OBWu(:,:,i) = interp2(YY,ZY,UW_temp',YM',GR');
-%     OBWu(:,:,i) = inpaint_nans(OBWu(:,:,i),4);
-% end
-% 
-% OBWu = reshape(OBWu,size(OBWu,1),size(OBWu,2),DPM,months,years);
-% OBWu = squeeze(nanmean(nanmean(OBWu,3),5));
-% 
-% OBWv = NaN(Ny,Nz,NumRec);
-% Vvel_west = squeeze(Vvel_west);
-% Vvel_west(Vvel_west==0)=NaN;
-% VW_temp = zeros(size(Vvel_west,1),size(Vvel_west,2));
-% for i = 1:size(Vvel_west,3)
-%     VW_temp = Vvel_west(:,:,i);
-%     OBWv(:,:,i) = interp2(YY,ZY,VW_temp',YM',GR');
-%     OBWv(:,:,i) = inpaint_nans(OBWv(:,:,i),4);
-% end
-% 
-% OBWv = reshape(OBWv,size(OBWv,1),size(OBWv,2),DPM,months,years);
-% OBWv = squeeze(nanmean(nanmean(OBWv,3),5));
-% 
-% 
-% OBWh = NaN(Ny,NumRec);
-% SIThick_west = squeeze(SIThick_west);
-% % ThickW_Temp = zeros(size(SIThick_west,1));
-% for i = 1:size(SIThick_west,2);
-%     ThickW_Temp = SIThick_west(:,i);
-%     OBWh(:,i) = interp1(SOSElatC,ThickW_Temp,ymc);
-%     OBWh(:,i) = inpaint_nans(OBWh(:,i),4);
-% end
-% 
-% OBWh = reshape(OBWh,size(OBWh,1),DPM,months,years);
-% OBWh = squeeze(nanmean(nanmean(OBWh,2),4));
-% 
-% 
-% OBWa = NaN(Ny,NumRec);
-% SIArea_west = squeeze(SIArea_west);
-% % AreaW_Temp = zeros(size(SIArea_west,1));
-% for i = 1:size(SIArea_west,2)
-%     AreaW_Temp = SIArea_west(:,i);
-%     OBWa(:,i) = interp1(SOSElatC,AreaW_Temp,ymc);
-%     OBWa(:,i) = inpaint_nans(OBWa(:,i),4);
-% end
-% 
-% OBWa = reshape(OBWa,size(OBWa,1),YDPM,months,5);
-% OBWa = squeeze(nanmean(nanmean(OBWa,2),4));
-% 
+% landidx = find(squeeze(salt_obcs_west(:,:,1,1))==0);
+% OBWeta = interpBdyData1(squeeze(PHIHYD_obcs_west(:,:,1,:)/g),SOSElatC,ymc,landidx);
+% OBWh = interpBdyData1(squeeze(SIThick_obcs_west),SOSElatC,ymc,landidx);
+% OBWa = interpBdyData1(squeeze(SIArea_obcs_west),SOSElatC,ymc,landidx);
+% OBWuice = interpBdyData1(squeeze(SIUvel_obcs_west),SOSElatC,ymc,landidx);
+% OBWvice = interpBdyData1(squeeze(SIVvel_obcs_west),SOSElatC,ymc,landidx);
+% OBWsl = 0*OBWh;
+% OBWsn = 0.3*ones(size(OBWh));
 
 
 
 
 
+%%% Modify eastern boundary stratification to set properties on continental
+%%% shelf
+if (set_shelf_properties)
+  for i = 1:size(OBEt,3)
 
+    for j=1:Ny
+      for k = 1:Nr
+        Pressure = -rho0*g*zz(1);
+        Tf = freezingTemp(OBEs(j,k,i),Pressure);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%% Alternate SEA ICE WRITING%%%%%%%%%%
-
-SeaThick = NaN(Nx,Ny,NumRec);
-SITemp = zeros(size(SIThick,1),size(SIThick,2));
-for i = 1:size(SIThick,3)
-    SITemp = SIThick(:,:,i);
-    SeaThick(:,:,i) = interp2(XS,YS,SITemp',WW',KK');
-    SeaThick(:,:,i) = inpaint_nans(SeaThick(:,:,i),4);
+        if (bathy_east(j) >= bathy_max)      
+          OBEt(j,k,i) = Tf;
+          OBEs(j,k,i) = shelf_salt;
+        else
+          if (bathy_east(j) >= bathy_min)
+            OBEt(j,k,i) = ( Tf * (bathy_east(j)-bathy_min) + OBEt(j,k,i) * (bathy_max-bathy_east(j)) ) / (bathy_max - bathy_min);
+            OBEs(j,k,i) = ( shelf_salt * (bathy_east(j)-bathy_min) + OBEs(j,k,i) * (bathy_max-bathy_east(j)) ) / (bathy_max - bathy_min);       
+          end
+        end
+      end
+    end    
+  end
 end
 
-SIEast = squeeze(SeaThick(end,:,:));
-OBEh = reshape(SIEast,size(SIEast,1),DPM,months,years);
-OBEh = squeeze(nanmean(nanmean(OBEh,2),4));
-
-SINorth = squeeze(SeaThick(:,end,:));
-OBNh = reshape(SINorth,size(SINorth,1),DPM,months,years);
-OBNh = squeeze(nanmean(nanmean(OBNh,2),4));
-
-
-
-
-
-SeaArea = NaN(Nx,Ny,NumRec);
-AreaTemp = zeros(size(SIArea,1),size(SIArea,2));
-for i = 1:size(SIArea,3)
-    AreaTemp = SIArea(:,:,i);
-    SeaArea(:,:,i) = interp2(XS,YS,AreaTemp',WW',KK');
-    SeaArea(:,:,i) = inpaint_nans(SeaArea(:,:,i),4);
+%%% Set minimum salinity and accompanying freezing temperature at eastern boundary
+if (min_salt_EB)
+  OBEs(OBEs<min_salt) = min_salt;
+  OBEt(OBEs==min_salt) = freezingTemp(min_salt,0);
 end
 
-AreaEast = squeeze(SeaArea(end,:,:));
-OBEa = reshape(AreaEast,size(AreaEast,1),DM,months,years);
-OBEa = squeeze(nanmean(nanmean(OBEa,2),4));
-
-AreaNorth = squeeze(SeaArea(:,end,:));
-OBNa = reshape(AreaNorth,size(AreaNorth,1),DM,months,years);
-OBNa = squeeze(nanmean(nanmean(OBNa,2),4));
-
-years = 1;
-
-iceu = NaN(Nx,Ny,NumRec);
-iceu_temp = zeros(size(SIUvel,1),size(SIUvel,2));
-for i = 1:size(SIUvel,3)
-    iceu_temp = SIUvel(:,:,i);
-    iceu(:,:,i) = interp2(XS,YS,iceu_temp',WW',KK');
-    iceu(:,:,i) = inpaint_nans(iceu(:,:,i),4);
+%%% Set minimum salinity and accompanying freezing temperature at eastern boundary
+if (min_salt_NB)
+  OBNs(OBNs<min_salt) = min_salt;
+  OBNt(OBNs==min_salt) = freezingTemp(min_salt,0);
 end
 
-SI_UVELEast = squeeze(iceu(end,:,:));
-OBEuice = reshape(SI_UVELEast,size(SI_UVELEast,1),DM,months,years);
-OBEuice = squeeze(nanmean(nanmean(OBEuice,2),4));
 
-SI_UVELNORTH = squeeze(iceu(:,end,:));
-OBNuice = reshape(SI_UVELNORTH,size(SI_UVELNORTH,1),DM,months,years);
-OBNuice = squeeze(nanmean(nanmean(OBNuice,2),4));
-
-
-% OBWuice = NaN(Ny,NumRec);
-% SIUvel_west = squeeze(SIUvel_west);
-% % SIUvelW_Temp = zeros(size(SIUvel_west,1));
-% for i = 1:size(SIUvel_west,2);
-%     SIUvelW_Temp = SIUvel_west(:,i);
-%     OBWuice(:,i) = interp1(SOSElatC,SIUvelW_Temp,ymc);
-%     OBWuice(:,i) = inpaint_nans(OBWuice(:,i),4);
-% end
-% 
-% OBWuice = reshape(OBWuice,size(OBWuice,1),DM,months,years);
-% OBWuice = squeeze(nanmean(nanmean(OBWuice,2),4));
-% 
-% 
-% OBWvice = NaN(Ny,NumRec);
-% SIVvel_west = squeeze(SIVvel_west);
-% % SIVvelW_Temp = zeros(size(SIVvel_west,1));
-% for i = 1:size(SIVvel_west,2);
-%     SIVvelW_Temp = SIVvel_west(:,i);
-%     OBWvice(:,i) = interp1(SOSElatC,SIVvelW_Temp,ymc);
-%     OBWvice(:,i) = inpaint_nans(OBWvice(:,i),4);
-% end
-% 
-% OBWvice = reshape(OBWvice,size(OBWvice,1),DM,months,years);
-% OBWvice = squeeze(nanmean(nanmean(OBWvice,2),4));
-
-icev = NaN(Nx,Ny,NumRec);
-icev_temp = zeros(size(SIVvel,1),size(SIVvel,2));
-for i = 1:size(SIVvel,3)
-    icev_temp = SIVvel(:,:,i);
-    icev(:,:,i) = interp2(XS,YS,icev_temp',WW',KK');
-    icev(:,:,i) = inpaint_nans(icev(:,:,i),4);
+%%% Shift the stratification at the eastern boundary to deepen the
+%%% pycnocline
+if (shift_pyc)
+  
+  %%% Look over monthly climatologies
+  for n = 1:size(OBEs,3)
+   
+    
+    %%% Loop through latitudinal indices
+    for j = 1:Ny    
+      
+      %%% Change in depth varies with latitude
+      shift_depth = (shift_lat_max - ymc(j)) / (shift_lat_max - shift_lat_min) * shift_depth_max;
+      shift_depth = max(min(shift_depth,shift_depth_max),0);
+      
+      %%% Find index of first gridpoint below the shift depth; everything
+      %%% above this gridpoint is simply replaced with the surface T/S
+      kmin = find(zz<-(shift_depth+dz(1)/2),1,'first');
+      OBEs_tmp = OBEs(j,:,n);
+      OBEt_tmp = OBEt(j,:,n);
+      OBEs_tmp(1:kmin-1) = OBEs(j,1,n);
+      OBEt_tmp(1:kmin-1) = OBEt(j,1,n);
+      
+      %%% Everything below the shift depth is linearly interpolated from
+      %%% the water column properties above
+      OBEs_tmp(kmin:end) = interp1(zz,OBEs(j,:,n),zz(kmin:end)+shift_depth,'linear');
+      OBEt_tmp(kmin:end) = interp1(zz,OBEt(j,:,n),zz(kmin:end)+shift_depth,'linear');
+      
+      %%% Replace OB properties
+      OBEs(j,:,n) = OBEs_tmp;
+      OBEt(j,:,n) = OBEt_tmp;
+      
+    end
+    
+    %%% Density (approximate) for thermal wind calculation
+    OBEd = densmdjwf(OBEs(:,:,n),OBEt(:,:,n),repmat(-zz,[Ny 1]));
+      
+    %%% Recalculate zonal velocity so that it's in thermal wind balance  
+    for j = 1:Ny    
+      
+      %%% Index of deepest wet grid cell
+      kbot = find(squeeze(hFacC(end,j,:))>0,1,'last');
+      
+      %%% Calculate thermal wind where we have shifted the pycnocline
+      if (~isempty(kbot) && ymc(j)<shift_lat_max)
+        OBEu_tmp = OBEu(j,:,n);
+        f0 = 2*Omega*sind(ymc(j));
+        deltay = (ymc(j+1)-ymc(j-1))* 2*pi/360 * Rp;
+        for k = kbot-1:-1:1 %%% Preserve velocity in lowest grid cell
+          OBEu_tmp(k) = OBEu_tmp(k+1) + (zz(k)-zz(k+1)) *  g/(rho0*f0) * (OBEd(j+1,k)-OBEd(j-1,k)) / deltay;
+        end
+        OBEu(j,:,n) = OBEu_tmp;
+      end
+        
+    end
+  end
+  
 end
 
-SI_VVELEast = squeeze(icev(end,:,:));
-OBEvice = reshape(SI_VVELEast,size(SI_VVELEast,1),DM,months,years);
-OBEvice = squeeze(nanmean(nanmean(OBEvice,2),4));
-
-SI_VVELNORTH = squeeze(icev(:,end,:));
-OBNvice = reshape(SI_VVELNORTH,size(SI_VVELNORTH,1),DM,months,years);
-OBNvice = squeeze(nanmean(nanmean(OBNvice,2),4));
 
 
-OBNsl = zeros(size(OBNvice,1),size(OBNvice,2),size(OBNvice,3));
-OBNsn = .3*ones(size(OBNvice,1),size(OBNvice,2),size(OBNvice,3));
-
-
-OBEsl = zeros(size(OBEvice,1),size(OBEvice,2));
-OBEsn = .3*ones(size(OBEvice,1),size(OBEvice,2));
-
-% 
-% OBWsl = zeros(size(OBWvice,1),size(OBWvice,2),size(OBWvice,3));
-% OBWsn = .3*ones(size(OBWvice,1),size(OBWvice,2),size(OBWvice,3));
-% 
+%%% Modify eastern boundary sea ice velocity to control sea ice influx 
+if (mod_bdry_iceflux)
+  OBEuice = OBEuice*2; %%% Doubled ice speed comes closer to interior ice speeds
+end
+if (mod_bdry_icethic)
+  OBEa(:,:) = 0.9; %%% Uniform ice concentration along eastern boundary
+  OBNa(:,:) = 0.9; %%% Uniform ice concentration along northern boundary
+end  
+if (mod_bdry_iceconc)
+  OBEh(:,:) = 1; %%% Uniform ice thickness along eastern boundary
+  OBNh(:,:) = 1; %%% Uniform ice thickness along northern boundary
+end
+    
+    
+    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%    WRITING FILES %%%%%%%%%%%%%%%
@@ -739,115 +314,235 @@ OBEsn = .3*ones(size(OBEvice,1),size(OBEvice,2));
 
 
 data = OBNt;
-writeDataset(data,fullfile(inputfolder,OBNtFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,OBNtFile),ieee,prec);
 clear data
 
 
 
 data = OBEt;
-writeDataset(data,fullfile(inputfolder,OBEtFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,OBEtFile),ieee,prec);
 clear data
+
 
 
 data = OBNs;
-writeDataset(data,fullfile(inputfolder,OBNsFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,OBNsFile),ieee,prec);
 clear data
 
 
-
-
 data = OBEs;
-writeDataset(data,fullfile(inputfolder,OBEsFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,OBEsFile),ieee,prec);
 clear data
 
 
 
 data = OBNu;
-writeDataset(data,fullfile(inputfolder,OBNuFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,OBNuFile),ieee,prec);
 clear data
 
 
 
 data = OBEu;
-writeDataset(data,fullfile(inputfolder,OBEuFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,OBEuFile),ieee,prec);
 clear data
 
 
 data = OBNv;
-writeDataset(data,fullfile(inputfolder,OBNvFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,OBNvFile),ieee,prec);
 clear data
 
 
 
 data = OBEv;
-writeDataset(data,fullfile(inputfolder,OBEvFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,OBEvFile),ieee,prec);
 clear data
 
 
 
 
 data = OBNa;
-writeDataset(data,fullfile(inputfolder,OBNaFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,OBNaFile),ieee,prec);
 clear data
 
 
 data = OBEa;
-writeDataset(data,fullfile(inputfolder,OBEaFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,OBEaFile),ieee,prec);
 clear data
 
 
+
+
 data = OBNh;
-writeDataset(data,fullfile(inputfolder,OBNhFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,OBNhFile),ieee,prec);
 clear data
 
 
 
 data = OBEh;
-writeDataset(data,fullfile(inputfolder,OBEhFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,OBEhFile),ieee,prec);
 clear data
+
+
 
 
 data = OBNsn;
-writeDataset(data,fullfile(inputfolder,OBNsnFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,OBNsnFile),ieee,prec);
 clear data
-
-
 
 
 data = OBEsn;
-writeDataset(data,fullfile(inputfolder,OBEsnFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,OBEsnFile),ieee,prec);
 clear data
 
 
+
+
 data = OBNuice;
-writeDataset(data,fullfile(inputfolder,OBNuiceFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,OBNuiceFile),ieee,prec);
 clear data
 
 
 data = OBEuice;
-writeDataset(data,fullfile(inputfolder,OBEuiceFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,OBEuiceFile),ieee,prec);
 clear data
 
 
+
+
 data = OBNvice;
-writeDataset(data,fullfile(inputfolder,OBNviceFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,OBNviceFile),ieee,prec);
 clear data
 
 
 
 data = OBEvice;
-writeDataset(data,fullfile(inputfolder,OBEviceFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,OBEviceFile),ieee,prec);
 clear data
 
 
+
+
 data = OBNsl;
-writeDataset(data,fullfile(inputfolder,OBNslFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,OBNslFile),ieee,prec);
 clear data
 
 
 
 data = OBEsl;
-writeDataset(data,fullfile(inputfolder,OBEslFile),ieee,prec);
+writeDataset(data,fullfile(inputconfigdir,OBEslFile),ieee,prec);
 clear data
 
 
+
+
+data = OBNeta;
+writeDataset(data,fullfile(inputconfigdir,OBNetaFile),ieee,prec);
+clear data
+
+
+
+data = OBEeta;
+writeDataset(data,fullfile(inputconfigdir,OBEetaFile),ieee,prec);
+clear data
+
+
+
+
+
+
+
+%%% 
+%%% switchLons
+%%%
+%%% Convenience function to switch grids from SOSE's [0,360] convention to
+%%% our [-180,180] convention, generate indices for switching other
+%%% matrices, and generate indices that restrict SOSE data to our model
+%%% domain.
+%%%
+function [SOSElonC,SOSElatC] = switchLons (XC,YC,xmin,xmax,ymin,ymax)
+
+  %%% Indices of "western" and "eastern" halves of SOSE domain
+  idx_west = find(XC(:,1)>=180);
+  idx_east = find(XC(:,1)<180);
+
+  %%% Switch longitude and latitude grids around
+  XC = [XC(idx_west,:)-360 ; XC(idx_east,:)];
+  YC = [YC(idx_west,:) ; YC(idx_east,:)];
+
+  %%% Indices defining the subset of SOSE that contains our model grid
+  idx_OBN = find(XC(:,1)>xmin & XC(:,1)<xmax);
+  idx_OBE = find(YC(1,:)>ymin & YC(1,:)<ymax);
+  
+  %%% Restrict grid matrices to our model domain
+  XC = XC(idx_OBN,idx_OBE);
+  YC = YC(idx_OBN,idx_OBE);
+  
+  %%% Extract 1D grid vectors
+  SOSElonC = XC(:,1);
+  SOSElatC= YC(1,:);
+
+end
+
+
+%%%
+%%% interpBdyData2
+%%%
+%%% Convenience function to interpolate boundary data onto the model grid;
+%%%
+function data_interp = interpBdyData2 (data,XD,ZD,XI,ZI)
+ 
+  %%% Input grid size  
+  Nt = size(data,3);
+  
+  %%% Remove land points
+  data(data==0) = NaN;
+  
+  %%% To store interpolated data
+  data_interp = zeros(size(XI,2),size(XI,1),Nt);
+  
+  
+  for n = 1:Nt
+    data_interp(:,:,n) = interp2(XD,ZD,data(:,:,n)',XI,ZI,'linear')';
+    data_interp(:,:,n) = inpaint_nans(data_interp(:,:,n),4); %%% Crude extrapolation
+  end
+
+end
+
+
+%%%
+%%% interpBdyData1
+%%%
+%%% Convenience function to interpolate boundary data onto the model grid.
+%%%
+function data_interp = interpBdyData1 (data,xd,xi,landidx)
+ 
+  %%% Input grid size  
+  Nt = size(data,2);
+  
+  %%% Remove land points
+  xd(landidx) = [];
+  
+  %%% To store interpolated data
+  data_interp = zeros(length(xi),Nt);
+  
+  for n = 1:Nt  
+    data_tmp = data(:,n);
+    data_tmp(landidx) = [];
+    data_interp(:,n) = interp1(xd,data_tmp,xi,'nearest','extrap')';
+  end
+
+end
+
+
+
+%%% 
+%%% freezingTemp
+%%%
+%%% Calculates freezing temperature
+%%%
+function Tfreeze = freezingTemp (salt,pressure)
+
+  Pa1dbar = 1e4;
+  Tfreeze = .0901 - .0575*salt - (7.61e-4 *(pressure/Pa1dbar));                
+  
+end

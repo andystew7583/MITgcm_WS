@@ -7,7 +7,7 @@
 %%% Load velocity
 
 loadexp;
-deltaT=440;
+% deltaT=440;
 % nIter0 = 0;
 %%% Frequency of diagnostic output - should match that specified in
 %%% data.diagnostics.
@@ -18,8 +18,10 @@ dumpIters = dumpIters(dumpIters > nIter0);
 nDumps = length(dumpIters);
 
 %%% Calculate time-averaged velocity
-tmin = 17*86400*360;
-tmax = 26*86400*360;
+% tmin = 17*86400*360;
+% tmax = 26*86400*360;
+tmin = 186701760 - 1;
+tmax = 186701760 + 1
 uu = readIters(exppath,'UVEL',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
 
 

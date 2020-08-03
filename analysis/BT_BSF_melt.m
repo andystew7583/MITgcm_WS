@@ -131,6 +131,8 @@ end
 %%% Set up the figure
 figure(2)
 clf
+set(gcf,'Position',[ 983    43   824   904]);
+
 % fontsize = 18;
 a=subplot(3,2,1);
 
@@ -190,7 +192,16 @@ ylabel('Latitude','interpreter','latex');
 % set(h,'Position',[0 -.95 0])
 text(.115,-1.3,'\textbf{a}','fontsize',14,'interpreter','latex')
 
+arrow([-0.025 -1.199],[-.0364 -1.213],'Color',[.5 .5 .5],'Length',10,'Width',1,'TipAngle',25)
+arrow([-0.01394 -1.224],[0 -1.24],'Color',[.5 .5 .5],'Length',10,'Width',1,'TipAngle',25)
+arrow([0.03815 -1.264],[0.0484 -1.247],'Color',[.5 .5 .5],'Length',10,'Width',1,'TipAngle',25)
+arrow([0.05334 -1.265],[0.04511 -1.286],'Color',[.5 .5 .5],'Length',10,'Width',1,'TipAngle',25)
+
 hold on
+
+handle = title('REF','FontSize',16);
+set(handle,'Position',[0.0000   -1.15    0.0000])
+
 
 
 
@@ -259,6 +270,17 @@ ax3_width = outerpos(3) - ti(1) - ti(3);
 ax3_height = outerpos(4) - ti(2) - ti(4);
 ax3.Position = [left-.07 bottom-.06 ax3_width+.05 ax3_height+.08];
 text(.115,-1.3,'\textbf{b}','fontsize',14,'interpreter','latex')
+
+handle = title('FRESH','FontSize',16);
+set(handle,'Position',[0.0000   -1.15    0.0000])
+
+arrow([-0.01942 -1.294],[-.03864 -1.281],'Color',[.5 .5 .5],'Length',10,'Width',1,'TipAngle',25)
+arrow([-0.05059 -1.218],[-0.04256 -1.206],'Color',[.5 .5 .5],'Length',10,'Width',1,'TipAngle',25)
+arrow([-0.0066 -1.278],[-0.01181 -1.26],'Color',[.5 .5 .5],'Length',10,'Width',1,'TipAngle',25)
+arrow([-0.01416 -1.24],[0.00699 -1.239],'Color',[.5 .5 .5],'Length',10,'Width',1,'TipAngle',25)
+arrow([0.03815 -1.264],[0.0484 -1.247],'Color',[.5 .5 .5],'Length',10,'Width',1,'TipAngle',25)
+arrow([0.05334 -1.265],[0.04511 -1.286],'Color',[.5 .5 .5],'Length',10,'Width',1,'TipAngle',25)
+
 
 
 c=subplot(3,2,3)

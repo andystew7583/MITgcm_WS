@@ -53,14 +53,14 @@ h = title('Mean Bottom Temperature ($^\circ$C), Initial 34.45psu Cavity','interp
 set(h,'Position',[0 -.95 0])
 
 hold on
-ax2 = gca;
-outerpos = ax2.OuterPosition;
-ti = ax2.TightInset; 
-left = outerpos(1) + ti(1);
-bottom = outerpos(2) + ti(2);
-ax2_width = outerpos(3) - ti(1) - ti(3);
-ax2_height = outerpos(4) - ti(2) - ti(4);
-ax2.Position = [left+.03 bottom ax2_width-.03 ax2_height];
+% ax2 = gca;
+% outerpos = ax2.OuterPosition;
+% ti = ax2.TightInset; 
+% left = outerpos(1) + ti(1);
+% bottom = outerpos(2) + ti(2);
+% ax2_width = outerpos(3) - ti(1) - ti(3);
+% ax2_height = outerpos(4) - ti(2) - ti(4);
+% ax2.Position = [left+.03 bottom ax2_width-.03 ax2_height];
 
 text(.3,-1.3,'a','fontsize',14,'interpreter','latex')
 
@@ -119,13 +119,13 @@ h = title('Mean Bottom Temperature ($^\circ$C), Initial 34psu Cavity','interpret
 
 set(h,'Position',[0 -.95 0])
 
-ax = gca;
-outerpos = ax.OuterPosition;
-ti = ax.TightInset; 
-left = outerpos(1) + ti(1);
-bottom = outerpos(2) + ti(2);
-ax_width = outerpos(3) - ti(1) - ti(3);
-ax_height = outerpos(4) - ti(2) - ti(4);
-ax.Position = [left bottom ax_width ax_height];
-text(.3,-1.3,'b','fontsize',14,'interpreter','latex')
+% ax = gca;
+% outerpos = ax.OuterPosition;
+% ti = ax.TightInset; 
+% left = outerpos(1) + ti(1);
+% bottom = outerpos(2) + ti(2);
+% ax_width = outerpos(3) - ti(1) - ti(3);
+% ax_height = outerpos(4) - ti(2) - ti(4);
+% ax.Position = [left bottom ax_width ax_height];
+% text(.3,-1.3,'b','fontsize',14,'interpreter','latex')
 

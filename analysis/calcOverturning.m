@@ -9,8 +9,21 @@
 loadexp;
 
 %%% Density bins for MOC calculation  
-ptlevs = layers_bounds;
-Npt = length(ptlevs)-1;
+dens_levs = [30.5:1:36.5 36.6:0.1:36.8 36.9:0.01:37.4 37.42:0.02:37.6];
+Nd = length(dens_levs)-1;
+p_ref = 2000;
+
+%%% Define coordinate system for integrating to compute streamfunction
+lat1 = -74.8;
+lon1 = -61; 
+lat2 = -78.35;
+lon2 = -36.7;
+phic = atan((lat2-lat1)/(lon2-lon1));
+CHI = (XC-lon1)*cos(phic) + (YC-lat1)*sin(phic);
+ETA = (YC-lat1)*cos(phic) - (XC-lon1)*sin(phic);
+pcolor(XC,YC,ETA)
+eta = -9:.1:11;
+Neta = length(eta);
 
 %%% Frequency of diagnostic output - should match that specified in
 %%% data.diagnostics.
@@ -20,8 +33,18 @@ dumpIters = round((1:nDumps)*dumpFreq/deltaT);
 dumpIters = dumpIters(dumpIters > nIter0);
 nDumps = length(dumpIters);
 
+
+
+
+
+
+
+%%%%%%%%%%%%%
+%%% GRIDS %%%
+%%%%%%%%%%%%%
+
 %%% Create a finer vertical grid
-ffac = 5;
+ffac = 1;
 Nrf = ffac*Nr;
 delRf = zeros(1,Nrf); 
 for n=1:Nr
@@ -33,24 +56,42 @@ zz = - cumsum((delR + [0 delR(1:Nr-1)])/2);
 zz_f = - cumsum((delRf + [0 delRf(1:Nrf-1)])/2);
 
 %%% Partial cell heights on fine grid
+hFacW_f = zeros(Nx,Ny,Nrf);
+for k=1:Nr
+  hFacW_f(:,:,ffac*(k-1)+1:ffac*k) = hFacW(:,:,k*ones(1,ffac));              
+end
 hFacS_f = zeros(Nx,Ny,Nrf);
 for k=1:Nr
   hFacS_f(:,:,ffac*(k-1)+1:ffac*k) = hFacS(:,:,k*ones(1,ffac));              
 end
 
+%%% 3D horizontal grid spacing matrices
+DXG_3D = repmat(DXG,[1 1 Nd]);
+DYG_3D = repmat(DYG,[1 1 Nd]);
+
 %%% Grid of actual vertical positions, accounting for partial cells
-ZZ = zeros(Nx,Ny,Nr);
-ZZ_f = zeros(Nx,Ny,Nrf);
+ZZ_u = zeros(Nx,Ny,Nr);
+ZZ_u_f = zeros(Nx,Ny,Nrf);
+ZZ_v = zeros(Nx,Ny,Nr);
+ZZ_v_f = zeros(Nx,Ny,Nrf);
 DZ = zeros(Nx,Ny,Nr);
 DZ_f = zeros(Nx,Ny,Nrf);
 PP = zeros(Nx,Ny,Nr);
-ZZ(:,:,1) = - delR(1)*hFacS(:,:,1)/2;
+ZZ_u(:,:,1) = - delR(1)*hFacW(:,:,1)/2;
 for k=2:Nr
-  ZZ(:,:,k) = ZZ(:,:,k-1) - 0.5*delR(k-1)*hFacS(:,:,k-1) - 0.5*delR(k)*hFacS(:,:,k);
+  ZZ_u(:,:,k) = ZZ_u(:,:,k-1) - 0.5*delR(k-1)*hFacW(:,:,k-1) - 0.5*delR(k)*hFacW(:,:,k);
 end       
-ZZ_f(:,:,1) = - delRf(1)*hFacS_f(:,:,1)/2;
+ZZ_u_f(:,:,1) = - delRf(1)*hFacW_f(:,:,1)/2;
 for k=2:Nrf 
-  ZZ_f(:,:,k) = ZZ_f(:,:,k-1) - 0.5*delRf(k-1)*hFacS_f(:,:,k-1) - 0.5*delRf(k)*hFacS_f(:,:,k);      
+  ZZ_u_f(:,:,k) = ZZ_u_f(:,:,k-1) - 0.5*delRf(k-1)*hFacW_f(:,:,k-1) - 0.5*delRf(k)*hFacW_f(:,:,k);      
+end
+ZZ_v(:,:,1) = - delR(1)*hFacS(:,:,1)/2;
+for k=2:Nr
+  ZZ_v(:,:,k) = ZZ_v(:,:,k-1) - 0.5*delR(k-1)*hFacS(:,:,k-1) - 0.5*delR(k)*hFacS(:,:,k);
+end       
+ZZ_v_f(:,:,1) = - delRf(1)*hFacS_f(:,:,1)/2;
+for k=2:Nrf 
+  ZZ_v_f(:,:,k) = ZZ_v_f(:,:,k-1) - 0.5*delRf(k-1)*hFacS_f(:,:,k-1) - 0.5*delRf(k)*hFacS_f(:,:,k);      
 end
 for k=1:Nr
   DZ(:,:,k) = delR(k);
@@ -63,47 +104,84 @@ for k=1:Nr
 end   
 
 %%% Matrices for vertical interpolation  
-k_p = zeros(Nx,Ny,Nrf);
-k_n = zeros(Nx,Ny,Nrf);
-w_n = zeros(Nx,Ny,Nrf);
-w_p = zeros(Nx,Ny,Nrf);
+kp_u = zeros(Nx,Ny,Nrf);
+kn_u = zeros(Nx,Ny,Nrf);
+wn_u = zeros(Nx,Ny,Nrf);
+wp_u = zeros(Nx,Ny,Nrf);
+kp_v = zeros(Nx,Ny,Nrf);
+kn_v = zeros(Nx,Ny,Nrf);
+wn_v = zeros(Nx,Ny,Nrf);
+wp_v = zeros(Nx,Ny,Nrf);
 for i=1:Nx
   for j=1:Ny
   
     %%% Indices of the lowest cells
-    kmax = sum(squeeze(hFacS(i,j,:))~=0);
-    kmax_f = ffac*kmax;
+    kmax_u = sum(squeeze(hFacW(i,j,:))~=0);
+    kmax_u_f = ffac*kmax_u;
+    kmax_v = sum(squeeze(hFacS(i,j,:))~=0);
+    kmax_v_f = ffac*kmax_v;
 
     for k=1:Nrf
 
       %%% Previous and next interpolation indices
-      k_p(i,j,k) = ceil(k/ffac-0.5);
-      k_n(i,j,k) = k_p(i,j,k) + 1;
-
+      kp_u(i,j,k) = ceil(k/ffac-0.5);
+      kn_u(i,j,k) = kp_u(i,j,k) + 1;
+      kp_v(i,j,k) = ceil(k/ffac-0.5);
+      kn_v(i,j,k) = kp_v(i,j,k) + 1;
+      
       %%% Fine grid cell is above highest coarse grid cell, so fine grid
       %%% gamma will just be set equal to uppermost coarse grid gamma
-      if (k_p(i,j,k) <= 0)
+      if (kp_u(i,j,k) <= 0)
 
-        k_p(i,j,k) = 1;
-        w_p(i,j,k) = 0;
-        w_n(i,j,k) = 1;
+        kp_u(i,j,k) = 1;
+        wp_u(i,j,k) = 0;
+        wn_u(i,j,k) = 1;
 
       else
 
         %%% Fine grid cell is below lowest coarse grid cell, so fine grid
         %%% gamma will just be set equal to lowermost coarse grid gamma
-        if (k_n(i,j,k) > kmax)
+        if (kn_u(i,j,k) > kmax_u)
 
-          k_n(i,j,k) = kmax;
-          w_n(i,j,k) = 0;
-          w_p(i,j,k) = 1;
+          kn_u(i,j,k) = kmax_u;
+          wn_u(i,j,k) = 0;
+          wp_u(i,j,k) = 1;
 
         %%% Otherwise set weights to interpolate linearly between neighboring
         %%% coarse-grid gammas
         else
 
-          w_p(i,j,k) = (ZZ(i,j,k_n(i,j,k))-ZZ_f(i,j,k))./(ZZ(i,j,k_n(i,j,k))-ZZ(i,j,k_p(i,j,k)));
-          w_n(i,j,k) = 1 - w_p(i,j,k);
+          wp_u(i,j,k) = (ZZ_u(i,j,kn_u(i,j,k))-ZZ_u_f(i,j,k))./(ZZ_u(i,j,kn_u(i,j,k))-ZZ_u(i,j,kp_u(i,j,k)));
+          wn_u(i,j,k) = 1 - wp_u(i,j,k);
+
+        end
+
+      end
+
+      %%% Fine grid cell is above highest coarse grid cell, so fine grid
+      %%% gamma will just be set equal to uppermost coarse grid gamma
+      if (kp_v(i,j,k) <= 0)
+
+        kp_v(i,j,k) = 1;
+        wp_v(i,j,k) = 0;
+        wn_v(i,j,k) = 1;
+
+      else
+
+        %%% Fine grid cell is below lowest coarse grid cell, so fine grid
+        %%% gamma will just be set equal to lowermost coarse grid gamma
+        if (kn_v(i,j,k) > kmax_v)
+
+          kn_v(i,j,k) = kmax_v;
+          wn_v(i,j,k) = 0;
+          wp_v(i,j,k) = 1;
+
+        %%% Otherwise set weights to interpolate linearly between neighboring
+        %%% coarse-grid gammas
+        else
+
+          wp_v(i,j,k) = (ZZ_v(i,j,kn_v(i,j,k))-ZZ_v_f(i,j,k))./(ZZ_v(i,j,kn_v(i,j,k))-ZZ_v(i,j,kp_v(i,j,k)));
+          wn_v(i,j,k) = 1 - wp_v(i,j,k);
 
         end
 
@@ -114,234 +192,224 @@ for i=1:Nx
   end
 end
 
-%%% Calculate time-averaged isopycnal flux, density and velocity
-vflux_tavg = zeros(Nx,Ny,Npt);
-h_pt_tavg = zeros(Nx,Ny,Npt);
-pt_tavg = zeros(Nx,Ny,Nr);
-vvel_tavg = zeros(Nx,Ny,Nr);
-navg = 0;
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PRE-DETERMINE ITERATION NUMBERS %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Determine iteration numbers to process
+readIters = [];
+times = [];
 for n=1:length(dumpIters)
  
   tyears = dumpIters(n)*deltaT/86400/365;
  
   if ((tyears >= tmin) && (tyears <= tmax))    
-
-    [tyears dumpIters(n)]
-    vflux = rdmdsWrapper(fullfile(exppath,'results/LaVH1TH'),dumpIters(n));      
-    h_pt = rdmdsWrapper(fullfile(exppath,'results/LaHs1TH'),dumpIters(n));      
-    pt  = rdmdsWrapper(fullfile(exppath,'/results/THETA'),dumpIters(n));                      
-    vvel  = rdmdsWrapper(fullfile(exppath,'/results/VVEL'),dumpIters(n));              
-    
-    if (isempty(vflux) || isempty(pt) ...
-        || isempty(h_pt) || isempty(vvel))
-      ['Ran out of data at n=',num2str(n),'/',num2str(nDumps),' t=',num2str(tyears),' days.']
-      break;
-    else
-      vflux_tavg = vflux_tavg + vflux;
-      h_pt_tavg = h_pt_tavg + h_pt;
-      pt_tavg = pt_tavg + squeeze(pt(:,:,:,1));      
-      vvel_tavg = vvel_tavg + squeeze(vvel(:,:,:,1));      
-      navg = navg + 1;
-    end
-  end
-   
-end
-
-%%% Calculate the time average
-if (navg == 0)
-  error('No data files found');
-end
-vflux_tavg = vflux_tavg/navg;
-h_pt_tavg = h_pt_tavg/navg;
-pt_tavg = pt_tavg/navg;
-vvel_tavg = vvel_tavg/navg;
-pt_tavg(hFacC==0) = NaN;
-
-%%% Interpolate potential temperature to v-gridpoints  
-pt_v = NaN*pt_tavg;
-pt_v(:,2:Ny,:) = 0.5* (pt_tavg(:,1:Ny-1,:) + pt_tavg(:,2:Ny,:));    
-
-%%% Interpolate onto a finer grid         
-vvel_f = zeros(Nx,Ny,Nrf);
-pt_f = NaN*zeros(Nx,Ny,Nrf);
-if (ffac == 1)
-
-  %%% Shortcut if fine grid resolution = coarse grid resolution
-  vvel_f = vvel_tavg;        
-  pt_f = pt_v;
-
-else   
-
-  %%% Velocity uniform throughout each coarse grid cell to preserve
-  %%% mass conservation
-  for k=1:Nr
-    vvel_f(:,:,ffac*(k-1)+1:ffac*k) = vvel_tavg(:,:,k*ones(1,ffac));          
-  end
-
-  %%% Linearly interpolate density
-  for i=1:Nx
-    for j=3:Ny-1 %%% Restrict to wet grid cells  
-      pt_f(i,j,:) = w_p(i,j,:).*pt_v(i,j,squeeze(k_p(i,j,:))) + w_n(i,j,:).*pt_v(i,j,squeeze(k_n(i,j,:)));
-    end
-  end
-
-end            
-
-%%% Calculate mean fluxes within mean density surfaces
-vflux_m = 0*vflux_tavg;
-vdz = vvel_f.*hFacS_f.*DZ_f;
-vflux_m(:,:,Npt) = vflux_m(:,:,Npt) + sum(vdz.*(pt_f>ptlevs(Npt)),3);
-vflux_m(:,:,1) = vflux_m(:,:,1) + sum(vdz.*(pt_f<=ptlevs(2)),3);
-for m=2:Npt-1
-  vflux_m(:,:,m) = vflux_m(:,:,m) + sum(vdz.*((pt_f>ptlevs(m)) & (pt_f<=ptlevs(m+1))),3);
-end   
-
-%%% Zonally integrate meridional fluxes
-vflux_xint = zeros(Ny,Npt);
-vflux_m_xint = zeros(Ny,Npt);
-for i=1:Nx
-  vflux_xint = vflux_xint + delX(i)*squeeze(vflux_tavg(i,:,:));
-  vflux_m_xint = vflux_m_xint + delX(i)*squeeze(vflux_m(i,:,:));
-end
-
-%%% Sum fluxes to obtain streamfunction
-psi_pt = zeros(Ny,Npt+1);
-psim_pt = zeros(Ny,Npt+1);
-for m=1:Npt  
-  psi_pt(:,m) = sum(vflux_xint(:,m:Npt),2);     
-  psim_pt(:,m) = sum(vflux_m_xint(:,m:Npt),2);     
-end
-psi_pt = psi_pt/1e6;
-psim_pt = psim_pt/1e6;
-psie_pt = psi_pt - psim_pt;
-
-%%% Calculate mean density surface heights
-h_pt_xtavg = squeeze(nanmean(h_pt_tavg));
-z_pt = 0*h_pt_xtavg;
-for m=1:Npt
-  z_pt(:,m) = - sum(h_pt_xtavg(:,1:m-1),2);
-end
-
-%%% Calculate zonal-mean potential temperature
-pt_xtavg = squeeze(nanmean(pt_tavg(:,:,:)));
-pt_f_xtavg = squeeze(nanmean(pt_f(:,:,:)));
-
-%%% Convert to z-coordinates by mapping the streamfunction at each temp 
-%%% level to the mean height of that density surface
-psi_z = NaN*ones(Ny,Nrf);
-psim_z = NaN*ones(Ny,Nrf);
-psie_z = NaN*ones(Ny,Nrf);
-for j=1:Ny  
-
-  for k=1:Nrf
-
-    %%% Density lies in the lowest bin
-    if (pt_f_xtavg(j,k) <= ptlevs(1))
-      psi_z(j,k) = psi_pt(j,1);      
-      psim_z(j,k) = psim_pt(j,1);    
-      psie_z(j,k) = psie_pt(j,1);    
-      continue;
-    end
-
-    %%% Density lies in the highest bin
-    if (pt_f_xtavg(j,k) > ptlevs(Npt))
-      psi_z(j,k) = psi_pt(j,Npt);      
-      psim_z(j,k) = psim_pt(j,Npt);      
-      psie_z(j,k) = psie_pt(j,Npt);      
-      continue;
-    end    
-
-    %%% Density lies in an intermediate bin, so find the bin and assign
-    %%% the overturning streamfunction via linear interpolation
-    for m=1:Npt-1
-      if (pt_f_xtavg(j,k) < ptlevs(m+1))
-        pt_n = ptlevs(m+1);
-        pt_p = ptlevs(m);
-        wp = (pt_n-pt_f_xtavg(j,k))/(pt_n-pt_p);
-        wn = 1 - wp;
-        psi_z(j,k) = wp*psi_pt(j,m) + wn*psi_pt(j,m+1);
-        psim_z(j,k) = wp*psim_pt(j,m) + wn*psim_pt(j,m+1);
-        psie_z(j,k) = wp*psie_pt(j,m) + wn*psie_pt(j,m+1);
-        break;
-      end
-    end
-    
+    readIters = [readIters dumpIters(n)];
+    times = [times dumpIters(n)*deltaT];
   end
   
 end
+Ntime = length(readIters);
 
-% %%% Map streamfunction back to z-coordinates
-% psi_z = zeros(Ny+1,Nr+1);
-% psim_z = zeros(Ny+1,Nr+1);
-% psie_z = zeros(Ny+1,Nr+1);
-% ZZ_psi =  zeros(Ny+1,Nr+1);
-% for j=2:Ny
-%   
-%   %%% Index of lowest wet cell and numerical topographic depth
-%   kbot = sum(hFacS(1,j,:)~=0);
-%   ZZ_psi(j,:) = - cumsum([0 squeeze(hFacS(1,j,:))'.*delR]);
-%   
-%   %%% Skip walls
-%   if (kbot == 0)
-%     continue;
-%   end
-%   
-%   %%% Loop over wet cell corners
-%   for k=2:kbot
-%     
-%     %%% Find layer depth nearest to this grid cell corner
-%     mnext = -1;
-%     for m=1:Npt
-%       if (ZZ_psi(j,k) > z_pt(j,m))
-%         mnext = m;
-%         break;
-%       end
-%     end
-%     if (mnext == -1)
-%       mnext = Npt+1;
-%     end
-%     
-%     %%% zz_psi(k) lies above the shallowest zrho
-%     if (mnext == 1)
-%       zprev = 0;  
-%       psi_prev = 0;
-%       psim_prev = 0;
-%       psie_prev = 0;
-%     else
-%       zprev = z_pt(j,mnext-1);
-%       psi_prev = psi_pt(j,mnext-1);
-%       psim_prev = psim_pt(j,mnext-1);
-%       psie_prev = psie_pt(j,mnext-1);
-%     end
-% 
-%     %%% zz_psi(k) lies deeper than the deepest zrho
-%     if (mnext == Npt+1)
-%       znext = ZZ_psi(j,kbot);
-%       psi_next = 0;
-%       psim_next = 0;
-%       psie_next = 0;
-%     else
-%       znext = z_pt(j,mnext);
-%       psi_next = psi_pt(j,mnext);
-%       psim_next = psim_pt(j,mnext);
-%       psie_next = psie_pt(j,mnext);
-%     end
-%     
-%     %%% Interpolation weights
-%     wprev = (znext-ZZ_psi(j,k)) / (znext-zprev);
-%     wnext = 1 - wprev;
-%     
-%     %%% Interpolate to grid cell corner
-%     psi_z(j,k) = wprev*psi_prev + wnext*psi_next;
-%     psim_z(j,k) = wprev*psim_prev + wnext*psim_next;
-%     psie_z(j,k) = wprev*psie_prev + wnext*psie_next;
-%     
-%   end
-% end
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% ISOPYCNAL FLUX CALCULATION %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Calculate time-averaged isopycnal flux, density and velocity
+psi = zeros(Neta,Nd+1,Ntime);
+uvel_tavg = zeros(Nx,Ny,Nr);
+vvel_tavg = zeros(Nx,Ny,Nr);
+dens_tavg = zeros(Nx,Ny,Nr);
+for n=1:Ntime
+ 
+  %%% Print current time to keep track of calculation
+  tyears = readIters(n)*deltaT/86400/365; 
+  [num2str(tyears) num2str(dumpIters(n))]      
+  
+  %%% Read velocity field
+  uvel  = rdmdsWrapper(fullfile(exppath,'/results/UVEL'),dumpIters(n));
+  vvel  = rdmdsWrapper(fullfile(exppath,'/results/VVEL'),dumpIters(n));              
+  if (isempty(uvel) || isempty(vvel))
+    ['Ran out of data at n=',num2str(n),'/',num2str(nDumps),' t=',num2str(tyears),' days.']
+    break;
+  end
+
+  %%% TODO calculate or read density
+
+  %%% Calculate density
+  theta = rdmdsWrapper(fullfile(exppath,'/results/THETA'),dumpIters(n));
+  salt  = rdmdsWrapper(fullfile(exppath,'/results/SALT'),dumpIters(n));    
+  dens = densjmd95(salt,theta,p_ref*ones(Nx,Ny,Nr))-1000;
+
+
+  %%% Compute streamfunction
+  psi(:,:,n) = calcIsopStreamfunction(...
+    uvel,vvel,dens,...
+    Nx,Ny,Nr,Nrf,Neta,Nd,ffac, ...
+    kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
+    DXG_3D,DYG_3D,hFacW_f,hFacS_f,DZ_f,dens_levs,ETA,eta);   
+  
+
+  %%% Add to time averages
+  uvel_tavg = uvel_tavg + uvel;
+  vvel_tavg = vvel_tavg + vvel;
+  dens_tavg = dens_tavg + dens;
+
+end
+
+%%% Divide by Ntime to get time mean
+uvel_tavg = uvel_tavg / Ntime;
+vvel_tavg = vvel_tavg / Ntime;
+dens_tavg = dens_tavg / Ntime;
+
+
+%%% Compute ``mean'' streamfunction
+psi_mean = calcIsopStreamfunction(...
+    uvel_tavg,vvel_tavg,dens_tavg,...
+    Nx,Ny,Nr,Nrf,Neta,Nd,ffac, ...
+    kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
+    DXG_3D,DYG_3D,hFacW_f,hFacS_f,DZ_f,dens_levs,ETA,eta);
+
+psi_eddy = psi-psi_mean;
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%
+%%% OUTPUT %%%
+%%%%%%%%%%%%%%
 
 %%% Store computed data for later
-save([expname,'_MOC_pt.mat'],'xx','yy','zz','zz_f','hFacS_f','delRf','ptlevs', ... 
-  'vvel','vvel_f','pt_tavg','pt_f', ...  
-  'vflux','vflux_m', ...
-  'psi_pt','psim_pt','psie_pt', ...
-  'psi_z','psim_z','psie_z');
+save([expname,'_MOC_dens.mat'],'eta','ETA','CHI','lon1','lat1','lon2','lat2', ...
+                                'dens_levs','times','psi','psi_mean','psi_eddy');
+
+
+
+
+figure(1);
+[DD,EE] = meshgrid(dens_levs,eta);
+pcolor(EE,DD,mean(psi,3)/1e6);
+% pcolor(EE,DD,mean(psi_mean,3)/1e6);
+shading interp;
+caxis([-7 7]);
+set(gca,'YDir','reverse');
+set(gca,'YLim',[36.8 37.4]);
+colormap redblue(56);
+colorbar;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%%%
+%%% Functionalized to avoid repeated code
+%%%
+function psi = calcIsopStreamfunction(...
+  uvel,vvel,dens,...
+  Nx,Ny,Nr,Nrf,Neta,Nd,ffac, ...
+  kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
+  DXG_3D,DYG_3D,hFacW_f,hFacS_f,DZ_f,dens_levs,ETA,eta)
+
+  %%% Calculate density on u and v points via straightforward linear
+  %%% interpolation
+  dens_u = 0.5* (dens(1:Nx,:,:) + dens([2:Nx 1],:,:));
+  dens_v = 0.5* (dens(:,1:Ny,:) + dens(:,[2:Ny 1],:)); 
+  
+  %%% Interpolate u, v and density onto a finer vertical grid      
+  uvel_f = zeros(Nx,Ny,Nrf);
+  dens_u_f = NaN*zeros(Nx,Ny,Nrf);
+  vvel_f = zeros(Nx,Ny,Nrf);
+  dens_v_f = NaN*zeros(Nx,Ny,Nrf);
+  if (ffac == 1)
+
+    %%% Shortcut if fine grid resolution = coarse grid resolution
+    uvel_f = uvel;        
+    dens_u_f = dens_u;
+    vvel_f = vvel;        
+    dens_v_f = dens_v;
+
+  else   
+
+    %%% Velocity uniform throughout each coarse grid cell to preserve
+    %%% mass conservation
+    for k=1:Nr
+      uvel_f(:,:,ffac*(k-1)+1:ffac*k) = uvel(:,:,k*ones(1,ffac)); 
+      vvel_f(:,:,ffac*(k-1)+1:ffac*k) = vvel(:,:,k*ones(1,ffac));          
+    end
+
+    %%% Linearly interpolate density
+    for i=1:Nx
+      for j=3:Ny-1 %%% Restrict to wet grid cells  
+        dens_u_f(i,j,:) = wp_u(i,j,:).*dens_u(i,j,squeeze(kp_u(i,j,:))) + wn_u(i,j,:).*dens_u(i,j,squeeze(kn_u(i,j,:)));
+        dens_v_f(i,j,:) = wp_v(i,j,:).*dens_v(i,j,squeeze(kp_v(i,j,:))) + wn_v(i,j,:).*dens_v(i,j,squeeze(kn_v(i,j,:)));
+      end
+    end
+
+  end            
+
+  %%% Calculate fluxes within density surfaces
+  udz = uvel_f.*hFacW_f.*DZ_f;
+  vdz = vvel_f.*hFacS_f.*DZ_f;
+  uflux = zeros(Nx,Ny,Nd);
+  vflux = zeros(Nx,Ny,Nd);
+  uflux(:,:,Nd) = uflux(:,:,Nd) + sum(udz.*(dens_u_f>dens_levs(Nd)),3);
+  uflux(:,:,1) = uflux(:,:,1) + sum(udz.*(dens_u_f<=dens_levs(2)),3);
+  vflux(:,:,Nd) = vflux(:,:,Nd) + sum(vdz.*(dens_v_f>dens_levs(Nd)),3);
+  vflux(:,:,1) = vflux(:,:,1) + sum(vdz.*(dens_v_f<=dens_levs(2)),3);
+  for m=2:Nd-1
+    uflux(:,:,m) = uflux(:,:,m) + sum(udz.*((dens_u_f>dens_levs(m)) & (dens_u_f<=dens_levs(m+1))),3);
+    vflux(:,:,m) = vflux(:,:,m) + sum(vdz.*((dens_v_f>dens_levs(m)) & (dens_v_f<=dens_levs(m+1))),3);
+  end   
+
+  %%% Compute horizontal divergence of isopycnal fluxes
+  fluxdiv = zeros(Nx,Ny,Nd);
+  fluxdiv(1:Nx-1,1:Ny-1,:) = uflux(2:Nx,1:Ny-1,:) .* DYG_3D(2:Nx,1:Ny-1,:) ...
+                              - uflux(1:Nx-1,1:Ny-1,:) .* DYG_3D(1:Nx-1,1:Ny-1,:) ...
+                              + vflux(1:Nx-1,2:Ny,:) .* DXG_3D(1:Nx-1,2:Ny,:) ...
+                              - vflux(1:Nx-1,1:Ny-1,:) .* DXG_3D(1:Nx-1,1:Ny-1,:);
+                       
+  %%% Integrate flux divergence across lines of constant eta (parallel to FRIS face)
+  eflux = zeros(Neta,Nd);
+  for m = 1:Neta
+    msk = repmat(ETA<eta(m),[1 1 Nd]);
+    eflux(m,:) = squeeze(sum(sum(fluxdiv.*msk,1),2));
+  end
+
+  %%% Sum fluxes to obtain streamfunction
+  psi = zeros(Neta,Nd+1);
+  for m=1:Nd  
+    psi(:,m) = -sum(eflux(:,m:Nd),2);     
+  end
+
+end

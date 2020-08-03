@@ -14,7 +14,7 @@ mac_plots = false;
 loadexp;
 
 %%% Select diagnostic variable to animate
-diagnum =21;
+diagnum = 5;
 outfname =diag_fileNames{1,diagnum};
 
 %%% Data index in the output data files
@@ -29,7 +29,7 @@ xylayer = 1;
 
 %%% Set true to plot the field in the lowest active cell at each horizontal
 %%% location
-botplot = 0;
+botplot = 1;
 
 %%% Set true to plot the field in the topmost wet cell at each horizontal
 %%% location
@@ -44,7 +44,7 @@ yzavg = 0;
 
 %%% Layer to plot in the y/z plane
 %%%for 1/3 DEGREE yzlayer = 126; 1/6 = 404;
-yzlayer = 126;
+yzlayer = 144;
 
 % load ../newexp/ELEV.mat
 % 
@@ -52,27 +52,26 @@ yzlayer = 126;
 % Mice_elev=Mice_elev';
 
 
-
 %%% Specify color range
 set_crange = 1;
-% crange = [-3 1]; %%%temp
-% crange = [33.9 34.7]; %%% salinity
-crange = [0 10]; %%%% for KPP hbl
-% crange = [0 5]; %%% For sea ice area
-% crange = [-.1 .1]; %%% For velocities or stresses
+% crange = [-3 1]; %/%%temp
+crange = [33.9 35.0]; %%% salinity
+% crange = [0 10]; %%%% for KPP hbl
+% crange = [0 1]; %%% For sea ice area
+% crange = [-.6 .6]; %%% For velocities or stresses
 % crange = [-1 1]*1e-4; %%% For freshwater fluxes
-% crange = [-100 100]; %%% Qnet
-
+% crange =[-100 100]; %%% Qnet
+% crange = [-300 300]; %%% swnet
+% crange = [0 3];
 %%% Frequency of diagnostic output - should match that specified in
 %%% data.diagnostics
 % nIter0 = 1278720;
 % deltaT = 200
 % nIter0 = 587520;
-nIter0 = 0;
 dumpFreq = abs(diag_frequency(diagnum));
 nDumps = round(nTimeSteps*deltaT/dumpFreq);
-dumpIters = round((0:nDumps)*dumpFreq/deltaT);
-dumpIters = dumpIters(dumpIters >= nIter0);
+dumpIters = round(nIter0+(1:nDumps)*dumpFreq/deltaT);
+dumpIters = dumpIters(dumpIters > nIter0);
 
 
 %%% Mesh grids for plotting
@@ -146,7 +145,7 @@ end
 
 %%% Plotting options
 scrsz = get(0,'ScreenSize');
-fontsize = 18;
+fontsize = 8;
 if (mac_plots)  
   framepos = [0 scrsz(4)/2 scrsz(3)/1.3 scrsz(4)];
   plotloc = [0.17 0.3 0.62 0.7];
@@ -155,7 +154,7 @@ else
   framepos = [100    500   800  800];
 end
 %%% Set up the figure
-handle = figure(20);
+handle = figure(22);
 set(handle,'Position',framepos);
 clf;
 axes('FontSize',fontsize);
@@ -164,10 +163,14 @@ M = moviein(48);
 
 Amean = [];
 
- for n = 2:48
+for n = 12
+% for n = 1:length(dumpIters)
+% for n=75
+% for n=48:length(dumpIters)
+% for n=14*12:length(dumpIters)
   dumpIters(n);
     
-  t = dumpIters(n)*deltaT/86400/365;
+  t = dumpIters(n)*deltaT/t1year;
   
   
   tyears(n) = t;
@@ -177,17 +180,23 @@ Amean = [];
   end     
   
   if (~isempty(find(isnan(A))))
+    error(['Found NaNs at iter=',num2str(dumpIters(n))]);
     break
   end
   
-  ['Max value: ',num2str(max(max(max(A(A~=0)))))]
-  ['Min value: ',num2str(min(min(min(A(A~=0)))))]
+  
   
   
 
    [idx1 idx2] = find(isnan(A));
 
-  
+   if (size(A,3)>1)
+     A(hFacC==0) = NaN;
+   end
+   
+   ['Max value: ',num2str(nanmax(A(:)))]
+   ['Min value: ',num2str(nanmin(A(:)))]
+   
 %%% x/y plot
  if (xyplot)
     
@@ -217,7 +226,7 @@ Amean = [];
         
     else
           FF = squeeze(A(:,:,xylayer,outfidx));        
-%           FF(hFacC(:,:,xylayer)==0) = NaN;
+          FF(hFacC(:,:,xylayer)==0) = NaN;
     end
       
       
@@ -231,7 +240,7 @@ Amean = [];
 %     p.FaceColor = [.5 .5 .5];
 %     p.FaceAlpha = .5;
 %     hold on
-    [cs,C] = contour(XC,YC,bathy,[-5000:1000:-1000 -500 -200],'EdgeColor','k');
+%     [cs,C] = contour(XC,YC,bathy,[-5000:1000:-1000 -500 -200],'EdgeColor','k');
     
 %     hh = clabel(cs,C);
     hold off;
@@ -244,7 +253,7 @@ Amean = [];
     
   %%% y/z zonally-averaged plot
  
- elseif (yzavg)
+ else
     
     
 %     if (yzavg)
@@ -263,7 +272,7 @@ Amean = [];
 %     [C,h]=contour(YY(jrange,:),ZZ(jrange,:)/1000,Ayz(jrange,:),[-2:0.5:12],'EdgeColor','k');
 %     [C,h]=contour(YY(jrange,:),ZZ(jrange,:)/1000,Ayz(jrange,:),[-0.1:0.005:0.1],'EdgeColor','k');
 %     if (yzavg)
-      h = plot(yy,min(bathy,[],1)/1000,'k','LineWidth',3);  
+%       h = plot(yy,min(bathy,[],1)/1000,'k','LineWidth',3);  
 %     else
       h = plot(yy,SHELFICEtopo(yzlayer,:)/1000,'k','LineWidth',3);  
       h = plot(yy,bathy(yzlayer,:)/1000,'k','LineWidth',3);  
@@ -272,10 +281,10 @@ Amean = [];
     xlabel('Offshore $y$ (latitude)','interpreter','latex','fontsize',15);
     ylabel('Height $z$ (km)','interpreter','latex','fontsize',15);
     set(gca,'YLim',[-1.3 0]);
-    set(gca,'XLim',[-82 -64]);
+    set(gca,'XLim',[-83 -64]);
 
  end
- hold on
+
  
 
 
@@ -284,7 +293,7 @@ Amean = [];
   handle=colorbar;
   colormap jet(200);
   set(handle,'FontSize',fontsize);
-  title(['$t=',num2str(tyears(n)*365,'%.1f'),'$ days'],'interpreter','latex');
+  title(['$t=',num2str(tyears(n),'%.1f'),'$ years'],'interpreter','latex');
   if (set_crange)  
     caxis(crange);
   end

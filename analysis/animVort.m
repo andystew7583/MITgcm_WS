@@ -23,7 +23,7 @@ diagfreq = diag_frequency(diagnum);
 %%% Frequency of diagnostic output
 dumpFreq = abs(diagfreq);
 nDumps = round(nTimeSteps*deltaT/dumpFreq);
-dumpIters = round((1:nDumps)*dumpFreq/deltaT);
+dumpIters = round(nIter0 + (1:nDumps)*dumpFreq/deltaT);
 dumpIters = dumpIters(dumpIters >= nIter0);
 nDumps = length(dumpIters);
 
@@ -40,15 +40,17 @@ for n=1:nDumps
   tt(n)
   
   %%% Attempt to load either instantaneous velocities or their squares
-  uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_inst'),dumpIters(n)) ;      
-  vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_inst'),dumpIters(n)); 
+%   uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_inst'),dumpIters(n)) ;      
+%   vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_inst'),dumpIters(n)); 
+  uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL'),dumpIters(n)) ;      
+  vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL'),dumpIters(n)); 
   if (isempty(uvel) || isempty(vvel))   
     break;
   end
   
   %%% Plot the vorticity  
   vort = zeros(Nx,Ny);
-  zlev = 30;
+  zlev = 20;
   vort(:,2:Ny) = - (uvel(:,2:Ny,zlev)-uvel(:,1:Ny-1,zlev))./DYC(:,2:Ny);
   vort(2:Nx,:) = vort(2:Nx,:) + (vvel(2:Nx,:,zlev)-vvel(1:Nx-1,:,zlev))./DXC(2:Nx,:);
 %   ubt = sum(uvel.*DZ.*hFacW,3) ./ sum(DZ.*hFacW,3);
@@ -64,7 +66,7 @@ for n=1:nDumps
   colormap redblue;
 %   caxis([-.5 .5]);
 %   caxis([-2 2]);
-  caxis([-.03 .03]);
+  caxis([-.1 .1]);
   set(gca,'FontSize',16);
   xlabel('Longitude','interpreter','latex');
   ylabel('Latitude','interpreter','latex');

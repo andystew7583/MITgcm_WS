@@ -63,13 +63,13 @@ function newexp (batch_name,exp_name)
   %%% vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
  
- %Set-up for Ardbeg
+ %%% Set-up for Ardbeg
 %  opt_file = 'ardbeg_ucla'; %%% options file name
 %  use_mpi = true; %%% set true for parallel processing
 %  use_pbs = true; %%% set true for execution via PBS
 %  cluster = 'ardbeg';
 %  queue = 'all.q';
-%   
+  
   %%% Set-up for Gordon
 %    opt_file = 'xsede_gordon'; %%% options file name
 %    use_mpi = true; %%% set true for parallel processing
@@ -88,19 +88,19 @@ function newexp (batch_name,exp_name)
    
 
 %Set-Up for Stampede
-   opt_file = 'xsede_stampede'; %%% options file name
-   use_mpi = true; %%% set true for parallel processing
-   use_pbs = true; %%% set true for execution via PBS
-   cluster = 'stampede';
-   queue = 'normal';
-   acct = '04585';
-
-%    opt_file = 'hoffman2_ucla'; %%% options file name
+%    opt_file = 'xsede_stampede'; %%% options file name
 %    use_mpi = true; %%% set true for parallel processing
 %    use_pbs = true; %%% set true for execution via PBS
-%    cluster = 'hoffman2';
-%    queue = 'highp';
-%    acct = 'andrewst';
+%    cluster = 'stampede';
+%    queue = 'normal';
+%    acct = '03198';
+
+  %%% Set-up for Hoffman2
+  opt_file = 'hoffman2_ucla'; %%% options file name
+  use_mpi = true; %%% set true for parallel processing
+  use_pbs = true; %%% set true for execution via PBS
+  cluster = 'hoffman2';
+  queue = 'highp';
 
   %%% Uploading/downloading parameters 
   switch(cluster)
@@ -128,17 +128,17 @@ function newexp (batch_name,exp_name)
             
     case 'ardbeg'
   
-      username = 'jhazel';
+      username = 'astewart';
       clustername = 'caolila.atmos.ucla.edu';
-      toolsdir = '/data1/MITgcm_WS/tools/';
+      toolsdir = '/data3/MITgcm_WS/tools/';
       clusterdir = fullfile('/data1/MITgcm_WS/experiments/',batch_name);
       
-     case 'hoffman2' %%% Defaults to laphroaig
+     case 'hoffman2' 
   
-      username = 'jhazel';
+      username = 'andrewst';
       clustername = 'hoffman2.idre.ucla.edu';
-      toolsdir ='/u/flashscratch/j/jhazel/MITgcm_WS/tools';
-      clusterdir = fullfile('/u/flashscratch/j/jhazel/MITgcm_WS/experiments/',batch_name);    
+      toolsdir = '/u/scratch/a/andrewst/MITgcm_WS/tools/';
+      clusterdir = ['/u/scratch/a/andrewst/MITgcm_WS/experiments/',batch_name];      
   
   end
   
@@ -236,7 +236,6 @@ function newexp (batch_name,exp_name)
   
   %%% Computation time (in hours) per gridpoint (in space and time) 
   %%% assigned to each processor.
-  %%% Estimated for a single Fram core.
   alpha = 0.63e-9;
   
   %%% Estimated total computation time in hours (assumes one tile per
@@ -302,9 +301,8 @@ function newexp (batch_name,exp_name)
         createPBSfile_Comet(resultspath,exp_name,nodes,2*comptime,acct,fullfile(clusterdir,exp_name,resultsdir));        
         runcommands = [runcommands,'sbatch run_mitgcm_comet',lf];
       case 'hoffman2'
-        createPBSfile(resultspath,exp_name,nodes,queue);
+        createPBSfile_Hoffman(resultspath,exp_name,nodes);
         runcommands = [runcommands,'qsub run_mitgcm > output.txt',lf];    
-        
       otherwise %%% Defaults to Ardbeg
         createPBSfile(resultspath,exp_name,nodes,queue);
         runcommands = [runcommands,'qsub run_mitgcm > output.txt',lf];
@@ -368,8 +366,8 @@ function newexp (batch_name,exp_name)
   
   %%% Upload command
   upcommand = [...
-    'scp -r ',...
-    '../',exp_name,'/ ', ...
+    'rsync -av --update ',...
+    '../',exp_name,' ', ...
     username,'@',clustername,':',clusterdir];
   fid = fopen(fullfile(exppath,'upload_to_cluster.sh'),'w');
   if (fid == -1)

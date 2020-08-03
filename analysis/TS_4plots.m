@@ -6,7 +6,7 @@ setExpname
 %%% Read experiment data
 loadexp;
 
-load TSanalysis4panel.mat
+load SavedFiles/TSanalysis4panel.mat
 
 
 %%% Frequency of diagnostic output
@@ -184,8 +184,10 @@ load SavedFiles/CDWHSSWvals_343445.mat
 
 figure(1)
 clf
+set(gcf,'Position',[406         168        1221         814]);
 
 r1=subplot(2,2,1);
+set(gca,'Position',[0.1013    0.6070    0.3653    0.3506]);
 pcolor(s,t,(new_v_3445c'));
 shading interp;
 colormap jet(40);
@@ -198,7 +200,7 @@ caxis([20 28]);
 % m = colorbar;
 % ylabel(m,'Log (Volume) m$^3$','interpreter','latex','fontsize',20);
 
-title('REF Full WSRM Domain', 'interpreter','latex','FontSize',16);
+title('REF, full WSRM domain', 'interpreter','latex','FontSize',16);
 
 b = gca; legend(b,'off');
 pt_maxc = 1.5;
@@ -220,9 +222,11 @@ hold on
 clabel(C,f)
 
 cmap=jet;
-text(34.8,-3.5,'\textbf{a}','fontsize',14,'fontweight','bold','interpreter','latex');
+text(33.85,-4,'\textbf{a}','fontsize',14,'fontweight','bold','interpreter','latex');
+set(gca,'FontSize',16);
 
 subplot(2,2,2);
+set(gca,'Position',[0.5340    0.6070    0.3653    0.3506]);
 pcolor(s,t,new_v_34w');
 shading interp
 % m2 = colorbar;
@@ -232,7 +236,7 @@ xlim([33.7 35]);
 xticks(33.7:.2:36);
 ylim([-3 1.5]);
 caxis([20 28]);
-title('FRESH Full WSRM Domain', 'interpreter','latex','FontSize',16);
+title('FRESH, full WSRM domain', 'interpreter','latex','FontSize',16);
 
 b = gca; legend(b,'off');
 
@@ -256,10 +260,11 @@ hold on
 clabel(C,f)
 % 
 % 
-text(34.8,-3.5,'\textbf{b}','fontsize',14,'fontweight','bold','interpreter','latex');
-
+text(33.85,-4,'\textbf{b}','fontsize',14,'fontweight','bold','interpreter','latex');
+set(gca,'FontSize',16);
 
 subplot(2,2,3);
+set(gca,'Position',[0.1013    0.135    0.3653    0.3506]);
 pcolor(s,t,new_v_3445');
 shading interp
 % m2 = colorbar;
@@ -271,11 +276,11 @@ xlim([33.7 35]);
 xticks(33.7:.2:36);
 ylim([-3 1.5]);
 caxis([20 28]);
-title('REF FRIS Cavity', 'interpreter','latex','FontSize',16);
+title('REF, FRIS cavity only', 'interpreter','latex','FontSize',16);
 % xlabel('Salinity (psu)', 'interpreter','latex','FontSize',18);
 % ylabel('Temperature ($^{o}$C)', 'interpreter','latex','FontSize',18);
 b = gca; legend(b,'off');
-
+set(gca,'FontSize',16);
 
 pt_max = 1.5;
 pt_min = -3;
@@ -296,11 +301,13 @@ hold on
 clabel(C,f)
 % 
 % 
-text(34.85,-3.5,'\textbf{c}','fontsize',14,'fontweight','bold','interpreter','latex');
-plot(Salt_diff_control_hssw,Temp_diff_control_hssw,'b+','markersize',12)
-plot(Salt_diff_control_cdw,Temp_diff_control_cdw,'r+','markersize',12);
+text(33.85,-4,'\textbf{c}','fontsize',14,'fontweight','bold','interpreter','latex');
+plot(Salt_diff_control_hssw,Temp_diff_control_hssw,'b+','markersize',12,'LineWidth',2)
+plot(Salt_diff_control_cdw,Temp_diff_control_cdw,'r+','markersize',12,'LineWidth',2)
+set(gca,'FontSize',16);
 
 subplot(2,2,4);
+set(gca,'Position',[0.5340    0.135    0.3653    0.3506]);
 pcolor(s,t,new_v_34');
 shading interp
 colormap jet(40);
@@ -312,7 +319,7 @@ xlim([33.7 35]);
 xticks(33.7:.2:36);
 ylim([-3 1.5]);
 caxis([20 28]);
-title('FRESH FRIS Cavity', 'interpreter','latex','FontSize',16);
+title('FRESH, FRIS cavity only', 'interpreter','latex','FontSize',16);
 
 b = gca; legend(b,'off');
 
@@ -336,15 +343,21 @@ hold on
 clabel(C,f)
 % 
 % 
-text(34.85,-3.5,'\textbf{d}','fontsize',14,'fontweight','bold','interpreter','latex');
-plot(Salt_diff_wcontrol_whssw,Temp_diff_control_whssw,'b+','markersize',12)
-plot(Salt_diff_wcontrol_wcdw,Temp_diff_control_wcdw,'r+','markersize',12);
+text(33.85,-4,'\textbf{d}','fontsize',14,'fontweight','bold','interpreter','latex');
+% plot(Salt_diff_wcontrol_whssw,Temp_diff_control_whssw,'b+','markersize',12);
+% plot(Salt_diff_wcontrol_wcdw,Temp_diff_control_wcdw,'r+','markersize',12);
+plot(Salt_diff_control_hssw,Temp_diff_control_hssw,'b+','markersize',12,'LineWidth',2)
+plot(Salt_diff_control_cdw,Temp_diff_control_cdw,'r+','markersize',12,'LineWidth',2)
+set(gca,'FontSize',16);
 m = colorbar;
-set(m,'Position',[.94,.12,.015,.8])
-ylabel(m,'Log(Volume)m$^{3}$','interpreter','latex','fontsize',14);
+set(m,'Position',[.92,.135,.015,.8226])
+ylabel(m,'Log(m$^{3})$','interpreter','latex','fontsize',16);
+
 
 [a,h]=suplabel('Temperature($^\circ$C)','y');
 set(h,'interpreter','latex','fontsize',20);
+set(h,'Position',[-0.0280    0.5000    0.0000]);
 
 [a,h]=suplabel('Salinity(psu)','x');
 set(h,'interpreter','latex','fontsize',20);
+

@@ -1,6 +1,6 @@
 %%%% plotting HSSW and melt/temp analysis
 hysteresisHSSW
-load cavtempanal.mat
+load SavedFiles/cavtempanal.mat
 
 
 figure(1)

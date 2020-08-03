@@ -5,7 +5,11 @@ load SavedFiles/bsf_controldata.mat
 load SavedFiles/TSanalysis4panel.mat
 load shimelt_control.mat
 figure(1)
+
+
 clf
+set(gcf,'Position',[406         168        1221         814]);
+
 s1=subplot(2,2,[1:2]);
 axesm('eqaconicstd',...
   'fontsize',13,...
@@ -23,21 +27,21 @@ axis off;
 setm(gca,'MLabelParallel',-20)
 
 
-contourfm(YG,XG,Psi_plot,40,'EdgeColor','none');
+contourfm(YG,XG,Psi_plot,0:1:30,'EdgeColor','none');
 colormap (flipud(pmkmp(40)));  
 
 h = colorbar;
 set(gca,'FontSize',10);
-set(h,'Position',[0.84 0.55 0.01 .4])
+set(h,'Position',[0.76 0.55 0.01 .4])
 % title(h,'Sv','Fontsize',20);
 % cbfreeze(h);
 % 
 hold on
-contourm(YG,XG,Psi_plot,0:1:30,'EdgeColor',[.5,.5,.5],'LineWidth',.6)
+contourm(YG,XG,Psi_plot,0:2:30,'EdgeColor',[.5,.5,.5],'LineWidth',.6)
 hold on
 
-
-[cs,C] = contourm(YC,XC,bathy,[-5000:1000:-1000 -500 -200 -100],'EdgeColor','black'); 
+[cs,C] = contourm(YC,XC,bathy,[-1000 -1000],'EdgeColor','black'); 
+% [cs,C] = contourm(YC,XC,bathy,[-5000:1000:-1000 -500 -200 -100],'EdgeColor','black'); 
 hh = clabelm(cs,C);
 set (hh,'fontsize',10,'BackgroundColor','none','Edgecolor','none')
          
@@ -62,7 +66,7 @@ ax2.Position = [left bottom-.01 ax2_width ax2_height];
 
 xlabel('Longitude','interpreter','latex');
 ylabel('Latitude','interpreter','latex');
-h = title('Barotropic Stream Function (Sv)','interpreter','latex','Fontsize',18);
+h = title('Barotropic Streamfunction (Sv)','interpreter','latex','Fontsize',18);
 set(h,'Position',[0 -.94 0])
 text(.28,-1.3,'\textbf{a}','fontsize',18,'interpreter','latex');
 ax = gca;
@@ -73,6 +77,13 @@ bottom = outerpos(2) + ti(2);
 ax_width = outerpos(3) - ti(1) - ti(3);
 ax_height = outerpos(4) - ti(2) - ti(4);
 ax.Position = [left bottom-.03 ax_width ax_height];
+
+arrow([-.1232 -1.228],[-.1304 -1.251],'Color',[.5 .5 .5],'Length',10,'Width',1,'TipAngle',25)
+arrow([-.1025 -1.249],[-.0808 -1.26],'Color',[.5 .5 .5],'Length',10,'Width',1,'TipAngle',25)
+arrow([-.059 -1.174],[-.0761 -1.211],'Color',[.5 .5 .5],'Length',10,'Width',1,'TipAngle',25)
+arrow([-.01319 -1.122],[-.0438 -1.116],'Color',[.5 .5 .5],'Length',10,'Width',1,'TipAngle',25)
+arrow([-.1469 -1.068],[-.1567 -1.034],'Color',[.5 .5 .5],'Length',10,'Width',1,'TipAngle',25)
+arrow([0.2905 -1.17],[.2739 -1.139],'Color',[.5 .5 .5],'Length',10,'Width',1,'TipAngle',25)
 
 
 
@@ -86,7 +97,7 @@ m = colorbar;
 colormap(s2,jet);
 l = (min(min(new_v_3445c)));
 caxis([22 30]);
-ylabel(m,'Log (Volume) m$^3$','interpreter','latex','fontsize',18)
+ylabel(m,'Log (m$^3$)','interpreter','latex','fontsize',18)
 xlim([33.5 35]);
 xticks(33.5:.2:36);
 % caxis([18 22]);
@@ -135,30 +146,33 @@ hold on
 % 
 % 
 % % 
-xlabel('t (years)','interpreter','latex');
+xlabel('Time (years)','interpreter','latex');
 ylabel('Integrated Shelf Ice Melt (Gt/yr)','interpreter','latex');
 title('Integrated FRIS Melt', 'interpreter','latex','fontsize',16);
 % % 
 hold on
 % % 
 
-%%%shade up to 1 years
-h1 = line([0 0],[0 2000]);
-h2 = line([2 2],[0 2000]);
-c = patch([0 2 2 0],[0 0 2000 2000],[.5 .5 .5]);
 
-c.FaceAlpha=.1;
+
+
 ylim([0 2000]);
 xlim([0 25]);
 hold on
 z = 124*ones(40,1);
 k3 = plot(0:39,z,'k:','linewidth',2);
 hold on
+
+%%%shade up to 1 years
+h1 = line([0 0],[0 2000]);
+h2 = line([2 2],[0 2000]);
+c = patch([0 2 2 0],[0 0 2000 2000],[.5 .5 .5]);
+c.FaceAlpha=.1;
 % % 
-legend([k3],{'Observed Melt'},'location','northeast','interpreter','latex','fontsize',13)
+legend({'REF','Observed Melt'},'location','northeast','interpreter','latex','fontsize',13)
 % 
 
-text(22,-125,'\textbf{c}','fontsize',18,'interpreter','latex');
+text(22,-250,'\textbf{c}','fontsize',18,'interpreter','latex');
 set(gca,'OuterPosition',[.54,.01,.45,.45]);
 
 set(gca,'fontsize',12);

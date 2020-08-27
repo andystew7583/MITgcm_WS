@@ -4,7 +4,7 @@
 %%% Convenience script to set the experiment name before loadexp.m is 
 %%% called in other scripts.
 %%%
-gendir = '/data3/';
+pgendir = '/data3/';
 basedir = fullfile(gendir,'MITgcm_WS/experiments');
 
 expdir = basedir;
@@ -14,7 +14,7 @@ expdir = basedir;
 % expname = 'hires_seq_onethird_ECCObdry';
 % expname = 'hires_seq_onethird_modbdry';
 % expname = 'hires_seq_onethird_pyc1000';
-% expname = 'hires_seq_onethird_SIbdryfix';
+% expname = 'hires_seq_onethird_SIbdryfix'a;
 % expname = 'hires_seq_onethird_SIbdryfix_pyc1000_fixSIdrag';
 % expname = 'hires_seq_onethird_SIbdryfix_pyc1000_fixSIdrag_fixSIsponge';
 % expname = 'hires_seq_onethird_albFix_ERArad_pyc500';
@@ -29,10 +29,17 @@ expdir = basedir;
 % expname = 'hires_seq_onesixth_smoothtopog_tildes_6';
 % expname = 'hires_seq_onesixth_iceflux2_iceAHconst_gammaFrict';
 % expname = 'hires_seq_onesixth_iceflux2_iceAHconst_gammaFrict_ERAsw_tempoff';
-% expname = 'hires_seq_onesixth_modbdrystrat';
 % expname = 'hires_seq_onesixth_modbdrystrat_wind1.5';
-expname = 'hires_seq_onetwelfth';
+% expname = 'hires_seq_onesixth_bdrysalt34';
 
+
+expname = 'hires_seq_onethird_RTOPO2';
+% expname = 'hires_seq_onethird';
+% expname = 'hires_seq_onethird_notides';
+% expname = 'hires_seq_onesixth_modbdrystrat';
+% expname = 'hires_seq_onesixth_notides';
+% expname = 'hires_seq_onesixth_RTOPO2';
+% expname = 'hires_seq_onetwelfth';
 
 %%% Julia's control experiments
 % expname = 'n_34452';

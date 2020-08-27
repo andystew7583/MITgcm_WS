@@ -41,12 +41,17 @@ addpath ../newexp_utils
 
 
 
-%Reading in grid from RTOPO dataset
-RTOPO_latitude = ncread(fullfile(datadir,'RTOPO.nc'),'lat');
-RTOPO_longitude = ncread(fullfile(datadir,'RTOPO.nc'),'lon');
-RTOPO_bathymetry = ncread(fullfile(datadir,'RTOPO.nc'),'bathy');
-RTOPO_ice = ncread(fullfile(datadir,'RTOPO.nc'),'draft');
-RTOPO_elev = ncread(fullfile(datadir,'RTOPO.nc'),'height');
+%%% Reading in grid from RTOPO dataset
+% RTOPO_latitude = ncread(fullfile(datadir,'RTOPO.nc'),'lat');
+% RTOPO_longitude = ncread(fullfile(datadir,'RTOPO.nc'),'lon');
+% RTOPO_bathymetry = ncread(fullfile(datadir,'RTOPO.nc'),'bathy');
+% RTOPO_ice = ncread(fullfile(datadir,'RTOPO.nc'),'draft');
+% RTOPO_elev = ncread(fullfile(datadir,'RTOPO.nc'),'height');
+RTOPO_latitude = ncread(fullfile(datadir,'RTOPO2.nc'),'lat');
+RTOPO_longitude = ncread(fullfile(datadir,'RTOPO2.nc'),'lon');
+RTOPO_bathymetry = ncread(fullfile(datadir,'RTOPO2.nc'),'bedrock_topography');
+RTOPO_ice = ncread(fullfile(datadir,'RTOPO2.nc'),'ice_base_topography');
+RTOPO_elev = ncread(fullfile(datadir,'RTOPO2.nc'),'surface_elevation');
 
 %%% Remove superfluous additional longitude value
 RTOPO_longitude = RTOPO_longitude(1:end-1);

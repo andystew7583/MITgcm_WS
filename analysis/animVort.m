@@ -33,7 +33,7 @@ set(gcf,'Color','w');
 M = moviein(nDumps);
 
 %%% Loop through iterations
-for n=1:nDumps
+for n=12:nDumps
 % for n=250:300
  
   tt(n) =  dumpIters(n)*deltaT/86400;
@@ -51,15 +51,15 @@ for n=1:nDumps
   %%% Plot the vorticity  
   vort = zeros(Nx,Ny);
   zlev = 20;
-  vort(:,2:Ny) = - (uvel(:,2:Ny,zlev)-uvel(:,1:Ny-1,zlev))./DYC(:,2:Ny);
-  vort(2:Nx,:) = vort(2:Nx,:) + (vvel(2:Nx,:,zlev)-vvel(1:Nx-1,:,zlev))./DXC(2:Nx,:);
-%   ubt = sum(uvel.*DZ.*hFacW,3) ./ sum(DZ.*hFacW,3);
-%   vbt = sum(vvel.*DZ.*hFacS,3) ./ sum(DZ.*hFacS,3);
-%   vort(:,2:Ny) = - (ubt(:,2:Ny)-ubt(:,1:Ny-1))/delY(1);
-%   vort = vort + (vbt([2:Nx 1],:)-vbt(:,:))/delX(1); 
+%   vort(:,2:Ny) = - (uvel(:,2:Ny,zlev)-uvel(:,1:Ny-1,zlev))./DYC(:,2:Ny);
+%   vort(2:Nx,:) = vort(2:Nx,:) + (vvel(2:Nx,:,zlev)-vvel(1:Nx-1,:,zlev))./DXC(2:Nx,:);
+  ubt = sum(uvel.*DZ.*hFacW,3) ./ sum(DZ.*hFacW,3);
+  vbt = sum(vvel.*DZ.*hFacS,3) ./ sum(DZ.*hFacS,3);
+  vort(:,2:Ny) = - (ubt(:,2:Ny)-ubt(:,1:Ny-1))./DYC(:,2:Ny);
+  vort = vort + (vbt([2:Nx 1],:)-vbt(:,:))./DXC; 
   Omega = 2*pi*366/365/86400;
   ff = 2*Omega*sind(YG);
-  pcolor(XG,YG,vort./ff);
+  pcolor(XG,YG,vort./abs(ff));
   shading interp;
 %   contourf(XX/1000,YY/1000,vort/f0,-1:0.05:1,'EdgeColor','None');
   colorbar;

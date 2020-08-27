@@ -13,6 +13,15 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %%%%% SET-UP %%%%%
   %%%%%%%%%%%%%%%%%%
   
+  %%% Some commonly varied parameters
+  
+  %   nIter0 = 0; %%% Initial iteration for brand new runs
+%   nIter0 = 1; %%% Initial iteration for pickup runs
+  nIter0 = 1183320;  
+  use_extended_diags = true;  
+  use_layers = true;
+  use_tides = false;
+  
   
   
   %%% GSW scripts
@@ -68,12 +77,7 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %%%%% FIXED PARAMETER VALUES %%%%%
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-  
-  %%% Simulation parameters
-%   nIter0 = 0; %%% Initial iteration for brand new runs
-  nIter0 = 1; %%% Initial iteration for pickup runs
-%   nIter0 = 1183320;
-
+ 
 
 
   %%% Diffusion parameters
@@ -536,10 +540,8 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   
   
   
-  %%%%%% tides ^%%%%%%%%
-  
-%   useOBCStides = false;
-  useOBCStides = true;
+  %%%%%% tides ^%%%%%%%% 
+  useOBCStides = use_tides;
 
   tidalPeriod=[44714, 43200, 45570, 43082, 86164, 92950, 86637, 96726,1180300,2380706];
 %   tidalPeriod=[44714, 43200, 45570, 43082, 86164, 92950, 86637];
@@ -1377,6 +1379,65 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   
   
   
+  
+  
+  
+  
+  
+  
+  
+    %%%%%%%%%%%%%%%%%%%%%%%%%
+  %%%%% LAYERS SET-UP %%%%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%
+  
+  
+  %%% To store parameter names and values
+  layers_parm01 = parmlist;
+  LAYERS_PARM = {layers_parm01};
+  
+  
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%%%% LAYERS PARAMETERS %%%%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  
+  
+  %%% Define parameters for layers package %%%
+  
+  %%% Number of fields for which to calculate layer fluxes
+  layers_maxNum = 1;
+  
+  %%% Specify potential temperature
+  layers_name = 'RHO';  
+  
+  %%% Potential temperature bounds for layers  
+  layers_bounds = [30.5:1:36.5 36.6:0.1:36.8 36.9:0.01:37.4 37.42:0.02:37.6] - 9.38; 
+  
+  %%% Reference level for calculation of potential density
+  layers_krho = 1;    
+  
+  %%% If set true, the GM bolus velocity is added to the calculation
+  layers_bolus = false;  
+   
+  %%% Layers
+  layers_parm01.addParm('layers_bounds',layers_bounds,PARM_REALS); 
+  layers_parm01.addParm('layers_krho',layers_krho,PARM_INT); 
+  layers_parm01.addParm('layers_name',layers_name,PARM_STR); 
+  layers_parm01.addParm('layers_bolus',layers_bolus,PARM_BOOL); 
+
+  %%z% Create the data.layers file
+  write_data_layers(inputpath,LAYERS_PARM,listterm,realfmt);
+  
+  %%% Create the LAYERS_SIZE.h file
+  createLAYERSSIZEh(codepath,length(layers_bounds)-1,layers_maxNum); 
+  
+  
+  
+  
+  
+  
+  
+  
+  
      
   
   
@@ -1418,6 +1479,7 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %%% Stores total number of diagnostic quantities
   ndiags = 0;
   
+  
   diag_fields_avg = ...
   { ...
     'UVEL','VVEL','WVEL'...      
@@ -1431,21 +1493,22 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
     'SIqnet','SIqsw','SIatmQnt','SItflux','SIaaflux','SIhl','SIqneto','SIqneti','SIempmr','SIatmFW','SIsnPrcp','SIactLHF','SIacSubl'
   };
 
-%     'KPPhbl','MXLDEPTH','KPPdiffT','KPPdiffS'...
-
-%     'SIfu','SIfv','SIsigI','SIsigII','SIqnet','SIempmr','SItices',...
-    
-%     'SIdAbATO','SIdAbATC','SIdAbOCN'... %%%SI area change
-%     'SIdHbATO','SIdHbATC','SIdHbOCN','SIdHbFLO'... %%%SI thickness change
-    
-%     'UVELSQ','VVELSQ','WVELSQ'... %%% For Kinetic Energy
-%     'UV_VEL_Z','WU_VEL','WV_VEL'... %%% Momentum fluxes
-%     'UVELSLT','VVELSLT','WVELSLT', ... %%% Salt fluxes
-%     'UVELTH','VVELTH','WVELTH', ... %%% Temperature fluxes  
-
-%     'PHIHYD','SFLUX','TFLUX' ... 
-%     'DFrI_TH','DFrI_SLT' ...
-
+  if (use_extended_diags)
+    diag_fields_avg = {diag_fields_avg{:}, ...
+      'UVELSLT','VVELSLT','WVELSLT', ... %%% Salt fluxes
+      'UVELTH','VVELTH','WVELTH', ... %%% Temperature fluxes  
+      'UVELSQ','VVELSQ','WVELSQ', ... %%% For Kinetic Energy
+      'UV_VEL_Z','WU_VEL','WV_VEL', ... %%% Momentum fluxes
+      'SALTSQ','THETASQ','THSLT' %%% Thermodynamic variances
+    };
+  end     
+  
+  if (use_layers)
+    diag_fields_avg = {diag_fields_avg{:}, ...
+      'LaUH1RHO', 'LaVH1RHO', ... %%% LAYERS fluxes
+      'LaHw1RHO', 'LaHs1RHO' ... %%% LAYERS thicknesses
+    };
+  end  
   
   numdiags_avg = length(diag_fields_avg);  
   diag_freq_avg = t1month; %%% Approximately monthly output
@@ -1515,6 +1578,58 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   
   
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  %%%%%%%%%%%%%%%%%%%%
+  %%%%%%%%%%%%%%%%%%%%
+  %%%%% PACKAGES %%%%%
+  %%%%%%%%%%%%%%%%%%%%
+  %%%%%%%%%%%%%%%%%%%%
+  
+  packages = parmlist;
+  PACKAGE_PARM = {packages};  
+  
+  packages.addParm('useDiagnostics',true,PARM_BOOL);    
+  packages.addParm('useKPP',true,PARM_BOOL);
+  packages.addParm('useOBCS',true,PARM_BOOL);  
+  packages.addParm('useRBCS',true,PARM_BOOL);  
+  packages.addParm('useEXF',true,PARM_BOOL);        
+  packages.addParm('useCAL',true,PARM_BOOL);         
+  packages.addParm('useSEAICE',true,PARM_BOOL);      
+  packages.addParm('useSHELFICE',true,PARM_BOOL);      
+  packages.addParm('useFRAZIL',false,PARM_BOOL);        
+  packages.addParm('useLayers',use_layers,PARM_BOOL); 
+  packages.addParm('useBBL',false,PARM_BOOL); 
+  packages.addParm('useGMREDI',false,PARM_BOOL);          
+  
+  %%% Create the data.pkg file
+  write_data_pkg(inputpath,PACKAGE_PARM,listterm,realfmt);
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %%%%% WRITE PARAMETERS TO A MATLAB FILE %%%%%
@@ -1525,6 +1640,6 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %%% Creates a matlab file defining all input parameters
 %   write_matlab_params(inputpath,[PARM DIAG_MATLAB_PARM],realfmt);
 %   write_matlab_params(inputpath,[PARM SHELFICE_PARM EXF_PARM DIAG_MATLAB_PARM],realfmt);
-  write_matlab_params(inputpath,[PARM RBCS_PARM KPP_PARM OBCS_PARM SHELFICE_PARM SEAICE_PARM EXF_PARM DIAG_MATLAB_PARM],realfmt);
+  write_matlab_params(inputpath,[PARM RBCS_PARM KPP_PARM OBCS_PARM SHELFICE_PARM SEAICE_PARM EXF_PARM LAYERS_PARM DIAG_MATLAB_PARM PACKAGE_PARM],realfmt);
   
 end

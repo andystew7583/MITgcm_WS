@@ -35,13 +35,15 @@ for n=1:nDumps
   
   %%% Attempt to load either instantaneous velocities or their squares
   theta = rdmdsWrapper(fullfile(exppath,'/results/THETA'),dumpIters(n)) ;      
- 
-  if (isempty(theta))   
+  salt = rdmdsWrapper(fullfile(exppath,'/results/SALT'),dumpIters(n)) ; 
+  
+  if (isempty(theta) || isempty(salt))   
     break;
   end  
   
-  %%% Calculate domain-mean potential temperature
+  %%% Calculate domain-mean potential temperature and salinity
   theta_avg(n) = sum(sum(sum(theta.*DX.*DY.*DZ.*hFacC))) / sum(sum(sum(DX.*DY.*DZ.*hFacC)));
+  salt_avg(n) = sum(sum(sum(salt.*DX.*DY.*DZ.*hFacC))) / sum(sum(sum(DX.*DY.*DZ.*hFacC)));
   
   %%% Increment counter
   ptlen = ptlen + 1;
@@ -52,21 +54,27 @@ disp(expname);
 disp(tt(n));
 
 %%% Calculate trend
-trend_length = 20;
+trend_length = 18*12;
 if (ptlen >= trend_length)
   p = polyfit(tt(ptlen-trend_length+1:ptlen),theta_avg(ptlen-trend_length+1:ptlen),1);
   disp(['Trend in ',expname,' = ',num2str(p(1)*100),' deg C/century']);
+  p = polyfit(tt(ptlen-trend_length+1:ptlen),salt_avg(ptlen-trend_length+1:ptlen),1);
+  disp(['Trend in ',expname,' = ',num2str(p(1)*100),' g/kg/century']);
 end
+
 
 if (~isempty(find(isnan(theta_avg))))
   disp(['NaNs found in experiment ',expname]);
 end
 
-% figure(1);
-% clf;
-% axes('FontSize',16);
-% plot(tt(1:ptlen),theta_avg(1:ptlen),'o-');
+figure(31);
 plot(tt(1:ptlen),theta_avg(1:ptlen)-theta_avg(1),'o-');
 axis tight;
 xlabel('t (years)');
 ylabel('Mean potential temperature (^oC)');
+
+figure(32);
+plot(tt(1:ptlen),salt_avg(1:ptlen)-salt_avg(1),'o-');
+axis tight;
+xlabel('t (years)');
+ylabel('Mean salinity (g/kg)');

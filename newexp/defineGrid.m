@@ -5,7 +5,7 @@
 %%%
 
 %%% Choose resolution
-res_fac = 6;
+res_fac = 3;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% MPI parameters %%%%%
@@ -24,10 +24,10 @@ switch (res_fac)
   case 6
     nPx_max = 36; %%% max. no. of processors in x-direction
     nPy_max = 48; %%% max. no. of processors in y-direction
-    nPx = 18; %%% no. of processors in x-direction
-    nPy = 12; %%% no. of processors in y-direction
-%     nPx = 36; %%% no. of processors in x-direction
-%     nPy = 48; %%% no. of processors in y-direction
+%     nPx = 18; %%% no. of processors in x-direction
+%     nPy = 12; %%% no. of processors in y-direction
+    nPx = 36; %%% no. of processors in x-direction
+    nPy = 24; %%% no. of processors in y-direction
 %     nPx = 9; %%% no. of processors in x-direction
 %     nPy = 6; %%% no. of processors in y-direction
   case 12

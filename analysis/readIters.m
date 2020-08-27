@@ -16,7 +16,7 @@ function avg = readIters (exppath,field,dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr)
     if ((tseconds >= tmin) && (tseconds <= tmax))
     
       fname = fullfile(exppath,'results',field);      
-      A = rdmdsWrapper(fname,dumpIters(n));      
+      A = rdmdsWrapper(fname,dumpIters(n));   
       if (isempty(A))
         error(['Could not find ',fname,' iteration ',num2str(dumpIters(n))]);
       end

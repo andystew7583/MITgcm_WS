@@ -4,7 +4,13 @@
 %%% Calculates thermohaline streamfunction in T/S space.
 %%%
 
+%%% TODO try using a grid with variable resoltion
+%%% TODO try widening the northern wrap region to e.g. include the entire
+%%% sponge layer. might help to reduce spurious overturning?
+
 %%% Read experiment data
+expname = 'hires_seq_onesixth_modbdrystrat';
+expdir = '/data3/MITgcm_WS/experiments';
 loadexp;
 
 
@@ -56,8 +62,13 @@ Ayz = repmat(reshape(DRF,[1 1 Nr]),[Nx Ny]).*DYG.*hFacW;
 Axy = RAC;
 
 %%% To store fluxes in TS space
-% F_TS = zeros(NS-1,NT,Ntime);
-psi_TS = zeros(NS,NT,Ntime);
+psi_TS_intT = zeros(NS,NT,Ntime);
+psi_TS_intS = zeros(NS,NT,Ntime);
+uvel_tavg = zeros(Nx,Ny,Nr);
+vvel_tavg = zeros(Nx,Ny,Nr);
+wvel_tavg = zeros(Nx,Ny,Nr);
+salt_tavg = zeros(Nx,Ny,Nr);
+theta_tavg = zeros(Nx,Ny,Nr);
 for n=1:Ntime
 
   %%% To keep track of progress
@@ -70,27 +81,108 @@ for n=1:Ntime
   vvel = rdmdsWrapper(fullfile(exppath,'results','VVEL'),readIters(n));
   wvel = rdmdsWrapper(fullfile(exppath,'results','WVEL'),readIters(n));
 
-  %%% Make sure no vertical velocities are present at solid cell faces
-  wvel(hFacC==0) = 0;
+  %%% Compute streamfunction
+  psi_TS_intT(:,:,n) = calcStreamfunction_intT (...
+    uvel,vvel,wvel,salt,theta, ...
+    Nx,Ny,Nr,NS,NT,SS,TT,Ayz,Axz,Axy);
+  psi_TS_intS(:,:,n) = calcStreamfunction_intS (...
+    uvel,vvel,wvel,salt,theta, ...
+    Nx,Ny,Nr,NS,NT,SS,TT,Ayz,Axz,Axy);
+  
+  %%% Add to time averages
+  uvel_tavg = uvel_tavg + uvel;
+  vvel_tavg = vvel_tavg + vvel;
+  wvel_tavg = wvel_tavg + wvel;
+  salt_tavg = salt_tavg + salt;
+  theta_tavg = theta_tavg + theta;
+ 
+end
 
-  %%% Calculate midpoint salinity and temperature
-  salt_u = 0.5*(salt([1:Nx],:,:)+salt([Nx 1:Nx-1],:,:));
-  salt_v = 0.5*(salt(:,[1:Ny],:)+salt(:,[Ny 1:Ny-1],:));
-  salt_w = 0.5*(salt(:,:,[1:Nr])+salt(:,:,[Nr 1:Nr-1]));
-%   theta_u = 0.5*(theta([1:Nx],:,:)+theta([Nx 1:Nx-1],:,:));
-%   theta_v = 0.5*(theta(:,[1:Ny],:)+theta(:,[Ny 1:Ny-1],:));
-%   theta_w = 0.5*(theta(:,:,[1:Nr])+theta(:,:,[Nr 1:Nr-1]));
+%%% Divide by Ntime to get time mean
+uvel_tavg = uvel_tavg / Ntime;
+vvel_tavg = vvel_tavg / Ntime;
+wvel_tavg = wvel_tavg / Ntime;
+salt_tavg = salt_tavg / Ntime;
+theta_tavg = theta_tavg / Ntime;
 
-  %%% Deal with open boundary transports by wrapping them around the boundary
-  %%% artificially, closing the domain-integrated transport. Iterate around
-  %%% open boundary points computing flux divergence at each point, and
-  %%% balancing it with a boundary-parallel barotropic flow.
+%%% Make sure no vertical velocities are present at solid cell faces
+wvel(hFacC==0) = 0;
+
+%%% Compute "mean" streamfunction
+psi_TS_mean_intT = calcStreamfunction_intT (...
+    uvel_tavg,vvel_tavg,wvel_tavg,salt_tavg,theta_tavg, ...
+    Nx,Ny,Nr,NS,NT,SS,TT,Ayz,Axz,Axy);
+psi_TS_mean_intS = calcStreamfunction_intS (...
+    uvel_tavg,vvel_tavg,wvel_tavg,salt_tavg,theta_tavg, ...
+    Nx,Ny,Nr,NS,NT,SS,TT,Ayz,Axz,Axy);
+  
+%%% Compute "eddy" streamfunction
+psi_TS_eddy_intT = psi_TS_intT - repmat(psi_TS_mean_intT,[1 1 Ntime]);
+psi_TS_eddy_intS = psi_TS_intS - repmat(psi_TS_mean_intS,[1 1 Ntime]);
+
+%%% Store computed data for later
+save([expname,'_MOC_TS.mat'],'SS','TT','times', ...
+  'psi_TS_intT','psi_TS_mean_intT','psi_TS_eddy_intT', ...
+  'psi_TS_intS','psi_TS_mean_intS','psi_TS_eddy_intS' ...
+);
+
+%%% Make a plot
+figure(2);
+[TTT,SSS]=meshgrid(TT,SS);
+pcolor(SSS,TTT,mean(-psi_TS_intT,3)/1e6);
+% pcolor(SSS,TTT,mean(psi_TS_eddy,3)/1e6);
+shading interp;
+colormap redblue
+caxis([-7 7]);
+colorbar;
+
+%%% Make a plot
+figure(3);
+[TTT,SSS]=meshgrid(TT,SS);
+pcolor(SSS,TTT,mean(psi_TS_intS,3)/1e6);
+% pcolor(SSS,TTT,mean(psi_TS_eddy,3)/1e6);
+shading interp;
+colormap redblue
+caxis([-7 7]);
+colorbar;
+
+%%% Make a plot
+figure(4);
+[TTT,SSS]=meshgrid(TT,SS);
+pcolor(SSS,TTT,mean(psi_TS_intS+psi_TS_intT,3)/1e6);
+% pcolor(SSS,TTT,mean(psi_TS_eddy,3)/1e6);
+shading interp;
+colormap redblue
+caxis([-1 1]);
+colorbar;
+
+
+
+
+
+
+
+
+
+%%%
+%%% Deal with open boundary transports by wrapping them around the boundary
+%%% artificially, closing the domain-integrated transport. Iterate around
+%%% open boundary points computing flux divergence at each point, and
+%%% balancing it with a boundary-parallel barotropic flow.
+%%%
+function [Tu,Tv,Tw] = wrapBdryTransport (...
+  uvel,vvel,wvel, ...
+  Nx,Ny,Nr,Ayz,Axz,Axy)
+  
   %%% BOUNDARY-MEAN FLOW %%%
+  
   NEtransport = sum(sum(vvel(1:Nx-1,Ny,:).*Axz(1:Nx-1,Ny,:))) ...
               + sum(sum(uvel(Nx,1:Ny-1,:).*Ayz(Nx,1:Ny-1,:)));              
   NEarea = sum(sum(Axz(1:Nx-1,Ny,:))) + sum(sum(Ayz(Nx,1:Ny-1,:)));
   Ubdry = NEtransport / NEarea;
+  
   %%% NORTHERN BOUNDARY %%%
+  
   for i=1:Nx-1
 
     %%% Compute N boundary flux divergence
@@ -106,12 +198,14 @@ for n=1:Ntime
 
       %%% Recompute flux convergence in order to recompute vertical velocity
       fluxconv = vvel(i,Ny,:).*Axz(i,Ny,:) - Ubdry.*Axz(i,Ny,:) + uvel(i,Ny,:).*Ayz(i,Ny,:) - uvel(i+1,Ny,:).*Ayz(i+1,Ny,:);
-      wvel(i,Ny,2:Nr) = - cumsum(fluxconv(:,:,1:Nr-1),3) / RAC(i,Ny);
+      wvel(i,Ny,2:Nr) = - cumsum(fluxconv(:,:,1:Nr-1),3) / Axy(i,Ny);
 
     end
 
   end
+  
   %%% NORTHEAST CORNER %%%
+  
   %%% Compute NE corner flux divergence
   fluxconv = sum(vvel(Nx,Ny,:).*Axz(Nx,Ny,:) - Ubdry.*Axz(Nx,Ny,:) + uvel(Nx,Ny,:).*Ayz(Nx,Ny,:) - Ubdry.*Ayz(Nx,Ny,:), 3);
 
@@ -125,10 +219,12 @@ for n=1:Ntime
 
     %%% Recompute flux convergence in order to recompute vertical velocity
     fluxconv = vvel(Nx,Ny,:).*Axz(Nx,Ny,:) - Ubdry.*Axz(Nx,Ny,:) + uvel(Nx,Ny,:).*Ayz(Nx,Ny,:) - Ubdry.*Ayz(Nx,Ny,:);
-    wvel(Nx,Ny,2:Nr) = - cumsum(fluxconv(:,:,1:Nr-1),3) / RAC(Nx,Ny);
+    wvel(Nx,Ny,2:Nr) = - cumsum(fluxconv(:,:,1:Nr-1),3) / Axy(Nx,Ny);
 
   end
+  
   %%% EASTERN BOUNDARY %%%
+  
   for j=Ny-1:-1:1
 
     %%% Compute E boundary flux divergence
@@ -144,7 +240,7 @@ for n=1:Ntime
 
       %%% Recompute flux convergence in order to recompute vertical velocity
       fluxconv = vvel(Nx,j,:).*Axz(Nx,j,:) - vvel(Nx,j+1,:).*Axz(Nx,j+1,:) + uvel(Nx,j,:).*Ayz(Nx,j,:) - Ubdry.*Ayz(Nx,j,:);
-      wvel(Nx,j,2:Nr) = - cumsum(fluxconv(:,:,1:Nr-1),3) / RAC(Nx,j);
+      wvel(Nx,j,2:Nr) = - cumsum(fluxconv(:,:,1:Nr-1),3) / Axy(Nx,j);
 
     end
 
@@ -155,6 +251,8 @@ for n=1:Ntime
   Tv = Axz.*vvel;
   Tw = Axy.*wvel;
   
+   
+  %%% DEBUG CODE
   %%% Map vertically integrated flux convergence
   % fluxconv = zeros(Nx,Ny);
   % fluxconv(1:Nx,1:Ny) = fluxconv(1:Nx,1:Ny) + sum(Tu(1:Nx,1:Ny,:) + Tv(1:Nx,1:Ny,:), 3);
@@ -165,15 +263,46 @@ for n=1:Ntime
   % shading interp;
   % colorbar;
 
+  %%% DEBUG CODE
 %   fluxdiv3D = zeros(Nx,Ny,Nr);
 %   fluxdiv3D = fluxdiv3D - Tu - Tv + Tw;
 %   fluxdiv3D(1:Nx-1,1:Ny,1:Nr) = fluxdiv3D(1:Nx-1,1:Ny,1:Nr) + Tu(2:Nx,1:Ny,:);
 %   fluxdiv3D(1:Nx,1:Ny-1,1:Nr) = fluxdiv3D(1:Nx,1:Ny-1,1:Nr) + Tv(1:Nx,2:Ny,:);
 %   fluxdiv3D(1:Nx,1:Ny,1:Nr-1) = fluxdiv3D(1:Nx,1:Ny,1:Nr-1) - Tw(1:Nx,1:Ny,2:Nr);
 %   sum(sum(sum(fluxdiv3D(theta<-1.75))))
-tstart = tic();
+
+end
+
+
+
+
+
+
+
+
+
+
+
+
+%%%
+%%% Computes TS streamfunction by integrating w.r.t. salinity at constant
+%%% temperature.
+%%%
+function psi_TS = calcStreamfunction_intS (...
+  uvel,vvel,wvel,salt,theta, ...
+  Nx,Ny,Nr,NS,NT,SS,TT,Ayz,Axz,Axy)
+
+
+  %%% Calculate midpoint salinity and temperature
+  salt_u = 0.5*(salt([1:Nx],:,:)+salt([Nx 1:Nx-1],:,:));
+  salt_v = 0.5*(salt(:,[1:Ny],:)+salt(:,[Ny 1:Ny-1],:));
+  salt_w = 0.5*(salt(:,:,[1:Nr])+salt(:,:,[Nr 1:Nr-1]));
+
+  %%% Wrap open boundary transports to close whole-domain transport
+  [Tu,Tv,Tw] = wrapBdryTransport(uvel,vvel,wvel,Nx,Ny,Nr,Ayz,Axz,Axy);
 
   %%% Loop over temperature space
+  psi_TS = zeros(NS,NT);
   for nt = 1:NT
 
     nt
@@ -202,37 +331,25 @@ tstart = tic();
 %       msk_u_salt = (salt_u>SS(ns)) & (salt_u<SS(ns+1)); %%% Salinity falls in salt class [SS(ns) SS(ns+1)]     
 %       msk_v_salt = (salt_v>SS(ns)) & (salt_v<SS(ns+1));
 %       msk_w_salt = (salt_w>SS(ns)) & (salt_w<SS(ns+1));
-      msk_u_salt = (salt_u<SS(ns)); %%% Salinity falls in salt class [SS(ns) SS(ns+1)]     
+      msk_u_salt = (salt_u<SS(ns)); %%% Salinity falls in below SS(ns)
       msk_v_salt = (salt_v<SS(ns));
       msk_w_salt = (salt_w<SS(ns));
 
       %%% Flux in T/S space is equal to sum of physical fluxes over all 
       %%% unmasked points     
 %       F_TS(ns,nt,n) = sum(sum(sum(Tu_msktheta.*msk_u_salt + Tv_msktheta.*msk_v_salt + Tw_msktheta.*msk_w_salt)));
-      psi_TS(ns,nt,n) = sum(sum(sum(Tu_msktheta.*msk_u_salt + Tv_msktheta.*msk_v_salt + Tw_msktheta.*msk_w_salt)));      
-%       psi_TS(ns,nt,n) = Tu_msktheta(:)'*msk_u_salt(:) + Tv_msktheta(:)'*msk_v_salt(:) + Tw_msktheta(:)'*msk_w_salt(:);
+      psi_TS(ns,nt) = sum(sum(sum(Tu_msktheta.*msk_u_salt + Tv_msktheta.*msk_v_salt + Tw_msktheta.*msk_w_salt)));      
 
     end
   end
+
   
-  toc(tstart)
+  %%% Streamfunction is equal to sum of fluxes
+  % psi_TS(2:NS,:,:) = cumsum(F_TS,1);
+  
 end
 
 
-%%% Streamfunction is equal to sum of fluxes
-% psi_TS(2:NS,:,:) = cumsum(F_TS,1);
-
-%%% Store computed data for later
-save([expname,'_MOC_TS.mat'],'SS','TT','times','psi_TS');
-
-%%% Make a plot
-figure(2);
-[TTT,SSS]=meshgrid(TT,SS);
-pcolor(SSS,TTT,mean(psi_TS,3)/1e6);
-shading interp;
-colormap redblue
-caxis([-7 7]);
-colorbar;
 
 
 
@@ -243,10 +360,57 @@ colorbar;
 
 
 
+%%%
+%%% Computes TS streamfunction by integrating w.r.t. temperature at constant
+%%% salinity.
+%%%
+function psi_TS = calcStreamfunction_intT (...
+  uvel,vvel,wvel,salt,theta, ...
+  Nx,Ny,Nr,NS,NT,SS,TT,Ayz,Axz,Axy)
 
+  %%% Calculate midpoint temperature
+  theta_u = 0.5*(theta([1:Nx],:,:)+theta([Nx 1:Nx-1],:,:));
+  theta_v = 0.5*(theta(:,[1:Ny],:)+theta(:,[Ny 1:Ny-1],:));
+  theta_w = 0.5*(theta(:,:,[1:Nr])+theta(:,:,[Nr 1:Nr-1]));
 
+  %%% Wrap open boundary transports to close whole-domain transport
+  [Tu,Tv,Tw] = wrapBdryTransport(uvel,vvel,wvel,Nx,Ny,Nr,Ayz,Axz,Axy);
+  
+  %%% Loop over salinity space
+  psi_TS = zeros(NS,NT);
+  for ns = 1:NS 
+    ns
 
+    %%% Create mask over all physical velocity points, leaving non-zero values 
+    %%% Only where adjacent salinity points straddle the current
+    %%% salinity (SS(ns)), and signed +1 (-1) if the temperature gradient
+    %%% is positive (negative)
+    msk_u_salt =  ((salt([1:Nx],:,:)-SS(ns)) .* (salt([Nx 1:Nx-1],:,:)-SS(ns)) < 0) ...
+                .* sign(salt([1:Nx],:,:)-salt([Nx 1:Nx-1],:,:)); %%% Flow crosses temp class SS(ns), positive if dT/dx>0
+    msk_v_salt =  ((salt(:,[1:Ny],:)-SS(ns)) .* (salt(:,[Ny 1:Ny-1],:)-SS(ns)) < 0) ...
+                .* sign(salt(:,[1:Ny],:,:)-salt(:,[Ny 1:Ny-1],:)); %%% Flow crosses temp class SS(ns), positive if dT/dy>0
+    msk_w_salt =  ((salt(:,:,[Nr 1:Nr-1])-SS(ns)) .* (salt(:,:,[1:Nr])-SS(ns)) < 0) ...
+                .* sign(salt(:,:,[Nr 1:Nr-1])-salt(:,:,[1:Nr])); %%% Flow crosses temp class SS(ns), positive if dT/dz>0
+              
+    %%% Precompute product of transport with salt mask        
+    Tu_msksalt = Tu.*msk_u_salt;    
+    Tv_msksalt = Tv.*msk_v_salt;
+    Tw_msksalt = Tw.*msk_w_salt;
 
-function psi_TS = calcStreamfunction
+    %%% Loop over temperature space
+    for nt = 1:NT-1
+
+      %%% Create masks over all physical velocity points that are non-zero
+      %%% only where the temperature falls within the current temperature bin
+      msk_u_temp = (theta_u<TT(nt)); 
+      msk_v_temp = (theta_v<TT(nt));
+      msk_w_temp = (theta_w<TT(nt));
+
+      %%% Flux in T/S space is equal to sum of physical fluxes over all 
+      %%% unmasked points    
+      psi_TS(ns,nt) = sum(sum(sum(Tu_msksalt.*msk_u_temp + Tv_msksalt.*msk_v_temp + Tw_msksalt.*msk_w_temp)));      
+
+    end
+  end
 
 end

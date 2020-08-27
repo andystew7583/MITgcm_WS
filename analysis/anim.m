@@ -14,7 +14,7 @@ mac_plots = false;
 loadexp;
 
 %%% Select diagnostic variable to animate
-diagnum = 5;
+diagnum = 4;
 outfname =diag_fileNames{1,diagnum};
 
 %%% Data index in the output data files
@@ -25,7 +25,7 @@ outfidx = 1;
 xyplot = 1;
 
 %%% Vertical layer index to use for top-down plots
-xylayer = 1;  
+xylayer = 1;
 
 %%% Set true to plot the field in the lowest active cell at each horizontal
 %%% location
@@ -54,8 +54,10 @@ yzlayer = 144;
 
 %%% Specify color range
 set_crange = 1;
-% crange = [-3 1]; %/%%temp
-crange = [33.9 35.0]; %%% salinity
+
+% crange = [-2.2 -1.6]; %/%% Filchner temp
+crange = [-3 1]; %/%%temp
+% crange = [33.9 35.0]; %%% salinity
 % crange = [0 10]; %%%% for KPP hbl
 % crange = [0 1]; %%% For sea ice area
 % crange = [-.6 .6]; %%% For velocities or stresses
@@ -63,6 +65,11 @@ crange = [33.9 35.0]; %%% salinity
 % crange =[-100 100]; %%% Qnet
 % crange = [-300 300]; %%% swnet
 % crange = [0 3];
+
+cmap = jet(200);
+% cmap = redblue(100);
+
+
 %%% Frequency of diagnostic output - should match that specified in
 %%% data.diagnostics
 % nIter0 = 1278720;
@@ -154,7 +161,7 @@ else
   framepos = [100    500   800  800];
 end
 %%% Set up the figure
-handle = figure(22);
+handle = figure(20);
 set(handle,'Position',framepos);
 clf;
 axes('FontSize',fontsize);
@@ -163,11 +170,11 @@ M = moviein(48);
 
 Amean = [];
 
-for n = 12
+for n = 6*12
 % for n = 1:length(dumpIters)
-% for n=75
+% for n=1:5
 % for n=48:length(dumpIters)
-% for n=14*12:length(dumpIters)
+% for n=0.5*12:length(dumpIters)
   dumpIters(n);
     
   t = dumpIters(n)*deltaT/t1year;
@@ -246,6 +253,8 @@ for n = 12
     hold off;
     xlabel('x (km)');
     ylabel('y (km)');
+    
+   
 
     xlabel('Longitude','interpreter','latex');
     ylabel('Latitude','interpreter','latex');
@@ -291,7 +300,7 @@ for n = 12
  
   %%% Finish the plot
   handle=colorbar;
-  colormap jet(200);
+  colormap(cmap);
   set(handle,'FontSize',fontsize);
   title(['$t=',num2str(tyears(n),'%.1f'),'$ years'],'interpreter','latex');
   if (set_crange)  

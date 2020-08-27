@@ -10,14 +10,22 @@ addpath ../utils/matlab
 
 %%% Configuration
 % inputdir = '/data3/MITgcm_WS/experiments/hires_seq_onethird/results';
-inputdir = '/data3/MITgcm_WS/experiments/hires_seq_onesixth_modbdrystrat/results';
+% inputdir = '/data3/MITgcm_WS/experiments/hires_seq_onesixth_modbdrystrat/results';
+inputdir = '/data3/MITgcm_WS/experiments/hires_seq_onethird_RTOPO2/results';
 % outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onesixth_nobdrymods/results';
-outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onetwelfth/results';
+% outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onetwelfth/results';
+% outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onethird_RTOPO2/results';
+outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onesixth_RTOPO2/results';
 % expiter_in = 1183320;
-expiter_in = 2366640;
+% expiter_in = 2366640;
+expiter_in = 591660;
 expiter_out = 1;
-Nx_out = 1224;
-Ny_out = 912;
+% Nx_out = 1224;
+% Ny_out = 912;
+% Nx_out = 304;
+% Ny_out = 232;
+Nx_out = 612;
+Ny_out = 432;
 pickupfiles = {'pickup','pickup_seaice'};
 nan_zeros = [true,false]; %%% Set true to replace zeros with NaNs before interpolation. 
                           %%% Usually a good idea e.g. to prevent tiny salinities when 

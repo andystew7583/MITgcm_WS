@@ -20,13 +20,13 @@ addpath ../utils/matlab
 %%%% Setting min salinity at eastern boundary
 min_salt_EB = true;
 min_salt_NB = true;
-min_salt = 34;
-% min_salt = 34.15;
+% min_salt = 34;
+min_salt = 34.15;
 
 %%% Eastern boundary continental shelf properties
 set_shelf_properties = 1;
-shelf_salt = 34;
-% shelf_salt = 34.15;
+% shelf_salt = 34;
+shelf_salt = 34.15;
 bathy_max = -400; %%% Limits of bathymetry at eastern boundary over which
 bathy_min = -600; %%% to feather modification of shelf temperature
 % bathy_max = -600; %%% Limits of bathymetry at eastern boundary over which

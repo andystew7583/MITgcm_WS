@@ -20,6 +20,7 @@ dumpIters = dumpIters(dumpIters > nIter0);
 %%% To store the result
 tt = zeros(1,nDumps);
 SHImelt = zeros(1,nDumps);
+SHImelt_mean = zeros(Nx,Ny);
 tlen = 0;
 
 %%% Indices over which to integrate, i.e. defining the FRIS
@@ -37,10 +38,13 @@ for n=1:nDumps
     break;
   end
   
+  %%% Mean local melt rate
+  SHImelt_mean = SHImelt_mean + SHIfwFlx;
         
   %%% Compute area-integrated freshwater flux
   SHIfwFlx = SHIfwFlx .* RAC;
   SHImelt(n) =  sum(sum(SHIfwFlx(xidx,yidx)));
+  
   
   
   %%% Increment counter
@@ -51,3 +55,12 @@ end
 %%% Plot the time series
 figure(10);
 plot(tt(1:tlen)/86400/365,SHImelt(1:tlen)/1e12*86400*365);
+
+
+SHImelt_mean = SHImelt_mean / tlen;
+figure(12);
+pcolor(XC,YC,-SHImelt_mean/920*86400*365);
+shading interp;
+colorbar;
+caxis([-5 5]);
+colormap redblue;

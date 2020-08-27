@@ -11,8 +11,8 @@ expname = 'n_34452';
 loadexp;
 
 %%% Set time range
-tmin = 9*86400*360;
-tmax = 18*86400*360;
+tmin = 9*86400*365;
+tmax = 18*86400*365;
 
 %%% Frequency of diagnostic output
 dumpFreq = abs(diag_frequency(15));

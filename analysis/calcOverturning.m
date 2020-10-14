@@ -5,35 +5,64 @@
 %%% that calculated using the MITgcm 'layers' package.
 %%%
 
+%%% Options
+expdir = '../experiments';
+expname = 'hires_seq_onethird_RTOPO2';
+tmin = 18.05;
+tmax = 27.05;
+% expname = 'hires_seq_onesixth_RTOPO2';
+% tmin = 9.05;
+% tmax = 18.05;
+
 %%% Load experiment
 loadexp;
 
 %%% Set true to compute eddy-induced transports
-calc_psi_eddy = false;
+calc_psi_eddy = true;
+
+%%% Set true to deform coordinates in the cavity
+deform_cavity = false;
+
+%%% Set true to use output from the Layers package to calculate isopycnal
+%%% fluxes. N.B. if this option is selected then the density variable must
+%%% be 'PD0' (surface-referenced potential density)
+use_layers = false;
+
+%%% Select density variable in which to compute isopycnal fluxes
+densvar = 'PD0';
+% densvar = 'ND1';
+% densvar = 'ND2';
+% densvar = 'PT';
 
 %%% Density bins for MOC calculation  
-% dens_levs = [30.5:1:36.5 36.6:0.1:36.8 36.9:0.01:37.4 37.42:0.02:37.6];
-dens_levs = [30.5:1:36.5 36.6:0.1:36.8 36.9:0.01:37.4 37.42:0.02:37.6] - 9.38; 
+if (use_layers)
+  densvar = 'PD0';
+  dens_levs = layers_bounds;
+else
+  switch (densvar)
+    case 'PD0'
+      % dens_levs = [30.5:1:36.5 36.6:0.1:36.8 36.9:0.01:37.4 37.42:0.02:37.6];
+      dens_levs = [30.5:1:36.5 36.6:0.1:36.8 36.9:0.01:37.4 37.42:0.02:37.6] - 9.38; 
+    case 'PT'
+      dens_levs = [-3:.1:2];
+    case 'ND1'
+      dens_levs = [21:1:27 27.1:.1:27.5 27.52:.02:28.7 28.74:0.04:29.1];      
+    case 'ND2'
+      dens_levs = [21:1:27 27.1:.1:27.5 27.52:.02:28.7 28.74:0.04:29.1];      
+  end
+end
 Nd = length(dens_levs)-1;
-p_ref = 10;
-% p_ref = 2000;
+p_ref = -rhoConst*gravity*RC(1)/1e4; %%% Reference pressure for surface-referenced potential density
 
 %%% Define coordinate system for integrating to compute streamfunction
-lat1 = -74.8;
-lon1 = -61; 
-lat2 = -78.35;
-lon2 = -36.7;
-phic = atan((lat2-lat1)/(lon2-lon1));
-CHI = (XC-lon1)*cos(phic) + (YC-lat1)*sin(phic);
-ETA = (YC-lat1)*cos(phic) - (XC-lon1)*sin(phic);
-pcolor(XC,YC,ETA)
+ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity);
 eta = -9:.1:11;
 Neta = length(eta);
 
 %%% Frequency of diagnostic output - should match that specified in
 %%% data.diagnostics.
 dumpFreq = abs(diag_frequency(1));
-nDumps = round(nTimeSteps*deltaT/dumpFreq);
+nDumps = round(endTime/dumpFreq);
 dumpIters = round((1:nDumps)*dumpFreq/deltaT);
 dumpIters = dumpIters(dumpIters > nIter0);
 nDumps = length(dumpIters);
@@ -211,19 +240,19 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% Determine iteration numbers to process
-readIters = [];
+itersToRead = [];
 times = [];
 for n=1:length(dumpIters)
  
   tyears = dumpIters(n)*deltaT/86400/365;
  
   if ((tyears >= tmin) && (tyears <= tmax))    
-    readIters = [readIters dumpIters(n)];
+    itersToRead = [itersToRead dumpIters(n)];
     times = [times dumpIters(n)*deltaT];
   end
   
 end
-Ntime = length(readIters);
+Ntime = length(itersToRead);
 
 
 
@@ -249,101 +278,211 @@ v_eddy_tavg = zeros(Nx,Ny,Nr);
 for n=1:Ntime
  
   %%% Print current time to keep track of calculation
-  tyears = readIters(n)*deltaT/86400/365; 
-  [num2str(tyears) num2str(readIters(n))]      
+  tyears = itersToRead(n)*deltaT/86400/365; 
+  [num2str(tyears) num2str(itersToRead(n))]      
   
   %%% Read velocity field
-  uvel  = rdmdsWrapper(fullfile(exppath,'/results/UVEL'),readIters(n));
-  vvel  = rdmdsWrapper(fullfile(exppath,'/results/VVEL'),readIters(n));              
+  uvel  = rdmdsWrapper(fullfile(exppath,'/results/UVEL'),itersToRead(n));
+  vvel  = rdmdsWrapper(fullfile(exppath,'/results/VVEL'),itersToRead(n));              
   if (isempty(uvel) || isempty(vvel))
     ['Ran out of data at n=',num2str(n),'/',num2str(nDumps),' t=',num2str(tyears),' days.']
     break;
   end
-
-  %%% TODO calculate or read density
-
-  %%% Calculate density
-  theta = rdmdsWrapper(fullfile(exppath,'/results/THETA'),readIters(n));
-  salt  = rdmdsWrapper(fullfile(exppath,'/results/SALT'),readIters(n));    
-  dens = densjmd95(salt,theta,p_ref*ones(Nx,Ny,Nr))-1000;
-
-  %%% Compute mean streamfunction
-  psi_mean(:,:,n) = calcIsopStreamfunction(...
-    uvel,vvel,dens,...
-    Nx,Ny,Nr,Nrf,Neta,Nd,ffac, ...
-    kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
-    DXG_3D,DYG_3D,hFacW_f,hFacS_f,DZ_f,dens_levs,ETA,eta);
   
   %%% Add to time averages
-  uvel_tavg = uvel_tavg + uvel;
-  vvel_tavg = vvel_tavg + vvel;
-  dens_tavg = dens_tavg + dens;
+  uvel_tavg = uvel_tavg + uvel/Ntime;
+  vvel_tavg = vvel_tavg + vvel/Ntime;
+
+  %%% Compute/load "density" variable
+  switch (densvar)
+
+    case 'PD0'
+      %%% Calculate density
+      theta = rdmdsWrapper(fullfile(exppath,'/results/THETA'),itersToRead(n));
+      salt  = rdmdsWrapper(fullfile(exppath,'/results/SALT'),itersToRead(n)); 
+      if (isempty(theta) || isempty(salt))
+        ['Ran out of data at n=',num2str(n),'/',num2str(nDumps),' t=',num2str(tyears),' days.']
+        break;
+      end
+      dens = densjmd95(salt,theta,p_ref*ones(Nx,Ny,Nr))-1000;
+
+    case 'ND1'
+     
+      %%% TODO      
+      dens = zeros(Nx,Ny,Nr);
+      
+    case 'ND2'
+      
+      %%% TODO
+      dens = zeros(Nx,Ny,Nr);
+      
+    case 'PT'
+      %%% 'Density' is just potential temperature
+      dens = rdmdsWrapper(fullfile(exppath,'/results/THETA'),itersToRead(n));
+      
+  end  
+  dens_tavg = dens_tavg + dens/Ntime; %%% Add to time average
   
+  %%% Currently we can only calculate overturning using time-mean flow in
+  %%% ND2 surfaces
+  if (strcmp(densvar,'ND1') || strcmp(densvar,'ND2'))
+    continue;
+  end
+  
+  %%% Compute mean streamfunction
+  [uflux,vflux] = calcIsopFluxes (...
+    uvel,vvel,dens,...
+    Nx,Ny,Nr,Nrf,Nd,ffac, ...
+    kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
+    hFacW_f,hFacS_f,DZ_f,dens_levs);
+  psi_mean(:,:,n) = calcIsopStreamfunction(...
+    uflux,vflux, ...
+    Nx,Ny,Neta,Nd, ...  
+    DXG_3D,DYG_3D,ETA,eta);
+  
+  %%% Calculate eddy streamfunction, if required
   if (calc_psi_eddy)
+   
+    if (use_layers)
     
-    %%% Load heat and salt fluxes
-    wvel  = rdmdsWrapper(fullfile(exppath,'/results/WVEL'),readIters(n));      
-    uvelth = rdmdsWrapper(fullfile(exppath,'/results/UVELTH'),readIters(n));
-    vvelth = rdmdsWrapper(fullfile(exppath,'/results/VVELTH'),readIters(n));
-    wvelth = rdmdsWrapper(fullfile(exppath,'/results/WVELTH'),readIters(n));
-    uvelslt = rdmdsWrapper(fullfile(exppath,'/results/UVELSLT'),readIters(n));
-    vvelslt = rdmdsWrapper(fullfile(exppath,'/results/VVELSLT'),readIters(n));
-    wvelslt = rdmdsWrapper(fullfile(exppath,'/results/WVELSLT'),readIters(n));
-  
-    %%% Compute eddy-induced velocities
-    [u_eddy,v_eddy,w_eddy] = calcTRMvelocity (...
-      uvel,vvel,wvel,theta,salt, ...
-      uvelth,vvelth,wvelth, ...
-      uvelslt,vvelslt,wvelslt, ...
-      hFacC,hFacW,hFacS, ...
-      DXG,DYG,RAC,DXC,DYC, ...
-      DRF,DRC,RC,RF,...
-      rhoConst,gravity);
+      %%% Read isopycnal fluxes
+      uflux  = rdmdsWrapper(fullfile(exppath,'/results/LaUH1RHO'),itersToRead(n));
+      vflux  = rdmdsWrapper(fullfile(exppath,'/results/LaVH1RHO'),itersToRead(n));              
+      if (isempty(uflux) || isempty(vflux))
+        ['Ran out of data at n=',num2str(n),'/',num2str(nDumps),' t=',num2str(tyears),' days.']
+        break;
+      end
+
+      %%% Compute total isopycnal streamfunction
+      psi_tot = calcIsopStreamfunction(...
+        uflux,vflux, ...
+        Nx,Ny,Neta,Nd, ...  
+        DXG_3D,DYG_3D,ETA,eta);
+      
+      %%% Eddy component is difference between total and mean
+      psi_eddy(:,:,n) = psi_tot - psi_mean(:,:,n);
+      
+    else
+
+      %%% Load heat and salt fluxes
+      wvel  = rdmdsWrapper(fullfile(exppath,'/results/WVEL'),itersToRead(n));      
+      uvelth = rdmdsWrapper(fullfile(exppath,'/results/UVELTH'),itersToRead(n));
+      vvelth = rdmdsWrapper(fullfile(exppath,'/results/VVELTH'),itersToRead(n));
+      wvelth = rdmdsWrapper(fullfile(exppath,'/results/WVELTH'),itersToRead(n));
+      uvelslt = rdmdsWrapper(fullfile(exppath,'/results/UVELSLT'),itersToRead(n));
+      vvelslt = rdmdsWrapper(fullfile(exppath,'/results/VVELSLT'),itersToRead(n));
+      wvelslt = rdmdsWrapper(fullfile(exppath,'/results/WVELSLT'),itersToRead(n));
+
+      %%% Compute eddy-induced velocities
+      [u_eddy,v_eddy,w_eddy] = calcTRMvelocity (...
+        uvel,vvel,wvel,theta,salt, ...
+        uvelth,vvelth,wvelth, ...
+        uvelslt,vvelslt,wvelslt, ...
+        hFacC,hFacW,hFacS, ...
+        DXG,DYG,RAC,DXC,DYC, ...
+        DRF,DRC,RC,RF,...
+        rhoConst,gravity);
+
+      %%% Compute eddy-induced streamfunction
+      [uflux,vflux] = calcIsopFluxes (...
+        u_eddy,v_eddy,dens,...
+        Nx,Ny,Nr,Nrf,Nd,ffac, ...
+        kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
+        hFacW_f,hFacS_f,DZ_f,dens_levs);
+      psi_eddy(:,:,n) = calcIsopStreamfunction(...
+        uflux,vflux, ...
+        Nx,Ny,Neta,Nd, ...  
+        DXG_3D,DYG_3D,ETA,eta);
     
-    %%% Compute eddy-induced streamfunction
-    psi_eddy(:,:,n) = calcIsopStreamfunction(...
-      u_eddy,v_eddy,dens,...
-      Nx,Ny,Nr,Nrf,Neta,Nd,ffac, ...
-      kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
-      DXG_3D,DYG_3D,hFacW_f,hFacS_f,DZ_f,dens_levs,ETA,eta);  
-    
-    %%% Add to time averages
-    u_eddy_tavg = u_eddy_tavg + u_eddy;
-    v_eddy_tavg = v_eddy_tavg + v_eddy;
+    end
     
   end
 
 
 end
 
-%%% Divide by Ntime to get time mean
-uvel_tavg = uvel_tavg / Ntime;
-vvel_tavg = vvel_tavg / Ntime;
-dens_tavg = dens_tavg / Ntime;
+%%% Currently we can only calculate overturning using time-mean flow in
+%%% ND1 surfaces
+if (strcmp(densvar,'ND1'))
+  densfname = fullfile('products',[expname,'_ND1.mat']);
+  load(densfname,'gg_ref');
+  theta_tavg = pt_ref;
+  salt_tavg = ss_ref;
+  dens_tavg = gg_ref;
+  dens_tavg(isnan(dens_tavg)) = 0;
+end
+
 
 %%% Partition mean streamfunction in to standing and fluctuating components
+[uflux,vflux] = calcIsopFluxes (...
+  uvel_tavg,vvel_tavg,dens_tavg,...
+  Nx,Ny,Nr,Nrf,Nd,ffac, ...
+  kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
+  hFacW_f,hFacS_f,DZ_f,dens_levs);
 psi_mean_stand = calcIsopStreamfunction(...
-    uvel_tavg,vvel_tavg,dens_tavg,...
-    Nx,Ny,Nr,Nrf,Neta,Nd,ffac, ...
-    kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
-    DXG_3D,DYG_3D,hFacW_f,hFacS_f,DZ_f,dens_levs,ETA,eta);
-psi_mean_fluc = psi_mean-psi_mean_stand;
+  uflux,vflux, ...
+  Nx,Ny,Neta,Nd, ...  
+  DXG_3D,DYG_3D,ETA,eta);
+psi_mean_fluc = mean(psi_mean,3)-psi_mean_stand;
 
-if (calc_psi_eddy)
+%%% If we're using ND1 as the density variable, estimate the eddy
+%%% streamfunction using the multi-annual mean fluxes
+if (calc_psi_eddy && strcmp(densvar,'ND1'))
+      
+  %%% Load time-mean fluxes and properties
+  wvel_tavg = readIters(exppath,'WVEL',dumpIters,deltaT,tmin*86400*365,tmax*86400*365,Nx,Ny,Nr);
+  uvelth_tavg = readIters(exppath,'UVELTH',dumpIters,deltaT,tmin*86400*365,tmax*86400*365,Nx,Ny,Nr);
+  vvelth_tavg = readIters(exppath,'VVELTH',dumpIters,deltaT,tmin*86400*365,tmax*86400*365,Nx,Ny,Nr);
+  wvelth_tavg = readIters(exppath,'WVELTH',dumpIters,deltaT,tmin*86400*365,tmax*86400*365,Nx,Ny,Nr);
+  uvelslt_tavg = readIters(exppath,'UVELSLT',dumpIters,deltaT,tmin*86400*365,tmax*86400*365,Nx,Ny,Nr);
+  vvelslt_tavg = readIters(exppath,'VVELSLT',dumpIters,deltaT,tmin*86400*365,tmax*86400*365,Nx,Ny,Nr);
+  wvelslt_tavg = readIters(exppath,'WVELSLT',dumpIters,deltaT,tmin*86400*365,tmax*86400*365,Nx,Ny,Nr);
+
+  %%% Compute eddy-induced velocities
+  [u_eddy,v_eddy,w_eddy] = calcTRMvelocity (...
+    uvel_tavg,vvel_tavg,wvel_tavg,theta_tavg,salt_tavg, ...
+    uvelth_tavg,vvelth_tavg,wvelth_tavg, ...
+    uvelslt_tavg,vvelslt_tavg,wvelslt_tavg, ...
+    hFacC,hFacW,hFacS, ...
+    DXG,DYG,RAC,DXC,DYC, ...
+    DRF,DRC,RC,RF,...
+    rhoConst,gravity);
+
+  %%% Compute eddy-induced streamfunction
+  [uflux,vflux] = calcIsopFluxes (...
+    u_eddy,v_eddy,dens_tavg,...
+    Nx,Ny,Nr,Nrf,Nd,ffac, ...
+    kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
+    hFacW_f,hFacS_f,DZ_f,dens_levs);
   
-  %%% Divide by Ntime to get time mean
-  u_eddy_tavg = u_eddy_tavg / Ntime;
-  v_eddy_tavg = v_eddy_tavg / Ntime;
-  
-  %%% Partition eddy streamfunction in to standing and fluctuating components
-  psi_eddy_stand = calcIsopStreamfunction(...
-      u_eddy_tavg,uvel_tavg,dens_tavg,...
-      Nx,Ny,Nr,Nrf,Neta,Nd,ffac, ...
-      kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
-      DXG_3D,DYG_3D,hFacW_f,hFacS_f,DZ_f,dens_levs,ETA,eta);
-  psi_eddy_fluc = psi_eddy-psi_eddy_stand;
+  %%% Assign to 'fluctuating' component of the streamfunction as this
+  %%% includes all temporal fluctuations from the multi-annual mean
+  psi_mean_fluc = calcIsopStreamfunction(...
+    uflux,vflux, ...
+    Nx,Ny,Neta,Nd, ...  
+    DXG_3D,DYG_3D,ETA,eta);
   
 end
+
+% if (calc_psi_eddy)
+%   
+%   %%% Divide by Ntime to get time mean
+%   u_eddy_tavg = u_eddy_tavg / Ntime;
+%   v_eddy_tavg = v_eddy_tavg / Ntime;
+%   
+%   %%% Partition eddy streamfunction in to standing and fluctuating components
+%   [uflux,vflux] = calcIsopFluxes (...
+%     u_eddy_tavg,uvel_tavg,dens_tavg,...
+%     Nx,Ny,Nr,Nrf,Nd,ffac, ...
+%     kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
+%     hFacW_f,hFacS_f,DZ_f,dens_levs);
+%   psi_eddy_stand = calcIsopStreamfunction(...
+%     uflux,vflux, ...
+%     Nx,Ny,Neta,Nd, ...  
+%     DXG_3D,DYG_3D,ETA,eta);
+%   psi_eddy_fluc = psi_eddy-psi_eddy_stand;
+%   
+% end
 
 
 
@@ -356,29 +495,36 @@ end
 %%% OUTPUT %%%
 %%%%%%%%%%%%%%
 
+%%% Construct output file name
+outfname = [expname,'_MOC_',densvar];
+if (calc_psi_eddy)
+  if (use_layers)
+    estr = '_layers';
+  else
+    estr = '_TRM';
+  end
+else
+  estr = '_noeddy';
+end
+outfname = [outfname,estr];
+if (deform_cavity)
+  outfname = [outfname,'_deform'];
+end
+outfname = [outfname,'.mat'];
+
 %%% Store computed data for later
-save([expname,'_MOC_dens.mat'], ...
-  'eta','ETA','CHI','lon1','lat1','lon2','lat2','dens_levs','times', ...
+save(fullfile('products',outfname), ...
+  'eta','ETA','dens_levs','times', ...
   'psi_mean','psi_mean_stand','psi_mean_fluc', ...
   'uvel_tavg','vvel_tavg','dens_tavg');
 
 if (calc_psi_eddy)
-  save([expname,'_MOC_dens.mat'],'psi_eddy','psi_eddy_stand','psi_eddy_fluc','-append');
+  save(fullfile('products',outfname),'psi_eddy', ...
+  ... %'psi_eddy_stand','psi_eddy_fluc',
+  '-append');
 end
 
 
-figure(3);
-[DD,EE] = meshgrid(dens_levs,eta);
-pcolor(EE,DD,mean(psi_mean,3)/1e6);
-% pcolor(EE,DD,mean(psi_mean+psi_eddy,3)/1e6);
-% pcolor(EE,DD,mean(psi_eddy,3)/1e6);
-shading interp;
-caxis([-4 4]);
-set(gca,'YDir','reverse');
-% set(gca,'YLim',[36.8 37.5]);
-set(gca,'YLim',[27.3 28]);
-colormap redblue(32);
-colorbar;
 
 
 
@@ -393,65 +539,16 @@ colorbar;
 
 
 
-%%%
-%%% Functionalized to avoid repeated code
-%%%
+
+
+
+
+
+
 function psi = calcIsopStreamfunction(...
-  uvel,vvel,dens,...
-  Nx,Ny,Nr,Nrf,Neta,Nd,ffac, ...
-  kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
-  DXG_3D,DYG_3D,hFacW_f,hFacS_f,DZ_f,dens_levs,ETA,eta)
-
-  %%% Calculate density on u and v points via straightforward linear
-  %%% interpolation
-  dens_u = 0.5* (dens(1:Nx,:,:) + dens([2:Nx 1],:,:));
-  dens_v = 0.5* (dens(:,1:Ny,:) + dens(:,[2:Ny 1],:)); 
-  
-  %%% Interpolate u, v and density onto a finer vertical grid      
-  uvel_f = zeros(Nx,Ny,Nrf);
-  dens_u_f = NaN*zeros(Nx,Ny,Nrf);
-  vvel_f = zeros(Nx,Ny,Nrf);
-  dens_v_f = NaN*zeros(Nx,Ny,Nrf);
-  if (ffac == 1)
-
-    %%% Shortcut if fine grid resolution = coarse grid resolution
-    uvel_f = uvel;        
-    dens_u_f = dens_u;
-    vvel_f = vvel;        
-    dens_v_f = dens_v;
-
-  else   
-
-    %%% Velocity uniform throughout each coarse grid cell to preserve
-    %%% mass conservation
-    for k=1:Nr
-      uvel_f(:,:,ffac*(k-1)+1:ffac*k) = uvel(:,:,k*ones(1,ffac)); 
-      vvel_f(:,:,ffac*(k-1)+1:ffac*k) = vvel(:,:,k*ones(1,ffac));          
-    end
-
-    %%% Linearly interpolate density
-    for i=1:Nx
-      for j=3:Ny-1 %%% Restrict to wet grid cells  
-        dens_u_f(i,j,:) = wp_u(i,j,:).*dens_u(i,j,squeeze(kp_u(i,j,:))) + wn_u(i,j,:).*dens_u(i,j,squeeze(kn_u(i,j,:)));
-        dens_v_f(i,j,:) = wp_v(i,j,:).*dens_v(i,j,squeeze(kp_v(i,j,:))) + wn_v(i,j,:).*dens_v(i,j,squeeze(kn_v(i,j,:)));
-      end
-    end
-
-  end            
-
-  %%% Calculate fluxes within density surfaces
-  udz = uvel_f.*hFacW_f.*DZ_f;
-  vdz = vvel_f.*hFacS_f.*DZ_f;
-  uflux = zeros(Nx,Ny,Nd);
-  vflux = zeros(Nx,Ny,Nd);
-  uflux(:,:,Nd) = uflux(:,:,Nd) + sum(udz.*(dens_u_f>dens_levs(Nd)),3);
-  uflux(:,:,1) = uflux(:,:,1) + sum(udz.*(dens_u_f<=dens_levs(2)),3);
-  vflux(:,:,Nd) = vflux(:,:,Nd) + sum(vdz.*(dens_v_f>dens_levs(Nd)),3);
-  vflux(:,:,1) = vflux(:,:,1) + sum(vdz.*(dens_v_f<=dens_levs(2)),3);
-  for m=2:Nd-1
-    uflux(:,:,m) = uflux(:,:,m) + sum(udz.*((dens_u_f>dens_levs(m)) & (dens_u_f<=dens_levs(m+1))),3);
-    vflux(:,:,m) = vflux(:,:,m) + sum(vdz.*((dens_v_f>dens_levs(m)) & (dens_v_f<=dens_levs(m+1))),3);
-  end   
+  uflux,vflux, ...
+  Nx,Ny,Neta,Nd, ...  
+  DXG_3D,DYG_3D,ETA,eta)
 
   %%% Compute horizontal divergence of isopycnal fluxes
   fluxdiv = zeros(Nx,Ny,Nd);

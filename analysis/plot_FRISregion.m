@@ -32,7 +32,6 @@ dumpIters4 = dumpIters4(dumpIters4 >= nIter0_4);
 
 XC;
 
-
 %%% Latitudinal positions
 
 YC;

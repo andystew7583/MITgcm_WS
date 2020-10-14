@@ -88,12 +88,12 @@ function newexp (batch_name,exp_name)
    
 
   %%% Set-Up for Stampede
- opt_file = 'xsede_stampede'; %%% options file name
- use_mpi = true; %%% set true for parallel processing
- use_pbs = true; %%% set true for execution via PBS
- cluster = 'stampede';
- queue = 'normal';
- acct = '03198';
+  opt_file = 'xsede_stampede'; %%% options file name
+  use_mpi = true; %%% set true for parallel processing
+  use_pbs = true; %%% set true for execution via PBS
+  cluster = 'stampede';
+  queue = 'normal';
+  acct = '03198';
 
   %%% Set-up for Hoffman2
 %   opt_file = 'hoffman2_ucla'; %%% options file name

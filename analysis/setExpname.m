@@ -4,7 +4,7 @@
 %%% Convenience script to set the experiment name before loadexp.m is 
 %%% called in other scripts.
 %%%
-pgendir = '/data3/';
+gendir = '/data3/';
 basedir = fullfile(gendir,'MITgcm_WS/experiments');
 
 expdir = basedir;
@@ -33,13 +33,14 @@ expdir = basedir;
 % expname = 'hires_seq_onesixth_bdrysalt34';
 
 
-expname = 'hires_seq_onethird_RTOPO2';
+% expname = 'hires_seq_onethird_RTOPO2_hifreq';
+% expname = 'hires_seq_onethird_RTOPO2';
 % expname = 'hires_seq_onethird';
 % expname = 'hires_seq_onethird_notides';
 % expname = 'hires_seq_onesixth_modbdrystrat';
 % expname = 'hires_seq_onesixth_notides';
 % expname = 'hires_seq_onesixth_RTOPO2';
-% expname = 'hires_seq_onetwelfth';
+expname = 'hires_seq_onetwelfth_RTOPO2';
 
 %%% Julia's control experiments
 % expname = 'n_34452';

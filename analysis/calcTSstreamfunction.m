@@ -4,15 +4,22 @@
 %%% Calculates thermohaline streamfunction in T/S space.
 %%%
 
-%%% TODO try using a grid with variable resoltion
-%%% TODO try widening the northern wrap region to e.g. include the entire
-%%% sponge layer. might help to reduce spurious overturning?
-
 %%% Read experiment data
-expname = 'hires_seq_onesixth_modbdrystrat';
+% expname = 'hires_seq_onethird_notides_RTOPO2';
+expname = 'hires_seq_onesixth_RTOPO2';
 expdir = '/data3/MITgcm_WS/experiments';
 loadexp;
+% tmin = 18.05;
+% tmax = 27.05;
+tmin = 9.05;
+tmax = 18.05;
 
+%%% Set true to calculate streamfunction by integrating w.r.t. S as well as
+%%% w.r.t. T
+calc_intS = false;
+
+%%% Set true to compute eddy-induced transports
+calc_psi_eddy = true; 
 
 %%% T/S grids
 dT = 0.05;
@@ -28,24 +35,24 @@ NT = length(TT);
 
 %%% Experiment output iterations
 dumpFreq = abs(diag_frequency(1));
-nDumps = round(nTimeSteps*deltaT/dumpFreq);
-dumpIters = round(nIter0+(1:nDumps)*dumpFreq/deltaT);
+nDumps = round(endTime/dumpFreq);
+dumpIters = round((1:nDumps)*dumpFreq/deltaT);
 dumpIters = dumpIters(dumpIters > nIter0);
 
 %%% Determine iteraton numbers to process
-readIters = [];
+itersToRead = [];
 times = [];
 for n=1:length(dumpIters)
  
   tyears = dumpIters(n)*deltaT/86400/365;
  
   if ((tyears >= tmin) && (tyears <= tmax))    
-    readIters = [readIters dumpIters(n)];
+    itersToRead = [itersToRead dumpIters(n)];
     times = [times dumpIters(n)*deltaT];
   end
   
 end
-Ntime = length(readIters);
+Ntime = length(itersToRead);
 
 %%% Grids
 DXG = rdmds(fullfile(resultspath,'DXG'));
@@ -62,8 +69,10 @@ Ayz = repmat(reshape(DRF,[1 1 Nr]),[Nx Ny]).*DYG.*hFacW;
 Axy = RAC;
 
 %%% To store fluxes in TS space
-psi_TS_intT = zeros(NS,NT,Ntime);
-psi_TS_intS = zeros(NS,NT,Ntime);
+psi_TS_mean_intT = zeros(NS,NT,Ntime);
+psi_TS_mean_intS = zeros(NS,NT,Ntime);
+psi_TS_eddy_intT = zeros(NS,NT,Ntime);
+psi_TS_eddy_intS = zeros(NS,NT,Ntime);
 uvel_tavg = zeros(Nx,Ny,Nr);
 vvel_tavg = zeros(Nx,Ny,Nr);
 wvel_tavg = zeros(Nx,Ny,Nr);
@@ -72,22 +81,62 @@ theta_tavg = zeros(Nx,Ny,Nr);
 for n=1:Ntime
 
   %%% To keep track of progress
-  tyears = readIters(n)*deltaT/86400/365
+  tyears = itersToRead(n)*deltaT/86400/365
 
   %%% Read model output
-  theta = rdmdsWrapper(fullfile(exppath,'results','THETA'),readIters(n));
-  salt = rdmdsWrapper(fullfile(exppath,'results','SALT'),readIters(n));
-  uvel = rdmdsWrapper(fullfile(exppath,'results','UVEL'),readIters(n));
-  vvel = rdmdsWrapper(fullfile(exppath,'results','VVEL'),readIters(n));
-  wvel = rdmdsWrapper(fullfile(exppath,'results','WVEL'),readIters(n));
+  theta = rdmdsWrapper(fullfile(exppath,'results','THETA'),itersToRead(n));
+  salt = rdmdsWrapper(fullfile(exppath,'results','SALT'),itersToRead(n));
+  uvel = rdmdsWrapper(fullfile(exppath,'results','UVEL'),itersToRead(n));
+  vvel = rdmdsWrapper(fullfile(exppath,'results','VVEL'),itersToRead(n));
+  wvel = rdmdsWrapper(fullfile(exppath,'results','WVEL'),itersToRead(n));
 
-  %%% Compute streamfunction
-  psi_TS_intT(:,:,n) = calcStreamfunction_intT (...
+  %%% Compute mean streamfunction
+  tstart = tic();
+  psi_TS_mean_intT(:,:,n) = calcStreamfunction_intT (...
     uvel,vvel,wvel,salt,theta, ...
     Nx,Ny,Nr,NS,NT,SS,TT,Ayz,Axz,Axy);
-  psi_TS_intS(:,:,n) = calcStreamfunction_intS (...
-    uvel,vvel,wvel,salt,theta, ...
-    Nx,Ny,Nr,NS,NT,SS,TT,Ayz,Axz,Axy);
+  disp(toc(tstart))
+  
+  if (calc_intS)
+    psi_TS_mean_intS(:,:,n) = calcStreamfunction_intS (...
+      uvel,vvel,wvel,salt,theta, ...
+      Nx,Ny,Nr,NS,NT,SS,TT,Ayz,Axz,Axy);
+  end
+  
+  %%% Calculate eddy streamfunction, if required
+  if (calc_psi_eddy)
+
+    %%% Load heat and salt fluxes
+    wvel  = rdmdsWrapper(fullfile(exppath,'/results/WVEL'),itersToRead(n));      
+    uvelth = rdmdsWrapper(fullfile(exppath,'/results/UVELTH'),itersToRead(n));
+    vvelth = rdmdsWrapper(fullfile(exppath,'/results/VVELTH'),itersToRead(n));
+    wvelth = rdmdsWrapper(fullfile(exppath,'/results/WVELTH'),itersToRead(n));
+    uvelslt = rdmdsWrapper(fullfile(exppath,'/results/UVELSLT'),itersToRead(n));
+    vvelslt = rdmdsWrapper(fullfile(exppath,'/results/VVELSLT'),itersToRead(n));
+    wvelslt = rdmdsWrapper(fullfile(exppath,'/results/WVELSLT'),itersToRead(n));
+
+    %%% Compute eddy-induced velocities
+    [u_eddy,v_eddy,w_eddy] = calcTRMvelocity (...
+      uvel,vvel,wvel,theta,salt, ...
+      uvelth,vvelth,wvelth, ...
+      uvelslt,vvelslt,wvelslt, ...
+      hFacC,hFacW,hFacS, ...
+      DXG,DYG,RAC,DXC,DYC, ...
+      DRF,DRC,RC,RF,...
+      rhoConst,gravity);
+
+    %%% Compute streamfunction
+    psi_TS_eddy_intT(:,:,n) = calcStreamfunction_intT (...
+      u_eddy,v_eddy,w_eddy,salt,theta, ...
+      Nx,Ny,Nr,NS,NT,SS,TT,Ayz,Axz,Axy);
+    if (calc_intS)
+      psi_TS_eddy_intS(:,:,n) = calcStreamfunction_intS (...
+        u_eddy,v_eddy,w_eddy,salt,theta, ...
+        Nx,Ny,Nr,NS,NT,SS,TT,Ayz,Axz,Axy);
+    end
+
+
+  end
   
   %%% Add to time averages
   uvel_tavg = uvel_tavg + uvel;
@@ -108,53 +157,54 @@ theta_tavg = theta_tavg / Ntime;
 %%% Make sure no vertical velocities are present at solid cell faces
 wvel(hFacC==0) = 0;
 
-%%% Compute "mean" streamfunction
-psi_TS_mean_intT = calcStreamfunction_intT (...
+%%% Compute "standing" component of streamfunction
+psi_TS_mean_stand_intT = calcStreamfunction_intT (...
     uvel_tavg,vvel_tavg,wvel_tavg,salt_tavg,theta_tavg, ...
     Nx,Ny,Nr,NS,NT,SS,TT,Ayz,Axz,Axy);
-psi_TS_mean_intS = calcStreamfunction_intS (...
-    uvel_tavg,vvel_tavg,wvel_tavg,salt_tavg,theta_tavg, ...
-    Nx,Ny,Nr,NS,NT,SS,TT,Ayz,Axz,Axy);
+if (calc_intS)
+  psi_TS_mean_stand_intS = calcStreamfunction_intS (...
+      uvel_tavg,vvel_tavg,wvel_tavg,salt_tavg,theta_tavg, ...
+      Nx,Ny,Nr,NS,NT,SS,TT,Ayz,Axz,Axy);
+else
+  psi_TS_mean_stand_intS = zeros(NS,NT);
+end
   
-%%% Compute "eddy" streamfunction
-psi_TS_eddy_intT = psi_TS_intT - repmat(psi_TS_mean_intT,[1 1 Ntime]);
-psi_TS_eddy_intS = psi_TS_intS - repmat(psi_TS_mean_intS,[1 1 Ntime]);
+%%% Compute "fluctuating" component of streamfunction
+psi_TS_mean_fluc_intT = mean(psi_TS_mean_intT) - psi_TS_mean_stand_intT;
+psi_TS_mean_fluc_intS = mean(psi_TS_mean_intS) - psi_TS_mean_stand_intS;
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%
+%%% OUTPUT %%%
+%%%%%%%%%%%%%%
+
+%%% Construct output file name
+outfname = [expname,'_MOC_TS'];
+if (calc_psi_eddy)  
+  estr = '_TRM';  
+else
+  estr = '_noeddy';
+end
+outfname = [outfname,estr];
+outfname = [outfname,'.mat'];
 
 %%% Store computed data for later
-save([expname,'_MOC_TS.mat'],'SS','TT','times', ...
-  'psi_TS_intT','psi_TS_mean_intT','psi_TS_eddy_intT', ...
-  'psi_TS_intS','psi_TS_mean_intS','psi_TS_eddy_intS' ...
+save(fullfile('products',outfname),'SS','TT','times', ...
+  'psi_TS_mean_intT','psi_TS_mean_stand_intT','psi_TS_mean_fluc_intT', ...
+  'psi_TS_mean_intS','psi_TS_mean_stand_intS','psi_TS_mean_fluc_intS' ...
 );
 
-%%% Make a plot
-figure(2);
-[TTT,SSS]=meshgrid(TT,SS);
-pcolor(SSS,TTT,mean(-psi_TS_intT,3)/1e6);
-% pcolor(SSS,TTT,mean(psi_TS_eddy,3)/1e6);
-shading interp;
-colormap redblue
-caxis([-7 7]);
-colorbar;
-
-%%% Make a plot
-figure(3);
-[TTT,SSS]=meshgrid(TT,SS);
-pcolor(SSS,TTT,mean(psi_TS_intS,3)/1e6);
-% pcolor(SSS,TTT,mean(psi_TS_eddy,3)/1e6);
-shading interp;
-colormap redblue
-caxis([-7 7]);
-colorbar;
-
-%%% Make a plot
-figure(4);
-[TTT,SSS]=meshgrid(TT,SS);
-pcolor(SSS,TTT,mean(psi_TS_intS+psi_TS_intT,3)/1e6);
-% pcolor(SSS,TTT,mean(psi_TS_eddy,3)/1e6);
-shading interp;
-colormap redblue
-caxis([-1 1]);
-colorbar;
+if (calc_psi_eddy)
+  save(fullfile('products',outfname), ...
+  'psi_TS_eddy_intT','psi_TS_eddy_intS', ...
+  '-append');
+end
 
 
 
@@ -293,7 +343,7 @@ function psi_TS = calcStreamfunction_intS (...
   Nx,Ny,Nr,NS,NT,SS,TT,Ayz,Axz,Axy)
 
 
-  %%% Calculate midpoint salinity and temperature
+  %%% Calculate midpoint salinity 
   salt_u = 0.5*(salt([1:Nx],:,:)+salt([Nx 1:Nx-1],:,:));
   salt_v = 0.5*(salt(:,[1:Ny],:)+salt(:,[Ny 1:Ny-1],:));
   salt_w = 0.5*(salt(:,:,[1:Nr])+salt(:,:,[Nr 1:Nr-1]));
@@ -360,6 +410,73 @@ end
 
 
 
+% %%%
+% %%% Computes TS streamfunction by integrating w.r.t. temperature at constant
+% %%% salinity.
+% %%%
+% function psi_TS = calcStreamfunction_intT (...
+%   uvel,vvel,wvel,salt,theta, ...
+%   Nx,Ny,Nr,NS,NT,SS,TT,Ayz,Axz,Axy)
+% 
+%   %%% Calculate midpoint temperature
+%   theta_u = 0.5*(theta([1:Nx],:,:)+theta([Nx 1:Nx-1],:,:));
+%   theta_v = 0.5*(theta(:,[1:Ny],:)+theta(:,[Ny 1:Ny-1],:));
+%   theta_w = 0.5*(theta(:,:,[1:Nr])+theta(:,:,[Nr 1:Nr-1]));
+% 
+%   %%% Wrap open boundary transports to close whole-domain transport
+%   [Tu,Tv,Tw] = wrapBdryTransport(uvel,vvel,wvel,Nx,Ny,Nr,Ayz,Axz,Axy);
+%   
+%   %%% Loop over salinity space
+%   psi_TS = zeros(NS,NT);
+%   for ns = 1:NS 
+%     ns
+% 
+%     %%% Create mask over all physical velocity points, leaving non-zero values 
+%     %%% Only where adjacent salinity points straddle the current
+%     %%% salinity (SS(ns)), and signed +1 (-1) if the temperature gradient
+%     %%% is positive (negative)
+%     msk_u_salt =  ((salt([1:Nx],:,:)-SS(ns)) .* (salt([Nx 1:Nx-1],:,:)-SS(ns)) < 0) ...
+%                 .* sign(salt([1:Nx],:,:)-salt([Nx 1:Nx-1],:,:)); %%% Flow crosses temp class SS(ns), positive if dT/dx>0
+%     msk_v_salt =  ((salt(:,[1:Ny],:)-SS(ns)) .* (salt(:,[Ny 1:Ny-1],:)-SS(ns)) < 0) ...
+%                 .* sign(salt(:,[1:Ny],:,:)-salt(:,[Ny 1:Ny-1],:)); %%% Flow crosses temp class SS(ns), positive if dT/dy>0
+%     msk_w_salt =  ((salt(:,:,[Nr 1:Nr-1])-SS(ns)) .* (salt(:,:,[1:Nr])-SS(ns)) < 0) ...
+%                 .* sign(salt(:,:,[Nr 1:Nr-1])-salt(:,:,[1:Nr])); %%% Flow crosses temp class SS(ns), positive if dT/dz>0
+%               
+%     %%% Precompute product of transport with salt mask        
+%     Tu_msksalt = Tu.*msk_u_salt;    
+%     Tv_msksalt = Tv.*msk_v_salt;
+%     Tw_msksalt = Tw.*msk_w_salt;
+% 
+%     %%% Loop over temperature space
+%     for nt = 1:NT-1
+% 
+%       %%% Create masks over all physical velocity points that are non-zero
+%       %%% only where the temperature falls within the current temperature bin
+%       msk_u_temp = (theta_u<TT(nt)); 
+%       msk_v_temp = (theta_v<TT(nt));
+%       msk_w_temp = (theta_w<TT(nt));
+% 
+%       %%% Flux in T/S space is equal to sum of physical fluxes over all 
+%       %%% unmasked points    
+%       psi_TS(ns,nt) = sum(sum(sum(Tu_msksalt.*msk_u_temp + Tv_msksalt.*msk_v_temp + Tw_msksalt.*msk_w_temp)));      
+% 
+%     end
+%   end
+% 
+% end
+
+
+
+
+
+
+
+
+
+
+
+
+
 %%%
 %%% Computes TS streamfunction by integrating w.r.t. temperature at constant
 %%% salinity.
@@ -376,40 +493,65 @@ function psi_TS = calcStreamfunction_intT (...
   %%% Wrap open boundary transports to close whole-domain transport
   [Tu,Tv,Tw] = wrapBdryTransport(uvel,vvel,wvel,Nx,Ny,Nr,Ayz,Axz,Axy);
   
-  %%% Loop over salinity space
+  %%% Loop over physical space and assign fluxes
   psi_TS = zeros(NS,NT);
-  for ns = 1:NS 
-    ns
-
-    %%% Create mask over all physical velocity points, leaving non-zero values 
-    %%% Only where adjacent salinity points straddle the current
-    %%% salinity (SS(ns)), and signed +1 (-1) if the temperature gradient
-    %%% is positive (negative)
-    msk_u_salt =  ((salt([1:Nx],:,:)-SS(ns)) .* (salt([Nx 1:Nx-1],:,:)-SS(ns)) < 0) ...
-                .* sign(salt([1:Nx],:,:)-salt([Nx 1:Nx-1],:,:)); %%% Flow crosses temp class SS(ns), positive if dT/dx>0
-    msk_v_salt =  ((salt(:,[1:Ny],:)-SS(ns)) .* (salt(:,[Ny 1:Ny-1],:)-SS(ns)) < 0) ...
-                .* sign(salt(:,[1:Ny],:,:)-salt(:,[Ny 1:Ny-1],:)); %%% Flow crosses temp class SS(ns), positive if dT/dy>0
-    msk_w_salt =  ((salt(:,:,[Nr 1:Nr-1])-SS(ns)) .* (salt(:,:,[1:Nr])-SS(ns)) < 0) ...
-                .* sign(salt(:,:,[Nr 1:Nr-1])-salt(:,:,[1:Nr])); %%% Flow crosses temp class SS(ns), positive if dT/dz>0
-              
-    %%% Precompute product of transport with salt mask        
-    Tu_msksalt = Tu.*msk_u_salt;    
-    Tv_msksalt = Tv.*msk_v_salt;
-    Tw_msksalt = Tw.*msk_w_salt;
-
-    %%% Loop over temperature space
-    for nt = 1:NT-1
-
-      %%% Create masks over all physical velocity points that are non-zero
-      %%% only where the temperature falls within the current temperature bin
-      msk_u_temp = (theta_u<TT(nt)); 
-      msk_v_temp = (theta_v<TT(nt));
-      msk_w_temp = (theta_w<TT(nt));
-
-      %%% Flux in T/S space is equal to sum of physical fluxes over all 
-      %%% unmasked points    
-      psi_TS(ns,nt) = sum(sum(sum(Tu_msksalt.*msk_u_temp + Tv_msksalt.*msk_v_temp + Tw_msksalt.*msk_w_temp)));      
-
+  for i=1:Nx
+    i
+    for j=1:Ny
+      for k=1:Nr
+        
+        %%% u-fluxes
+        if ((i > 1) && (Tu(i,j,k)~=0))
+ 
+          %%% Local temperature and adjacent salinities
+          Tval = theta_u(i,j,k);
+          Sm = salt(i-1,j,k);
+          Sp = salt(i,j,k);
+          
+          %%% Add flux to all temperatures bins smaller than local
+          %%% temperature, and to all salinity bins between adjacent
+          %%% salinities
+          nt = find(Tval<TT);
+          ns = find((Sp-SS) .* (Sm-SS) < 0); %%% N.B. can be multiple indices
+          psi_TS(ns,nt) = psi_TS(ns,nt) + Tu(i,j,k)*sign(Sp-Sm);
+          
+        end        
+        
+        %%% v-fluxes
+        if ((j > 1) && (Tv(i,j,k)~=0))
+          
+          %%% Local temperature and adjacent salinities
+          Tval = theta_v(i,j,k);
+          Sm = salt(i,j-1,k);
+          Sp = salt(i,j,k);
+          
+          %%% Add flux to all temperatures bins smaller than local
+          %%% temperature, and to all salinity bins between adjacent
+          %%% salinities
+          nt = find(Tval<TT);
+          ns = find((Sp-SS) .* (Sm-SS) < 0); %%% N.B. can be multiple indices
+          psi_TS(ns,nt) = psi_TS(ns,nt) + Tv(i,j,k)*sign(Sp-Sm);
+          
+        end
+        
+        %%% w-fluxes
+        if ((k > 1) && (Tw(i,j,k)~=0))
+          
+          %%% Local temperature and adjacent salinities
+          Tval = theta_w(i,j,k);
+          Sm = salt(i,j,k);
+          Sp = salt(i,j,k-1);
+          
+          %%% Add flux to all temperatures bins smaller than local
+          %%% temperature, and to all salinity bins between adjacent
+          %%% salinities
+          nt = find(Tval<TT);
+          ns = find((Sp-SS) .* (Sm-SS) < 0); %%% N.B. can be multiple indices
+          psi_TS(ns,nt) = psi_TS(ns,nt) + Tw(i,j,k)*sign(Sp-Sm);
+          
+        end
+        
+      end
     end
   end
 

@@ -8,7 +8,7 @@
 %%%
 
 %%% Read experiment data
-loadexp;
+% loadexp;
 
 %%% Vertical grid spacing matrix
 DZ = repmat(reshape(delR,[1 1 Nr]),[Nx Ny 1]);
@@ -32,8 +32,14 @@ figure(1);
 set(gcf,'Color','w');
 M = moviein(nDumps);
 
+plotIters = 12:nDumps;
+
+
+dumpIters = [1599673];
+plotIters = 1;
+
 %%% Loop through iterations
-for n=12:nDumps
+for n=plotIters
 % for n=250:300
  
   tt(n) =  dumpIters(n)*deltaT/86400;
@@ -42,21 +48,33 @@ for n=12:nDumps
   %%% Attempt to load either instantaneous velocities or their squares
 %   uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_inst'),dumpIters(n)) ;      
 %   vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_inst'),dumpIters(n)); 
-  uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL'),dumpIters(n)) ;      
-  vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL'),dumpIters(n)); 
+%   uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL'),dumpIters(n));      
+%   vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL'),dumpIters(n));    
+  uvel = rdmdsWrapper(fullfile(exppath,'/results/U'),dumpIters(n)) ;      
+  vvel = rdmdsWrapper(fullfile(exppath,'/results/V'),dumpIters(n)); 
   if (isempty(uvel) || isempty(vvel))   
     break;
   end
   
   %%% Plot the vorticity  
-  vort = zeros(Nx,Ny);
-  zlev = 20;
+
+%   vort = zeros(Nx,Ny);
+%   zlev = 20;
 %   vort(:,2:Ny) = - (uvel(:,2:Ny,zlev)-uvel(:,1:Ny-1,zlev))./DYC(:,2:Ny);
 %   vort(2:Nx,:) = vort(2:Nx,:) + (vvel(2:Nx,:,zlev)-vvel(1:Nx-1,:,zlev))./DXC(2:Nx,:);
-  ubt = sum(uvel.*DZ.*hFacW,3) ./ sum(DZ.*hFacW,3);
-  vbt = sum(vvel.*DZ.*hFacS,3) ./ sum(DZ.*hFacS,3);
-  vort(:,2:Ny) = - (ubt(:,2:Ny)-ubt(:,1:Ny-1))./DYC(:,2:Ny);
-  vort = vort + (vbt([2:Nx 1],:)-vbt(:,:))./DXC; 
+%   ubt = sum(uvel.*DZ.*hFacW,3) ./ sum(DZ.*hFacW,3);
+  
+%   vbt = sum(vvel.*DZ.*hFacS,3) ./ sum(DZ.*hFacS,3);
+%   vort(:,2:Ny) = - (ubt(:,2:Ny)-ubt(:,1:Ny-1))./DYC(:,2:Ny);
+%   vort = vort + (vbt([2:Nx 1],:)-vbt(:,:))./DXC; 
+
+  uvel(hFacW==0) = NaN;
+  vvel(hFacS==0) = NaN;
+  vort = zeros(Nx,Ny,Nr);
+  vort(:,2:Ny,:) = - (uvel(:,2:Ny,:)-uvel(:,1:Ny-1,:))./repmat(DYC(:,2:Ny),[1 1 Nr]);
+  vort(2:Nx,:,:) = vort(2:Nx,:,:) + (vvel(2:Nx,:,:)-vvel(1:Nx-1,:,:))./repmat(DXC(2:Nx,:),[1 1 Nr]);
+  vort = nanmean(vort,3); %%% Approximate depth-average
+  
   Omega = 2*pi*366/365/86400;
   ff = 2*Omega*sind(YG);
   pcolor(XG,YG,vort./abs(ff));

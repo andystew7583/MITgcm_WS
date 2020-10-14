@@ -16,11 +16,12 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %%% Some commonly varied parameters
   
   %   nIter0 = 0; %%% Initial iteration for brand new runs
-%   nIter0 = 1; %%% Initial iteration for pickup runs
-  nIter0 = 1183320;  
+  nIter0 = 1; %%% Initial iteration for pickup runs
+%   nIter0 = 1183320;
+%   nIter0 = 1774980;
   use_extended_diags = true;  
   use_layers = true;
-  use_tides = false;
+  use_tides = true;
   
   
   
@@ -1536,6 +1537,7 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   
   diag_fields_inst = ...
   {...      
+  %'ETAN'...
 %     'UVEL','VVEL','WVEL'...      
 %     'THETA' ... 
 %     'SALT','ETAN' ... 
@@ -1549,7 +1551,8 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
 %   diag_freq_inst = 0.1*t1year;
 %    diag_freq_inst = .0417*t1day;
 %   diag_freq_inst = 30*t1day;
-  diag_freq_inst = 10*deltaT;
+%   diag_freq_inst = 10*deltaT;
+  diag_freq_inst = t1day/24;
   diag_phase_inst = 0;
   
   for n=1:numdiags_inst    
@@ -1602,7 +1605,7 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   packages.addParm('useDiagnostics',true,PARM_BOOL);    
   packages.addParm('useKPP',true,PARM_BOOL);
   packages.addParm('useOBCS',true,PARM_BOOL);  
-  packages.addParm('useRBCS',true,PARM_BOOL);  
+  packages.addParm('useRBCS',false,PARM_BOOL);  
   packages.addParm('useEXF',true,PARM_BOOL);        
   packages.addParm('useCAL',true,PARM_BOOL);         
   packages.addParm('useSEAICE',true,PARM_BOOL);      

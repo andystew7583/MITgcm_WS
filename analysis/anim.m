@@ -1,4 +1,4 @@
-%%%
+%%%hplot
 %%% anim.m
 %%%
 %%% Reads diagnostic output from MITgcm and makes a movie of it. Requires
@@ -14,7 +14,7 @@ mac_plots = false;
 loadexp;
 
 %%% Select diagnostic variable to animate
-diagnum = 4;
+diagnum = 1;
 outfname =diag_fileNames{1,diagnum};
 
 %%% Data index in the output data files
@@ -29,7 +29,7 @@ xylayer = 1;
 
 %%% Set true to plot the field in the lowest active cell at each horizontal
 %%% location
-botplot = 1;
+botplot = 0;
 
 %%% Set true to plot the field in the topmost wet cell at each horizontal
 %%% location
@@ -53,11 +53,12 @@ yzlayer = 144;
 
 
 %%% Specify color range
-set_crange = 1;
+set_crange = 0;
+
 
 % crange = [-2.2 -1.6]; %/%% Filchner temp
-crange = [-3 1]; %/%%temp
-% crange = [33.9 35.0]; %%% salinity
+% crange = [-3 1]; %/%%temp
+crange = [34.2 35.0]; %%% salinity
 % crange = [0 10]; %%%% for KPP hbl
 % crange = [0 1]; %%% For sea ice area
 % crange = [-.6 .6]; %%% For velocities or stresses
@@ -65,9 +66,18 @@ crange = [-3 1]; %/%%temp
 % crange =[-100 100]; %%% Qnet
 % crange = [-300 300]; %%% swnet
 % crange = [0 3];
+% crange = [-0.01 0.01];
 
-cmap = jet(200);
-% cmap = redblue(100);
+% cmap = pmkmp(100,'Swtth');
+% cmap = cmocean('haline',100);
+% cmap = cmocean('thermal',100);
+% cmap = cmocean('ice',100);
+% cmap = haxby;
+% cmap = jet(200);
+cmap = redblue(100);
+
+% titlestr = 'Bottom salinity (g/kg)';
+titlestr = '';
 
 
 %%% Frequency of diagnostic output - should match that specified in
@@ -76,8 +86,8 @@ cmap = jet(200);
 % deltaT = 200
 % nIter0 = 587520;
 dumpFreq = abs(diag_frequency(diagnum));
-nDumps = round(nTimeSteps*deltaT/dumpFreq);
-dumpIters = round(nIter0+(1:nDumps)*dumpFreq/deltaT);
+nDumps = round(endTime/dumpFreq);
+dumpIters = round((1:nDumps)*dumpFreq/deltaT);
 dumpIters = dumpIters(dumpIters > nIter0);
 
 
@@ -152,29 +162,32 @@ end
 
 %%% Plotting options
 scrsz = get(0,'ScreenSize');
-fontsize = 8;
+fontsize = 14;
 if (mac_plots)  
   framepos = [0 scrsz(4)/2 scrsz(3)/1.3 scrsz(4)];
   plotloc = [0.17 0.3 0.62 0.7];
 else
-  plotloc = [0.15 0.15 0.7 0.76];
-  framepos = [100    500   800  800];
+  plotloc = [0.0855    0.0888    0.7916    0.8624];
+  framepos = [100   306   936   676];
 end
+
 %%% Set up the figure
 handle = figure(20);
 set(handle,'Position',framepos);
 clf;
 axes('FontSize',fontsize);
 set(gcf,'color','w');
-M = moviein(48);
+M = moviein(length(dumpIters));
 
 Amean = [];
+Amax = [];
 
-for n = 6*12
+% for n = 15*12:length(dumpIters)
 % for n = 1:length(dumpIters)
-% for n=1:5
+% for n=5*12
+for n=74
 % for n=48:length(dumpIters)
-% for n=0.5*12:length(dumpIters)
+% for n=2:length(dumpIters)
   dumpIters(n);
     
   t = dumpIters(n)*deltaT/t1year;
@@ -201,6 +214,7 @@ for n = 6*12
      A(hFacC==0) = NaN;
    end
    
+   Amax(n)= nanmax(nanmax(A(:,:,1)));
    ['Max value: ',num2str(nanmax(A(:)))]
    ['Min value: ',num2str(nanmin(A(:)))]
    
@@ -302,7 +316,7 @@ for n = 6*12
   handle=colorbar;
   colormap(cmap);
   set(handle,'FontSize',fontsize);
-  title(['$t=',num2str(tyears(n),'%.1f'),'$ years'],'interpreter','latex');
+  title([titlestr,', $t=',num2str(tyears(n),'%.1f'),'$ years'],'interpreter','latex');
   if (set_crange)  
     caxis(crange);
   end

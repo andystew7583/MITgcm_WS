@@ -120,8 +120,10 @@ ss_ref_sponge = ss_ref;
 pt_ref_sponge = pt_ref;
 XC3D = repmat(XC,[1 1 Nr]);
 YC3D = repmat(YC,[1 1 Nr]);
-ss_ref_sponge((YC3D<YC(1,end-spongethickness+1) & (XC3D<XC(end-spongethickness+1,1)))) = NaN;
-pt_ref_sponge((YC3D<YC(1,end-spongethickness+1) & (XC3D<XC(end-spongethickness+1,1)))) = NaN;
+% ss_ref_sponge((YC3D<YC(1,end-spongethickness+1) & (XC3D<XC(end-spongethickness+1,1)))) = NaN;
+% pt_ref_sponge((YC3D<YC(1,end-spongethickness+1) & (XC3D<XC(end-spongethickness+1,1)))) = NaN;
+ss_ref_sponge((YC3D<YC(1,end) & (XC3D<XC(end,1)))) = NaN;
+pt_ref_sponge((YC3D<YC(1,end) & (XC3D<XC(end,1)))) = NaN;
 TSvol_sponge = binByVolume(ss_ref_sponge,pt_ref_sponge,[], ...
                   Smin,Smax,dS,Tmin,Tmax,dT, ...
                   RAC,DRF,hFacC);

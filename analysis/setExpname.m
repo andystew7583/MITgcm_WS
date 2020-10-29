@@ -4,8 +4,8 @@
 %%% Convenience script to set the experiment name before loadexp.m is 
 %%% called in other scripts.
 %%%
-gendir = '/data3/';
-basedir = fullfile(gendir,'MITgcm_WS/experiments');
+gendir = '..';
+basedir = fullfile(gendir,'experiments');
 
 expdir = basedir;
 % expname = 'hires_seq_onethird';

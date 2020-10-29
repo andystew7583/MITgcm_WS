@@ -14,7 +14,7 @@ mac_plots = false;
 loadexp;
 
 %%% Select diagnostic variable to animate
-diagnum = 1;
+diagnum = 17;
 outfname =diag_fileNames{1,diagnum};
 
 %%% Data index in the output data files
@@ -185,7 +185,7 @@ Amax = [];
 % for n = 15*12:length(dumpIters)
 % for n = 1:length(dumpIters)
 % for n=5*12
-for n=74
+for n=7*12:8*12
 % for n=48:length(dumpIters)
 % for n=2:length(dumpIters)
   dumpIters(n);

@@ -20,7 +20,8 @@ addpath ../GSW/library/
 %%% Load experiment data
 expdir = '../experiments';
 % expname = 'hires_seq_onethird_RTOPO2';
-expname = 'hires_seq_onesixth_RTOPO2';
+% expname = 'hires_seq_onesixth_RTOPO2';
+expname = 'hires_seq_onetwelfth_notides_RTOPO2';
 loadexp;
 
 
@@ -36,8 +37,10 @@ loadexp;
 %%% climatology
 % tmin = 18.05*86400*365;
 % tmax = 27.05*86400*365;
-tmin = 9.05*86400*365;
-tmax = 18tt.05*86400*365;
+% tmin = 9.05*86400*365;
+% tmax = 18.05*86400*365;
+tmin = 1.05*86400*365;
+tmax = 9.05*86400*365;
 
 %%% b-factor of Jackett and McDougall 1997
 bfac = 2;

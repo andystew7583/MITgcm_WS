@@ -14,15 +14,15 @@
 
 %%% Load experiment data
 expdir = '../experiments';
-% expname = 'hires_seq_onethird_RTOPO2';
-% tmin = 18.05;
+% expname = 'hires_seq_onethird_notides_RTOPO2';
+% tmin = 19.05;
 % tmax = 27.05;
-% expname = 'hires_seq_onesixth_RTOPO2';
+% expname = 'hires_seq_onesixth_notides_RTOPO2';
 % tmin = 10.05;
 % tmax = 18.05;
 expname = 'hires_seq_onetwelfth_notides_RTOPO2';
-tmin = 7.95;
-tmax = 8.05;
+tmin = 1.05;
+tmax = 9.05;
 loadexp;
 
 %%% Set true to deform coordinates in the cavity
@@ -99,6 +99,10 @@ uvelth_tavg = zeros(Nx,Ny,Nr);
 vvelth_tavg = zeros(Nx,Ny,Nr);
 uvelslt_tavg = zeros(Nx,Ny,Nr);
 vvelslt_tavg = zeros(Nx,Ny,Nr);
+tflux_tavg = zeros(Nx,Ny);
+sflux_tavg = zeros(Nx,Ny);
+SHIfwFlx_tavg = zeros(Nx,Ny);
+SHIhtFlx_tavg = zeros(Nx,Ny);
 for n=1:Ntime
  
   %%% Print current time to keep track of calculation
@@ -114,8 +118,13 @@ for n=1:Ntime
   vvelth  = rdmdsWrapper(fullfile(exppath,'/results/VVELTH'),itersToRead(n));
   uvelslt  = rdmdsWrapper(fullfile(exppath,'/results/UVELSLT'),itersToRead(n));
   vvelslt  = rdmdsWrapper(fullfile(exppath,'/results/VVELSLT'),itersToRead(n));
+  tflux  = rdmdsWrapper(fullfile(exppath,'/results/TFLUX'),itersToRead(n));
+  sflux  = rdmdsWrapper(fullfile(exppath,'/results/SFLUX'),itersToRead(n));
+  SHIfwFlx  = rdmdsWrapper(fullfile(exppath,'/results/SHIfwFlx'),itersToRead(n));
+  SHIhtFlx  = rdmdsWrapper(fullfile(exppath,'/results/SHIhtFlx'),itersToRead(n));
   if (isempty(uvel) || isempty(vvel) || isempty(theta) || isempty(salt) ...
-      || isempty(uvelth) || isempty(vvelth) || isempty(uvelslt) || isempty(vvelslt))
+      || isempty(uvelth) || isempty(vvelth) || isempty(uvelslt) || isempty(vvelslt) ...
+      || isempty(tflux) || isempty(sflux) || isempty(SHIfwFlx) || isempty(SHIhtFlx))
     ['Ran out of data at n=',num2str(n),'/',num2str(nDumps),' t=',num2str(tyears),' days.']
     break;
   end
@@ -145,6 +154,10 @@ for n=1:Ntime
   vvelth_tavg = vvelth_tavg + vvelth/Ntime;
   uvelslt_tavg = uvelslt_tavg + uvelslt/Ntime;
   vvelslt_tavg = vvelslt_tavg + vvelslt/Ntime;
+  tflux_tavg = tflux_tavg + tflux/Ntime;
+  sflux_tavg = sflux_tavg + sflux/Ntime;
+  SHIfwFlx_tavg = SHIfwFlx_tavg + SHIfwFlx/Ntime;
+  SHIhtFlx_tavg = SHIhtFlx_tavg + SHIhtFlx/Ntime;
   
 end
 
@@ -175,7 +188,8 @@ save(fullfile('products',outfname), ...
   'thflux_stand','thflux_fluc','thflux_eddy',...
   'sltflux_stand','sltflux_fluc','sltflux_eddy',...
   'uvel_tavg','vvel_tavg','theta_tavg','salt_tavg', ...
-  'uvelth_tavg','vvelth_tavg','uvelslt_tavg','vvelslt_tavg');
+  'uvelth_tavg','vvelth_tavg','uvelslt_tavg','vvelslt_tavg', ...
+  'tflux_tavg','sflux_tavg','SHIfwFlx_tavg','SHIhtFlx_tavg');
 
 
 

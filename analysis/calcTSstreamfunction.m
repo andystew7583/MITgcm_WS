@@ -6,13 +6,16 @@
 
 %%% Read experiment data
 % expname = 'hires_seq_onethird_notides_RTOPO2';
-expname = 'hires_seq_onesixth_RTOPO2';
+% expname = 'hires_seq_onesixth_RTOPO2';
+expname = 'hires_seq_onetwelfth_notides_RTOPO2';
 expdir = '/data3/MITgcm_WS/experiments';
 loadexp;
 % tmin = 18.05;
 % tmax = 27.05;
-tmin = 9.05;
-tmax = 18.05;
+% tmin = 9.05;
+% tmax = 18.05;
+tmin = 1.05;
+tmax = 9.05;
 
 %%% Set true to calculate streamfunction by integrating w.r.t. S as well as
 %%% w.r.t. T
@@ -106,8 +109,7 @@ for n=1:Ntime
   %%% Calculate eddy streamfunction, if required
   if (calc_psi_eddy)
 
-    %%% Load heat and salt fluxes
-    wvel  = rdmdsWrapper(fullfile(exppath,'/results/WVEL'),itersToRead(n));      
+    %%% Load heat and salt fluxes     
     uvelth = rdmdsWrapper(fullfile(exppath,'/results/UVELTH'),itersToRead(n));
     vvelth = rdmdsWrapper(fullfile(exppath,'/results/VVELTH'),itersToRead(n));
     wvelth = rdmdsWrapper(fullfile(exppath,'/results/WVELTH'),itersToRead(n));
@@ -124,6 +126,7 @@ for n=1:Ntime
       DXG,DYG,RAC,DXC,DYC, ...
       DRF,DRC,RC,RF,...
       rhoConst,gravity);
+    clear('uvelth','vvelth','wvelth','uvelslt','vvelslt','wvelslt');
 
     %%% Compute streamfunction
     psi_TS_eddy_intT(:,:,n) = calcStreamfunction_intT (...

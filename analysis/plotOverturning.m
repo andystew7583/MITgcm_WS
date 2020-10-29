@@ -154,7 +154,12 @@ set(gca,'FontSize',12);
 
 
 Nt = length(times);
-[eof_maps,pc,expvar] = eof((psi_mean+psi_eddy)/1e6);
+Neta = length(eta);
+Nd = length(dens_levs);
+psi_tot = psi_mean+psi_eddy;
+% psi_tot = psi_tot - repmat(squeeze(mean(reshape(psi_tot,[Neta Nd 12,size(psi_tot,3)/12]),4)),[1 1 size(psi_tot,3)/12]);
+[eof_maps,pc,expvar] = eof((psi_tot)/1e6);
+
 
 psi_plot = std((psi_mean+psi_eddy)/1e6,[],3);
 % psi_plot = sign(psi_plot).*min(abs(psi_plot),psimax);

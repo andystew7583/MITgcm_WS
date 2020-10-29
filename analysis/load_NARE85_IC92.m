@@ -11,10 +11,25 @@ IC92_casts = readCTDdata('../data/CTD/IC92_phys_oce.txt');
 %%% Extract specific zonal sections that we need
 Nz = 200;
 NARE85_plotidx = 4:15;
-[NARE85_HH,NARE85_ZZ,NARE85_pt,NARE85_ss,NARE85_pd] = extractSection(NARE85_casts,NARE85_plotidx,Nz,false);
+[NARE85_HH,NARE85_ZZ,NARE85_pt,NARE85_ss,NARE85_pd,NARE85_maxdepth] = extractSection(NARE85_casts,NARE85_plotidx,Nz,false);
 IC92_plotidx = [32    34    36    38    40    42    44    48    50    52    54    56];
-[IC92_HH,IC92_ZZ,IC92_pt,IC92_ss,IC92_pd] = extractSection(IC92_casts,IC92_plotidx,Nz,true);
+[IC92_HH,IC92_ZZ,IC92_pt,IC92_ss,IC92_pd,IC92_maxdepth] = extractSection(IC92_casts,IC92_plotidx,Nz,true);
 
+%%% Coordinates of plots
+NARE85_lon = zeros(1,length(NARE85_plotidx));
+NARE85_lat = zeros(1,length(NARE85_plotidx));
+for n=1:length(NARE85_plotidx)
+  NARE85_lon(n) = mean(NARE85_casts{NARE85_plotidx(n)}.lon);
+  NARE85_lat(n) = mean(NARE85_casts{NARE85_plotidx(n)}.lat);
+end
+IC92_lon = zeros(1,length(IC92_plotidx));
+IC92_lat = zeros(1,length(IC92_plotidx));
+for n=1:length(IC92_plotidx)
+  IC92_lon(n) = mean(IC92_casts{IC92_plotidx(n)}.lon);
+  IC92_lat(n) = mean(IC92_casts{IC92_plotidx(n)}.lat);
+end
+[IC92_lon,sortidx] = sort(IC92_lon);
+IC92_lat = IC92_lat(sortidx);
 
 
 
@@ -93,7 +108,7 @@ end
 %%%
 %%% Convenience function to extract a section from cast data.
 %%%
-function [HH,ZZ,pt,ss,pd] = extractSection (casts,plotidx,Nz,do_sort)
+function [HH,ZZ,pt,ss,pd,maxdepth] = extractSection (casts,plotidx,Nz,do_sort)
 
   smoothwidth = 60;
   smoothmethod = 'moving';
@@ -107,6 +122,7 @@ function [HH,ZZ,pt,ss,pd] = extractSection (casts,plotidx,Nz,do_sort)
   pt = zeros(Nh,Nz);
   ss = zeros(Nh,Nz);
   pd = zeros(Nh,Nz);
+  maxdepth = zeros(Nh,1);
   for n = 1:length(plotidx)
     ncast = plotidx(n);
     zmax = casts{ncast}.depth(end);
@@ -117,6 +133,7 @@ function [HH,ZZ,pt,ss,pd] = extractSection (casts,plotidx,Nz,do_sort)
     pt(n,:) = interp1(casts{ncast}.depth,smooth(casts{ncast}.pottemp,smoothwidth,smoothmethod),ZZ(n,:),'linear');    
     ss(n,:) = interp1(casts{ncast}.depth,smooth(casts{ncast}.salt,smoothwidth,smoothmethod),ZZ(n,:),'linear');   
     pd(n,:) = interp1(casts{ncast}.depth,smooth(casts{ncast}.sigma,smoothwidth,smoothmethod),ZZ(n,:),'linear');
+    maxdepth(n) = casts{ncast}.maxdepth(1);
   end  
   
   %%% Sort in longitudinal order
@@ -127,6 +144,7 @@ function [HH,ZZ,pt,ss,pd] = extractSection (casts,plotidx,Nz,do_sort)
     pt = pt(sortidx,:);
     ss = ss(sortidx,:);
     pd = pd(sortidx,:);
+    maxdepth = maxdepth(sortidx);
   end
   
 end

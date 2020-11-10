@@ -7,7 +7,7 @@
 %%% Read experiment data
 % expname = 'hires_seq_onethird_notides_RTOPO2';
 % expname = 'hires_seq_onesixth_RTOPO2';
-expname = 'hires_seq_onetwelfth_notides_RTOPO2';
+expname = 'hires_seq_onetwelfth_RTOPO2';
 expdir = '/data3/MITgcm_WS/experiments';
 loadexp;
 % tmin = 18.05;
@@ -173,8 +173,8 @@ else
 end
   
 %%% Compute "fluctuating" component of streamfunction
-psi_TS_mean_fluc_intT = mean(psi_TS_mean_intT) - psi_TS_mean_stand_intT;
-psi_TS_mean_fluc_intS = mean(psi_TS_mean_intS) - psi_TS_mean_stand_intS;
+psi_TS_mean_fluc_intT = mean(psi_TS_mean_intT,3) - psi_TS_mean_stand_intT;
+psi_TS_mean_fluc_intS = mean(psi_TS_mean_intS,3) - psi_TS_mean_stand_intS;
 
 
 

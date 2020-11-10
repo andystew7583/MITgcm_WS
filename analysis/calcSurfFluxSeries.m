@@ -77,6 +77,8 @@ tflux = zeros(Nx,Ny,Ntime);
 sflux = zeros(Nx,Ny,Ntime);
 SHIfwFlx = zeros(Nx,Ny,Ntime);
 SHIhtFlx = zeros(Nx,Ny,Ntime);
+oceTAUX = zeros(Nx,Ny,Ntime);
+oceTAUY = zeros(Nx,Ny,Ntime);
 for n=1:Ntime
  
   %%% Print current time to keep track of calculation
@@ -88,6 +90,8 @@ for n=1:Ntime
   sflux(:,:,n)  = rdmdsWrapper(fullfile(exppath,'/results/SFLUX'),itersToRead(n));
   SHIfwFlx(:,:,n)  = rdmdsWrapper(fullfile(exppath,'/results/SHIfwFlx'),itersToRead(n));
   SHIhtFlx(:,:,n)  = rdmdsWrapper(fullfile(exppath,'/results/SHIhtFlx'),itersToRead(n));
+  oceTAUX(:,:,n)  = rdmdsWrapper(fullfile(exppath,'/results/oceTAUX'),itersToRead(n));
+  oceTAUY(:,:,n)  = rdmdsWrapper(fullfile(exppath,'/results/oceTAUY'),itersToRead(n));
   
 end
 
@@ -95,5 +99,5 @@ end
 outfname = [expname,'_surfFluxes'];
 outfname = [outfname,'.mat'];
 save(fullfile('products',outfname), ...
-  'tflux','sflux','SHIfwFlx','SHIhtFlx');
+  'tflux','sflux','SHIfwFlx','SHIhtFlx','oceTAUX','oceTAUY');
 

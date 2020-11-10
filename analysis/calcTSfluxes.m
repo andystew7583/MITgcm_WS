@@ -20,7 +20,7 @@ expdir = '../experiments';
 % expname = 'hires_seq_onesixth_notides_RTOPO2';
 % tmin = 10.05;
 % tmax = 18.05;
-expname = 'hires_seq_onetwelfth_notides_RTOPO2';
+expname = 'hires_seq_onetwelfth_RTOPO2';
 tmin = 1.05;
 tmax = 9.05;
 loadexp;

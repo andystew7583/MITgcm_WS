@@ -10,7 +10,7 @@
 
 %%% Load experiment
 expdir = '../experiments';
-expname = 'hires_seq_onetwelfth_notides_RTOPO2';
+expname = 'hires_seq_onetwelfth_RTOPO2';
 loadexp;
 
 %%% Load streamfunction
@@ -139,7 +139,7 @@ clabel(C,h,'Color','k');
 clabel(C,h,'Color',[0.5 0.5 0.5]);
 plot(ss_bdry(:),pt_bdry(:),'o','MarkerSize',1,'MarkerFaceColor',[.7 .7 .7],'Color',[.7 .7 .7]);
 hold off;
-colormap(redblue(round(2*psimax/psistep)));
+colormap(gca,redblue(round(2*psimax/psistep)));
 caxis([-psimax psimax]);
 colorbar;
 xlabel('S (g/kg)');

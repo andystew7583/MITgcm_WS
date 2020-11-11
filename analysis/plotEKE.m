@@ -11,7 +11,8 @@
 %%% Load experiment data
 expdir = '../experiments';
 % expname = 'hires_seq_onethird_notides_RTOPO2';
-expname = 'hires_seq_onesixth_notides_RTOPO2';
+% expname = 'hires_seq_onesixth_notides_RTOPO2';
+expname = 'hires_seq_onesixth_RTOPO2';
 loadexp;
 
 %%% Load pre-computed products
@@ -31,9 +32,16 @@ colorbar;
 colormap jet;
 
 figure(52);
-pcolor(XC,YC,PEtoEKE_zavg.*sum(hFacC.*DRF,3));
+pcolor(XC,YC,PEtoEKE_zavg.*sum(hFacC.*DRF,3)./sum(hFacC.*DRF,3));
 shading interp;
 colorbar
 colormap redblue;
-caxis([-2 2]*1e-4);
+% caxis([-2 2]*1e-4);
+
+% figure(53);
+% pcolor(XC,YC,nansum(MKEtoEKE.*hFacC.*DRF,3)./sum(hFacC.*DRF,3));
+% shading interp;
+% colorbar
+% colormap redblue;
+% % caxis([-2 2]*1e-4);
 

@@ -4,38 +4,38 @@
 %%% Plots heat/salt fluxes in quasi-latitude coordinates
 %%%
 
-% %%% Load experiment
-% expdir = '../experiments';
-% expname = 'hires_seq_onetwelfth_RTOPO2';
-% expname_notides = 'hires_seq_onetwelfth_notides_RTOPO2';
-% 
-% %%% Options (see calcTSfluxes)
-% deform_cavity = false;
-% outfname = ['','_TSfluxes'];
-% if (deform_cavity)
-%   outfname = [outfname,'_deform'];
-% end
-% outfname = [outfname,'.mat'];
-% outfname_tides = [expname,outfname];
-% outfname_notides = [expname_notides,outfname];
-% 
-% %%% Load pre-computed fluxes
-% load(fullfile('products',outfname_tides));
-% thflux_tot_tides = thflux_stand+thflux_fluc+mean(thflux_eddy,2);
-% thflux_tot_plot = thflux_tot_tides;
-% sltflux_tot_tides = sltflux_stand+sltflux_fluc+mean(sltflux_eddy,2);
-% sltflux_tot_plot = sltflux_tot_tides;
-% load(fullfile('products',outfname_notides));
-% thflux_mean_plot = thflux_stand;
-% thflux_fluc_plot = thflux_fluc;
-% thflux_eddy_plot = mean(thflux_eddy,2);
-% thflux_tot_notides = thflux_stand+thflux_fluc+mean(thflux_eddy,2);
-% thflux_tide_plot = thflux_tot_tides - thflux_tot_notides;
-% sltflux_mean_plot = sltflux_stand;
-% sltflux_fluc_plot = sltflux_fluc;
-% sltflux_eddy_plot = mean(sltflux_eddy,2);
-% sltflux_tot_notides = sltflux_stand+sltflux_fluc+mean(sltflux_eddy,2);
-% sltflux_tide_plot = sltflux_tot_tides - sltflux_tot_notides;
+%%% Load experiment
+expdir = '../experiments';
+expname = 'hires_seq_onetwelfth_RTOPO2';
+expname_notides = 'hires_seq_onetwelfth_notides_RTOPO2';
+
+%%% Options (see calcTSfluxes)
+deform_cavity = false;
+outfname = ['','_TSfluxes'];
+if (deform_cavity)
+  outfname = [outfname,'_deform'];
+end
+outfname = [outfname,'.mat'];
+outfname_tides = [expname,outfname];
+outfname_notides = [expname_notides,outfname];
+
+%%% Load pre-computed fluxes
+load(fullfile('products',outfname_tides));
+thflux_tot_tides = thflux_stand+thflux_fluc+mean(thflux_eddy,2);
+thflux_tot_plot = thflux_tot_tides;
+sltflux_tot_tides = sltflux_stand+sltflux_fluc+mean(sltflux_eddy,2);
+sltflux_tot_plot = sltflux_tot_tides;
+load(fullfile('products',outfname_notides));
+thflux_mean_plot = thflux_stand;
+thflux_fluc_plot = thflux_fluc;
+thflux_eddy_plot = mean(thflux_eddy,2);
+thflux_tot_notides = thflux_stand+thflux_fluc+mean(thflux_eddy,2);
+thflux_tide_plot = thflux_tot_tides - thflux_tot_notides;
+sltflux_mean_plot = sltflux_stand;
+sltflux_fluc_plot = sltflux_fluc;
+sltflux_eddy_plot = mean(sltflux_eddy,2);
+sltflux_tot_notides = sltflux_stand+sltflux_fluc+mean(sltflux_eddy,2);
+sltflux_tide_plot = sltflux_tot_tides - sltflux_tot_notides;
 
 
 

@@ -8,7 +8,7 @@
 %%%
 
 %%% Read experiment data
-% loadexp;
+loadexp;
 
 %%% Vertical grid spacing matrix
 DZ = repmat(reshape(delR,[1 1 Nr]),[Nx Ny 1]);

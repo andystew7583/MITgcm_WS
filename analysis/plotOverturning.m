@@ -8,17 +8,17 @@ addpath CDT/cdt;
 
 %%% Load experiment
 expdir = '../experiments';
-expname = 'hires_seq_onethird_RTOPO2';
+expname = 'hires_seq_onesixth_RTOPO2';
 
 %%% Options (see calcOverturning)
 calc_psi_eddy = true;
 deform_cavity = false;
-use_layers = true;
+use_layers = false;
 densvar = 'PD0';
-psimax = 6;
-psistep = 0.5;
-% psimax = 2;
-% psistep = 0.1;
+% psimax = 6;
+% psistep = 0.5;
+psimax = 2;
+psistep = 0.1;
 ylim = [27.3 28.2];
 % ylim = [27.3 29];
 

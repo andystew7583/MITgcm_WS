@@ -24,7 +24,7 @@ loadexp;
 calc_psi_eddy = true;
 
 %%% Set true to deform coordinates in the cavity
-deform_cavity = false;
+deform_cavity = true;
 
 %%% Set true to use output from the Layers package to calculate isopycnal
 %%% fluxes. N.B. if this option is selected then the density variable must
@@ -408,7 +408,7 @@ end
 %%% ND1 surfaces
 if (strcmp(densvar,'ND1'))
   densfname = fullfile('products',[expname,'_ND1.mat']);
-  load(densfname,'gg_ref');
+  load(densfname,'gg_ref','pt_ref','ss_ref');
   theta_tavg = pt_ref;
   salt_tavg = ss_ref;
   dens_tavg = gg_ref;

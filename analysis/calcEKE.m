@@ -12,14 +12,17 @@
 expdir = '../experiments';
 % expname = 'hires_seq_onethird_notides_RTOPO2';
 expname = 'hires_seq_onesixth_RTOPO2';
+% expname = 'hires_seq_onetwelfth_notides_RTOPO2';
 loadexp;
 
 %%% Time frame over which to average thermodynamic variables to create
 %%% climatology
-% tmin = 18.05*86400*365;
+% tmin = 19.05*86400*365;
 % tmax = 27.05*86400*365;
-tmin = 9.05*86400*365;
+tmin = 10.05*86400*365;
 tmax = 18.05*86400*365;
+% tmin = 1.05*86400*365;
+% tmax = 9.05*86400*365;
 
 
 
@@ -50,7 +53,7 @@ wvelslt = readIters(exppath,'WVELSLT',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
 wvelth = readIters(exppath,'WVELTH',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
 uvelsq = readIters(exppath,'UVELSQ',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
 vvelsq = readIters(exppath,'VVELSQ',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
-
+uvvel = readIters(exppath,'UV_VEL_Z',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
 
 
 
@@ -92,7 +95,18 @@ PEtoEKE = gravity*(alpha_w.*wvelth_eddy - beta_w.*wvelslt_eddy);
 PEtoEKE_zavg = sum(PEtoEKE.*DRF3D.*hFacC,3) ./ sum(DRF3D.*hFacC,3);
 PEtoEKE_zavg(isinf(PEtoEKE_zavg)) = 0;
 
-
+%%% Calculate MKE->EKE
+uvel(hFacW==0) = NaN;
+vvel(hFacS==0) = NaN;
+uvvel_mean = 0.5*(vvel(1:Nx,1:Ny,:)+vvel([Nx 1:Nx-1],1:Ny,:)) ...
+        + 0.5*(uvel(1:Nx,1:Ny,:)+vvel(1:Nx,[Ny 1:Ny-1],:));
+uvvel_eddy = uvvel - uvvel_mean;
+MKEtoEKE = - uvelsq_eddy.*(uvel([2:Nx 1],:,:)-uvel(:,:,:))./DXG ...
+           - uvvel_eddy.*(uvel(:,1:Ny,:)-uvel(:,[Ny 1:Ny-1],:))./DYC ...
+           - uvvel_eddy.*(vvel(1:Nx,:,:)-vvel([Nx 1:Nx-1],:,:))./DXC ...
+           - vvelsq_eddy.*(vvel(:,[2:Ny 1],:)-vvel(:,:,:))./DYG;
+MKEtoEKE_zavg = nansum(MKEtoEKE.*DRF3D.*hFacC,3) ./ sum(DRF3D.*hFacC,3);
+MKEtoEKE_zavg(isinf(MKEtoEKE_zavg)) = 0;
 
 
 
@@ -108,5 +122,5 @@ PEtoEKE_zavg(isinf(PEtoEKE_zavg)) = 0;
 %%%%%%%%%%%%%%%%%%
 
 outfname = [expname,'_EKE.mat'];
-save(fullfile('products',outfname),'EKE','EKE_zavg','PEtoEKE','PEtoEKE_zavg');
+save(fullfile('products',outfname),'EKE','EKE_zavg','PEtoEKE','PEtoEKE_zavg','MKEtoEKE','MKEtoEKE_zavg');
 

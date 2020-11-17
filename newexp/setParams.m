@@ -247,14 +247,13 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   h(1:idx_obcs_n,end) = 0;
  
   %%% Overwrite bathymetry data file
-  data = h;
-  writeDataset(data,fullfile(inputpath,bathyFile),ieee,prec);
-  clear data
+  writeDataset(h,fullfile(inputpath,bathyFile),ieee,prec);
+  clear h
+
   
-  %%% Overwrite ice draft data file
-  data = SHELFICEtopo;
-  writeDataset(data,fullfile(inputpath,SHELFICEtopoFile),ieee,prec);
-  clear data
+  %%% Overwrite ice draft data file  
+  writeDataset(SHELFICEtopo,fullfile(inputpath,SHELFICEtopoFile),ieee,prec);
+  clear SHELFICEtopo
   
   
   %%%%%%%%%%%%%%%%%%%%%%%%
@@ -1277,7 +1276,7 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %%%%%%%%%%%%%%%%
   %%%%%%%%%%%%%%%%
   
-  
+  useRBCS = false;
   
     
   %%%%%%%%%%%%%%%%%%%%%%%
@@ -1295,8 +1294,8 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %%%%% RELAXATION PARAMETERS %%%%%
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-  useRBCtemp = true;
-  useRBCsalt = true;
+  useRBCtemp = useRBCS;
+  useRBCsalt = useRBCS;
   useRBCuVel = false;
   useRBCvVel = false;
 %   tauRelaxT = 60*t1day;
@@ -1310,56 +1309,60 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   rbcs_parm01.addParm('tauRelaxT',tauRelaxT,PARM_REAL);
   rbcs_parm01.addParm('tauRelaxS',tauRelaxS,PARM_REAL);  
   
+  if (useRBCS)
   
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  %%%%% RELAXATION TEMPERATURE/SALINITY %%%%%
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%      
-  
-  %%% Restore salinity everywhere under ice shelves to ISW salinity
-  salt_ISW = 34.5;
-%   salt_ISW = 34;
-  salt_relax = salt_ISW*ones(Nx,Ny,Nr);
-  
-  %%% Restore temperature to local freezing point under ice shelves
-%   Pressure = repmat(reshape(-rho0*g*zz/Pa1dbar,[1 1 Nr]),[Nx Ny 1]);
-%   temp_relax = .0901 - .0575*salt_relax - (7.61e-4 * Pressure);
-  %%%% Restore temperature to surface freezing point 
-  
-  Pressure = repmat(reshape(-rho0*g*zz(1)/Pa1dbar,[1 1 1]),[Nx Ny 1]);
-  temp_relax = .0901 - .0575*salt_relax - (7.61e-4 * Pressure);
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%% RELAXATION TEMPERATURE/SALINITY %%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%      
 
-  
-  %%% Save as parameters
-  writeDataset(temp_relax,fullfile(inputpath,'sponge_temp.bin'),ieee,prec); 
-  rbcs_parm01.addParm('relaxTFile','sponge_temp.bin',PARM_STR);
-  writeDataset(salt_relax,fullfile(inputpath,'sponge_salt.bin'),ieee,prec); 
-  rbcs_parm01.addParm('relaxSFile','sponge_salt.bin',PARM_STR);  
-  
-  
-  %%%%%%%%%%%%%%%%%%%%%  
-  %%%%% RBCS MASK %%%%%
-  %%%%%%%%%%%%%%%%%%%%%  
-  
-  %%% Mask is zero everywhere by default, i.e. no relaxation
-  mskT=zeros(Nx,Ny,Nr);
-  mskS=zeros(Nx,Ny,Nr);     
-  
-  %%% If a sponge BC is required, gradually relax in the gridpoints 
-  %%% approaching the wall (no relaxation at the wall)   
-  for i=1:Nx
-    for j=1:Ny      
-      if (SHELFICEtopo(i,j) < 0)
-        mskT(i,j,:) = 1;
-        mskS(i,j,:) = 1;
-      end                  
-    end       
-  end   
-  
-  %%% Save as parameters
-  writeDataset(mskT,fullfile(inputpath,'rbcs_temp_mask.bin'),ieee,prec); 
-  rbcs_parm01.addParm('relaxMaskFile(1)','rbcs_temp_mask.bin',PARM_STR);
-  writeDataset(mskS,fullfile(inputpath,'rbcs_salt_mask.bin'),ieee,prec); 
-  rbcs_parm01.addParm('relaxMaskFile(2)','rbcs_salt_mask.bin',PARM_STR);
+    %%% Restore salinity everywhere under ice shelves to ISW salinity
+    salt_ISW = 34.5;
+  %   salt_ISW = 34;
+    salt_relax = salt_ISW*ones(Nx,Ny,Nr);
+
+    %%% Restore temperature to local freezing point under ice shelves
+  %   Pressure = repmat(reshape(-rho0*g*zz/Pa1dbar,[1 1 Nr]),[Nx Ny 1]);
+  %   temp_relax = .0901 - .0575*salt_relax - (7.61e-4 * Pressure);
+    %%%% Restore temperature to surface freezing point 
+
+    Pressure = repmat(reshape(-rho0*g*zz(1)/Pa1dbar,[1 1 1]),[Nx Ny 1]);
+    temp_relax = .0901 - .0575*salt_relax - (7.61e-4 * Pressure);
+
+
+    %%% Save as parameters
+    writeDataset(temp_relax,fullfile(inputpath,'sponge_temp.bin'),ieee,prec); 
+    rbcs_parm01.addParm('relaxTFile','sponge_temp.bin',PARM_STR);
+    writeDataset(salt_relax,fullfile(inputpath,'sponge_salt.bin'),ieee,prec); 
+    rbcs_parm01.addParm('relaxSFile','sponge_salt.bin',PARM_STR);  
+
+
+    %%%%%%%%%%%%%%%%%%%%%  
+    %%%%% RBCS MASK %%%%%
+    %%%%%%%%%%%%%%%%%%%%%  
+
+    %%% Mask is zero everywhere by default, i.e. no relaxation
+    mskT=zeros(Nx,Ny,Nr);
+    mskS=zeros(Nx,Ny,Nr);     
+
+    %%% If a sponge BC is required, gradually relax in the gridpoints 
+    %%% approaching the wall (no relaxation at the wall)   
+    for i=1:Nx
+      for j=1:Ny      
+        if (SHELFICEtopo(i,j) < 0)
+          mskT(i,j,:) = 1;
+          mskS(i,j,:) = 1;
+        end                  
+      end       
+    end   
+
+    %%% Save as parameters
+    writeDataset(mskT,fullfile(inputpath,'rbcs_temp_mask.bin'),ieee,prec); 
+    rbcs_parm01.addParm('relaxMaskFile(1)','rbcs_temp_mask.bin',PARM_STR);
+    writeDataset(mskS,fullfile(inputpath,'rbcs_salt_mask.bin'),ieee,prec); 
+    rbcs_parm01.addParm('relaxMaskFile(2)','rbcs_salt_mask.bin',PARM_STR);
+
+
+  end
   
   
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

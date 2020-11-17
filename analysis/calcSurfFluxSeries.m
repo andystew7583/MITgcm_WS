@@ -14,15 +14,15 @@
 
 %%% Load experiment data
 expdir = '../experiments';
-% expname = 'hires_seq_onethird_notides_RTOPO2';
-% tmin = 19.05;
-% tmax = 27.05;
-% expname = 'hires_seq_onesixth_notides_RTOPO2';
+expname = 'hires_seq_onethird_RTOPO2';
+tmin = 19.05;
+tmax = 27.05;
+% expname = 'hires_seq_onesixth_RTOPO2';
 % tmin = 10.05;
 % tmax = 18.05;
-expname = 'hires_seq_onetwelfth_notides_RTOPO2';
-tmin = 1.05;
-tmax = 9.05;
+% expname = 'hires_seq_onetwelfth_RTOPO2';
+% tmin = 1.05;
+% tmax = 9.05;
 loadexp;
 
 %%% Frequency of diagnostic output - should match that specified in

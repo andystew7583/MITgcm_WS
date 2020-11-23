@@ -82,6 +82,13 @@ AABWdens_shelf_std_sens = zeros(1,Nsens);
 FRISmelt_std_sens = zeros(1,Nsens);
 shelfBuoyLoss_std_sens = zeros(1,Nsens);
 
+psimean_full_sens = zeros(1,Nsens);
+psimean_shelf_sens = zeros(1,Nsens);
+psimean_cavity_sens = zeros(1,Nsens);
+psimean_eddy_sens = zeros(1,Nsens);
+AABWdensMean_full_sens = zeros(1,Nsens);
+AABWdensMean_shelf_sens = zeros(1,Nsens);
+
 %%% Loop through experiments
 for m=1:Nsens
   
@@ -130,6 +137,7 @@ for m=1:Nsens
   %%% Indices over which to integrate, i.e. defining the FRIS
   xidx = find(XC(:,1)<-29.9);
   yidx = find(YC(1,:)<-74.5);
+  [DD,EE] = meshgrid(dens_levs,eta);
   
   %%% Time series of key metrics
   psimax_cavity = zeros(1,Nt);
@@ -162,7 +170,7 @@ for m=1:Nsens
     
     %%% Eddy streamfunction strength
     tmp = psi_eddy(:,:,n)/1e6;
-    psimax_eddy(n) = max(max(tmp((EE<eta_shelf+2) & (EE>eta_shelf-2))));    
+    psimax_eddy(n) = -min(min(tmp((EE<eta_shelf+2) & (EE>eta_shelf-2))));    
     
     %%% Composite surface heat flux
     htFlxDn = tflux(:,:,n);
@@ -214,6 +222,26 @@ for m=1:Nsens
   shelfBuoyLoss_std_sens(m) = std(shelfBuoyLoss);
   FRISmelt_std_sens(m) = std(FRISmelt);
   
+  %%% Metrics using long-term mean streamfunction
+  tmp = mean(psi_mean+psi_eddy,3)/1e6;
+  psimean_full_sens(m) = - min(min(tmp(EE<eta_full)));
+  psimean_shelf_sens(m) = -min(min(tmp(EE<eta_shelf)));
+  psimean_cavity_sens(m) = max(max(tmp(EE<eta_cavity)));
+
+  %%% Transport-weighted density on shelf
+  jidx = find(eta>eta_shelf,1,'first');
+  kidx = find(tmp(jidx,:)==min(tmp(jidx,:)),1,'last');
+  AABWdensMean_shelf_sens(m) = sum(diff(tmp(jidx,kidx:end),1,2).*(0.5*(dens_levs(kidx:end-1)+dens_levs(kidx+1:end)))) / (tmp(jidx,end)-tmp(jidx,kidx));
+
+  %%% Transport-weighted density in open ocean
+  jidx = find(eta>eta_full,1,'first');
+  kidx = find(tmp(jidx,:)==min(tmp(jidx,:)),1,'last');
+  AABWdensMean_full_sens(m) = sum(diff(tmp(jidx,kidx:end),1,2).*(0.5*(dens_levs(kidx:end-1)+dens_levs(kidx+1:end)))) / (tmp(jidx,end)-tmp(jidx,kidx));
+
+  %%% Eddy streamfunction strength
+  tmp = mean(psi_eddy,3)/1e6;
+  psimean_eddy_sens(m) = -min(min(tmp((EE<eta_shelf+2) & (EE>eta_shelf-2))));    
+
 end
 
 
@@ -243,6 +271,7 @@ axpos(8,:) = [axoff2 0.055 axwidth axheight];
 axlabels = {'(a)','(b)','(c)','(d)','(e)','(f)','(g)','(h)'};
 colororder = get(gca,'ColorOrder');
 markersize = 10;
+linewidth = 1.5;
 errbar_width_fac = 30/29;
 errbar_linewidth = 0.5;
 
@@ -269,9 +298,11 @@ set(gcf,'Position',[382          55        820         900]);
 
 %%% Overall MOC strength
 subplot('Position',axpos(1,:));
-semilogx(res_sens,psi_full_mean_sens(res_idx_tides),'o-','Color',colororder(1,:),'MarkerSize',markersize);
+semilogx(res_sens,psi_full_mean_sens(res_idx_tides),'o-','Color',colororder(1,:),'MarkerSize',markersize,'LineWidth',linewidth);
 hold on;
-semilogx(res_sens,psi_full_mean_sens(res_idx_notides),'o-','Color',colororder(2,:),'MarkerSize',markersize);
+semilogx(res_sens,psi_full_mean_sens(res_idx_notides),'o-','Color',colororder(2,:),'MarkerSize',markersize,'LineWidth',linewidth);
+semilogx(res_sens,psimean_full_sens(res_idx_tides),'s--','Color',colororder(1,:),'MarkerSize',markersize,'LineWidth',linewidth);
+semilogx(res_sens,psimean_full_sens(res_idx_notides),'s--','Color',colororder(2,:),'MarkerSize',markersize,'LineWidth',linewidth);
 for m=1:length(res_idx_tides)
   mean_tmp = psi_full_mean_sens(res_idx_tides(m));
   std_tmp = psi_full_std_sens(res_idx_tides(m));
@@ -298,8 +329,10 @@ legend('Tides','No tides','Location','NorthEast','Orientation','horizontal');
 
 %%% Shelf MOC strength
 subplot('Position',axpos(2,:));
-semilogx(res_sens,psi_shelf_mean_sens(res_idx_tides),'o-','Color',colororder(1,:),'MarkerSize',markersize);
-hold on;
+semilogx(res_sens,psi_shelf_mean_sens(res_idx_tides),'o-','Color',colororder(1,:),'MarkerSize',markersize,'LineWidth',linewidth);
+hold on
+semilogx(res_sens,psimean_shelf_sens(res_idx_tides),'s--','Color',colororder(1,:),'MarkerSize',markersize,'LineWidth',linewidth);
+semilogx(res_sens,psimean_shelf_sens(res_idx_notides),'s--','Color',colororder(2,:),'MarkerSize',markersize,'LineWidth',linewidth);
 for m=1:length(res_idx_tides)
   mean_tmp = psi_shelf_mean_sens(res_idx_tides(m));
   std_tmp = psi_shelf_std_sens(res_idx_tides(m));
@@ -307,7 +340,7 @@ for m=1:length(res_idx_tides)
   semilogx([res_sens(m)/errbar_width_fac res_sens(m)*errbar_width_fac],[mean_tmp+std_tmp mean_tmp+std_tmp],'Color',colororder(1,:),'LineWidth',errbar_linewidth);
   semilogx([res_sens(m)/errbar_width_fac res_sens(m)*errbar_width_fac],[mean_tmp-std_tmp mean_tmp-std_tmp],'Color',colororder(1,:),'LineWidth',errbar_linewidth);
 end
-semilogx(res_sens,psi_shelf_mean_sens(res_idx_notides),'o-','Color',colororder(2,:),'MarkerSize',markersize);
+semilogx(res_sens,psi_shelf_mean_sens(res_idx_notides),'o-','Color',colororder(2,:),'MarkerSize',markersize,'LineWidth',linewidth);
 for m=1:length(res_idx_tides)
   mean_tmp = psi_shelf_mean_sens(res_idx_notides(m));
   std_tmp = psi_shelf_std_sens(res_idx_notides(m));
@@ -325,8 +358,10 @@ set(gca,'XLim',[(7/8)*res_sens(1) (8/7)*res_sens(end)]);
 
 %%% Cavity MOC strength
 subplot('Position',axpos(3,:));
-semilogx(res_sens,psi_cavity_mean_sens(res_idx_tides),'o-','Color',colororder(1,:),'MarkerSize',markersize);
+semilogx(res_sens,psi_cavity_mean_sens(res_idx_tides),'o-','Color',colororder(1,:),'MarkerSize',markersize,'LineWidth',linewidth);
 hold on;
+semilogx(res_sens,psimean_cavity_sens(res_idx_tides),'s--','Color',colororder(1,:),'MarkerSize',markersize,'LineWidth',linewidth);
+semilogx(res_sens,psimean_cavity_sens(res_idx_notides),'s--','Color',colororder(2,:),'MarkerSize',markersize,'LineWidth',linewidth);
 for m=1:length(res_idx_tides)
   mean_tmp = psi_cavity_mean_sens(res_idx_tides(m));
   std_tmp = psi_cavity_std_sens(res_idx_tides(m));
@@ -334,7 +369,7 @@ for m=1:length(res_idx_tides)
   semilogx([res_sens(m)/errbar_width_fac res_sens(m)*errbar_width_fac],[mean_tmp+std_tmp mean_tmp+std_tmp],'Color',colororder(1,:),'LineWidth',errbar_linewidth);
   semilogx([res_sens(m)/errbar_width_fac res_sens(m)*errbar_width_fac],[mean_tmp-std_tmp mean_tmp-std_tmp],'Color',colororder(1,:),'LineWidth',errbar_linewidth);
 end
-semilogx(res_sens,psi_cavity_mean_sens(res_idx_notides),'o-','Color',colororder(2,:),'MarkerSize',markersize);
+semilogx(res_sens,psi_cavity_mean_sens(res_idx_notides),'o-','Color',colororder(2,:),'MarkerSize',markersize,'LineWidth',linewidth);
 for m=1:length(res_idx_tides)
   mean_tmp = psi_cavity_mean_sens(res_idx_notides(m));
   std_tmp = psi_cavity_std_sens(res_idx_notides(m));
@@ -352,8 +387,10 @@ set(gca,'XLim',[(7/8)*res_sens(1) (8/7)*res_sens(end)]);
 
 %%% Eddy MOC strength
 subplot('Position',axpos(4,:));
-semilogx(res_sens,psi_eddy_mean_sens(res_idx_tides),'o-','Color',colororder(1,:),'MarkerSize',markersize);
+semilogx(res_sens,psi_eddy_mean_sens(res_idx_tides),'o-','Color',colororder(1,:),'MarkerSize',markersize,'LineWidth',linewidth);
 hold on;
+semilogx(res_sens,psimean_eddy_sens(res_idx_tides),'s--','Color',colororder(1,:),'MarkerSize',markersize,'LineWidth',linewidth);
+semilogx(res_sens,psimean_eddy_sens(res_idx_notides),'s--','Color',colororder(2,:),'MarkerSize',markersize,'LineWidth',linewidth);
 for m=1:length(res_idx_tides)
   mean_tmp = psi_eddy_mean_sens(res_idx_tides(m));
   std_tmp = psi_eddy_std_sens(res_idx_tides(m));
@@ -361,7 +398,7 @@ for m=1:length(res_idx_tides)
   semilogx([res_sens(m)/errbar_width_fac res_sens(m)*errbar_width_fac],[mean_tmp+std_tmp mean_tmp+std_tmp],'Color',colororder(1,:),'LineWidth',errbar_linewidth);
   semilogx([res_sens(m)/errbar_width_fac res_sens(m)*errbar_width_fac],[mean_tmp-std_tmp mean_tmp-std_tmp],'Color',colororder(1,:),'LineWidth',errbar_linewidth);
 end
-semilogx(res_sens,psi_eddy_mean_sens(res_idx_notides),'o-','Color',colororder(2,:),'MarkerSize',markersize);
+semilogx(res_sens,psi_eddy_mean_sens(res_idx_notides),'o-','Color',colororder(2,:),'MarkerSize',markersize,'LineWidth',linewidth);
 for m=1:length(res_idx_tides)
   mean_tmp = psi_eddy_mean_sens(res_idx_notides(m));
   std_tmp = psi_eddy_std_sens(res_idx_notides(m));
@@ -370,7 +407,7 @@ for m=1:length(res_idx_tides)
   semilogx([res_sens(m)/errbar_width_fac res_sens(m)*errbar_width_fac],[mean_tmp-std_tmp mean_tmp-std_tmp],'Color',colororder(2,:),'LineWidth',errbar_linewidth);
 end
 hold off;
-set(gca,'YLim',[0 1.5]);
+% set(gca,'YLim',[0 1.5]);
 set(gca,'FontSize',fontsize);
 % xlabel('Horizontal grid spacing ($^\circ$)','interpreter','latex');
 ylabel('Eddy MOC strength (Sv)','interpreter','latex');
@@ -380,8 +417,10 @@ set(gca,'XLim',[(7/8)*res_sens(1) (8/7)*res_sens(end)]);
 
 %%% AABW density
 subplot('Position',axpos(5,:));
-semilogx(res_sens,AABWdens_full_mean_sens(res_idx_tides),'o-','Color',colororder(1,:),'MarkerSize',markersize);
+semilogx(res_sens,AABWdens_full_mean_sens(res_idx_tides),'o-','Color',colororder(1,:),'MarkerSize',markersize,'LineWidth',linewidth);
 hold on;
+semilogx(res_sens,AABWdensMean_full_sens(res_idx_tides),'s--','Color',colororder(1,:),'MarkerSize',markersize,'LineWidth',linewidth);
+semilogx(res_sens,AABWdensMean_full_sens(res_idx_notides),'s--','Color',colororder(2,:),'MarkerSize',markersize,'LineWidth',linewidth);
 for m=1:length(res_idx_tides)
   mean_tmp = AABWdens_full_mean_sens(res_idx_tides(m));
   std_tmp = AABWdens_full_std_sens(res_idx_tides(m));
@@ -389,7 +428,7 @@ for m=1:length(res_idx_tides)
   semilogx([res_sens(m)/errbar_width_fac res_sens(m)*errbar_width_fac],[mean_tmp+std_tmp mean_tmp+std_tmp],'Color',colororder(1,:),'LineWidth',errbar_linewidth);
   semilogx([res_sens(m)/errbar_width_fac res_sens(m)*errbar_width_fac],[mean_tmp-std_tmp mean_tmp-std_tmp],'Color',colororder(1,:),'LineWidth',errbar_linewidth);
 end
-semilogx(res_sens,AABWdens_full_mean_sens(res_idx_notides),'o-','Color',colororder(2,:),'MarkerSize',markersize);
+semilogx(res_sens,AABWdens_full_mean_sens(res_idx_notides),'o-','Color',colororder(2,:),'MarkerSize',markersize,'LineWidth',linewidth);
 for m=1:length(res_idx_tides)
   mean_tmp = AABWdens_full_mean_sens(res_idx_notides(m));
   std_tmp = AABWdens_full_std_sens(res_idx_notides(m));
@@ -408,8 +447,10 @@ set(gca,'XLim',[(7/8)*res_sens(1) (8/7)*res_sens(end)]);
 
 %%% Shelf AABW density
 subplot('Position',axpos(6,:));
-semilogx(res_sens,AABWdens_shelf_mean_sens(res_idx_tides),'o-','Color',colororder(1,:),'MarkerSize',markersize);
+semilogx(res_sens,AABWdens_shelf_mean_sens(res_idx_tides),'o-','Color',colororder(1,:),'MarkerSize',markersize,'LineWidth',linewidth);
 hold on;
+semilogx(res_sens,AABWdensMean_shelf_sens(res_idx_tides),'s--','Color',colororder(1,:),'MarkerSize',markersize,'LineWidth',linewidth);
+semilogx(res_sens,AABWdensMean_shelf_sens(res_idx_notides),'s--','Color',colororder(2,:),'MarkerSize',markersize,'LineWidth',linewidth);
 for m=1:length(res_idx_tides)
   mean_tmp = AABWdens_shelf_mean_sens(res_idx_tides(m));
   std_tmp = AABWdens_shelf_std_sens(res_idx_tides(m));
@@ -417,7 +458,7 @@ for m=1:length(res_idx_tides)
   semilogx([res_sens(m)/errbar_width_fac res_sens(m)*errbar_width_fac],[mean_tmp+std_tmp mean_tmp+std_tmp],'Color',colororder(1,:),'LineWidth',errbar_linewidth);
   semilogx([res_sens(m)/errbar_width_fac res_sens(m)*errbar_width_fac],[mean_tmp-std_tmp mean_tmp-std_tmp],'Color',colororder(1,:),'LineWidth',errbar_linewidth);
 end
-semilogx(res_sens,AABWdens_shelf_mean_sens(res_idx_notides),'o-','Color',colororder(2,:),'MarkerSize',markersize);
+semilogx(res_sens,AABWdens_shelf_mean_sens(res_idx_notides),'o-','Color',colororder(2,:),'MarkerSize',markersize,'LineWidth',linewidth);
 for m=1:length(res_idx_tides)
   mean_tmp = AABWdens_shelf_mean_sens(res_idx_notides(m));
   std_tmp = AABWdens_shelf_std_sens(res_idx_notides(m));
@@ -436,7 +477,7 @@ set(gca,'XLim',[(7/8)*res_sens(1) (8/7)*res_sens(end)]);
 
 %%% FRIS melt
 subplot('Position',axpos(7,:));
-semilogx(res_sens,FRISmelt_mean_sens(res_idx_tides)/1e12*t1year,'o-','Color',colororder(1,:),'MarkerSize',markersize);
+semilogx(res_sens,FRISmelt_mean_sens(res_idx_tides)/1e12*t1year,'o-','Color',colororder(1,:),'MarkerSize',markersize,'LineWidth',linewidth);
 hold on;
 for m=1:length(res_idx_tides)
   mean_tmp = FRISmelt_mean_sens(res_idx_tides(m))/1e12*t1year;
@@ -445,7 +486,7 @@ for m=1:length(res_idx_tides)
   semilogx([res_sens(m)/errbar_width_fac res_sens(m)*errbar_width_fac],[mean_tmp+std_tmp mean_tmp+std_tmp],'Color',colororder(1,:),'LineWidth',errbar_linewidth);
   semilogx([res_sens(m)/errbar_width_fac res_sens(m)*errbar_width_fac],[mean_tmp-std_tmp mean_tmp-std_tmp],'Color',colororder(1,:),'LineWidth',errbar_linewidth);
 end
-semilogx(res_sens,FRISmelt_mean_sens(res_idx_notides)/1e12*t1year,'o-','Color',colororder(2,:),'MarkerSize',markersize);
+semilogx(res_sens,FRISmelt_mean_sens(res_idx_notides)/1e12*t1year,'o-','Color',colororder(2,:),'MarkerSize',markersize,'LineWidth',linewidth);
 for m=1:length(res_idx_tides)
   mean_tmp = FRISmelt_mean_sens(res_idx_notides(m))/1e12*t1year;
   std_tmp = FRISmelt_std_sens(res_idx_notides(m))/1e12*t1year;
@@ -464,7 +505,7 @@ set(gca,'XLim',[(7/8)*res_sens(1) (8/7)*res_sens(end)]);
 
 %%% Shelf buoyancy loss
 subplot('Position',axpos(8,:));
-semilogx(res_sens,shelfBuoyLoss_mean_sens(res_idx_tides),'o-','Color',colororder(1,:),'MarkerSize',markersize);
+semilogx(res_sens,shelfBuoyLoss_mean_sens(res_idx_tides),'o-','Color',colororder(1,:),'MarkerSize',markersize,'LineWidth',linewidth);
 hold on;
 for m=1:length(res_idx_tides)
   mean_tmp = shelfBuoyLoss_mean_sens(res_idx_tides(m));
@@ -473,7 +514,7 @@ for m=1:length(res_idx_tides)
   semilogx([res_sens(m)/errbar_width_fac res_sens(m)*errbar_width_fac],[mean_tmp+std_tmp mean_tmp+std_tmp],'Color',colororder(1,:),'LineWidth',errbar_linewidth);
   semilogx([res_sens(m)/errbar_width_fac res_sens(m)*errbar_width_fac],[mean_tmp-std_tmp mean_tmp-std_tmp],'Color',colororder(1,:),'LineWidth',errbar_linewidth);
 end
-semilogx(res_sens,shelfBuoyLoss_mean_sens(res_idx_notides),'o-','Color',colororder(2,:),'MarkerSize',markersize);
+semilogx(res_sens,shelfBuoyLoss_mean_sens(res_idx_notides),'o-','Color',colororder(2,:),'MarkerSize',markersize,'LineWidth',linewidth);
 for m=1:length(res_idx_tides)
   mean_tmp = shelfBuoyLoss_mean_sens(res_idx_notides(m));
   std_tmp = shelfBuoyLoss_std_sens(res_idx_notides(m));

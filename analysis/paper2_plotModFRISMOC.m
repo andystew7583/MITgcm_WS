@@ -11,7 +11,7 @@
 
 %%% Load experiment
 expdir = '../experiments';
-expname = 'hires_seq_onesixth_RTOPO2';
+expname = 'hires_seq_onetwelfth_RTOPO2';
 loadexp;
 
 %%% Options (see calcOverturning)
@@ -23,7 +23,7 @@ psimax = 6;
 psistep = 0.25;
 % psimax = 2;
 % psistep = 0.1;
-ylim = [27.3 28.2];
+ylim = [27.2 28.1];
 % ylim = [27.3 29];
 
 %%% Construct output file name
@@ -128,7 +128,8 @@ set(gca,'FontSize',fontsize);
 cbhandle = colorbar;
 set(cbhandle,'Position',cb2_pos);
 title(cbhandle,'Sv');
-text(7,28.15,'Overturning streamfunction, \psi','FontSize',fontsize+2);
+text(7,28.05,'Overturning streamfunction, \psi','FontSize',fontsize+2);
+
 
 %%% Panel labels
 annotation('textbox',[axpos(1,1)-0.07 axpos(1,2)-0.04 0.03 0.03],'String',axlabels{1},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');

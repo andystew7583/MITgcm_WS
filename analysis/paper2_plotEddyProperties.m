@@ -1,103 +1,103 @@
-% %%%
-% %%% paper2_plotEddyProperties.m
-% %%%
-% %%% Plots properties of mesoscale eddies in our Weddell Sea simulations.
-% %%%
-% 
-% %%% Load experiment
-% expdir = '../experiments';
-% expname = 'hires_seq_onetwelfth_notides_RTOPO2';
-% loadexp;
-% 
-% %%% Load pre-computed EKE and EKE production products
-% outfname = [expname,'_EKE.mat'];
-% load(fullfile('products',outfname));
-% 
-% %%% Load pre-computed thickness fluxes
-% outfname = [expname,'_AABWcirc_.mat'];
-% load(fullfile('products',outfname));
-% 
-% %%% Load snapshots
-% % dumpIter = 1774980;
-% dumpIter = 1753067;
-% uvel = rdmdsWrapper(fullfile(exppath,'/results/U'),dumpIter);      
-% vvel = rdmdsWrapper(fullfile(exppath,'/results/V'),dumpIter);
-% theta = rdmdsWrapper(fullfile(exppath,'/results/T'),dumpIter);
-% 
-% 
-%   
-%   
-%   
-% 
-% 
-% 
-% 
-% 
-% 
-% 
-% 
-% %%%%%%%%%%%%%%%%%%%%
-% %%% CALCULATIONS %%%
-% %%%%%%%%%%%%%%%%%%%%
-% 
-% %%% Compute relative vorticity
-% uvel(hFacW==0) = NaN;
-% vvel(hFacS==0) = NaN;
-% vort = zeros(Nx,Ny,Nr);
-% vort(:,2:Ny,:) = - (uvel(:,2:Ny,:)-uvel(:,1:Ny-1,:))./repmat(DYC(:,2:Ny),[1 1 Nr]);
-% vort(2:Nx,:,:) = vort(2:Nx,:,:) + (vvel(2:Nx,:,:)-vvel(1:Nx-1,:,:))./repmat(DXC(2:Nx,:),[1 1 Nr]);
-% hFacQ = zeros(Nx,Ny,Nr);
-% for i=2:Nx
-%   for j=2:Ny
-%     for k=1:Nr
-%       hFacQ(i,j,k) = min([hFacW(i,j,k),hFacW(i,j-1,k),hFacS(i,j,k),hFacS(i-1,j,k)]);
+%%%
+%%% paper2_plotEddyProperties.m
+%%%
+%%% Plots properties of mesoscale eddies in our Weddell Sea simulations.
+%%%
+
+%%% Load experiment
+expdir = '../experiments';
+expname = 'hires_seq_onetwelfth_notides_RTOPO2';
+loadexp;
+
+%%% Load pre-computed EKE and EKE production products
+outfname = [expname,'_EKE.mat'];
+load(fullfile('products',outfname));
+
+%%% Load pre-computed thickness fluxes
+outfname = [expname,'_AABWcirc_.mat'];
+load(fullfile('products',outfname));
+
+%%% Load snapshots
+% dumpIter = 1774980;
+dumpIter = 1753067;
+uvel = rdmdsWrapper(fullfile(exppath,'/results/U'),dumpIter);      
+vvel = rdmdsWrapper(fullfile(exppath,'/results/V'),dumpIter);
+theta = rdmdsWrapper(fullfile(exppath,'/results/T'),dumpIter);
+
+
+  
+  
+  
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%
+%%% CALCULATIONS %%%
+%%%%%%%%%%%%%%%%%%%%
+
+%%% Compute relative vorticity
+uvel(hFacW==0) = NaN;
+vvel(hFacS==0) = NaN;
+vort = zeros(Nx,Ny,Nr);
+vort(:,2:Ny,:) = - (uvel(:,2:Ny,:)-uvel(:,1:Ny-1,:))./repmat(DYC(:,2:Ny),[1 1 Nr]);
+vort(2:Nx,:,:) = vort(2:Nx,:,:) + (vvel(2:Nx,:,:)-vvel(1:Nx-1,:,:))./repmat(DXC(2:Nx,:),[1 1 Nr]);
+hFacQ = zeros(Nx,Ny,Nr);
+for i=2:Nx
+  for j=2:Ny
+    for k=1:Nr
+      hFacQ(i,j,k) = min([hFacW(i,j,k),hFacW(i,j-1,k),hFacS(i,j,k),hFacS(i-1,j,k)]);
+    end
+  end
+end
+vort_avg = nansum(vort.*DRF.*hFacQ,3) ./ sum(DRF.*hFacQ,3);
+Omega = 2*pi*366/365/86400;
+ff = 2*Omega*sind(YG);
+  
+%%% Construct bottom temp
+theta(hFacC==0) = NaN;
+% thetabot = theta(:,:,40);
+% for i=1:Nx
+%   for j=1:Ny
+%     if (isnan(thetabot(i,j)))
+%       kmax = find(~isnan(theta(i,j,:)),1,'last');
+%       if (~isempty(kmax))
+%         thetabot(i,j) = theta(i,j,kmax);
+%       end
 %     end
 %   end
 % end
-% vort_avg = nansum(vort.*DRF.*hFacQ,3) ./ sum(DRF.*hFacQ,3);
-% Omega = 2*pi*366/365/86400;
-% ff = 2*Omega*sind(YG);
-%   
-% %%% Construct bottom temp
-% theta(hFacC==0) = NaN;
-% % thetabot = theta(:,:,40);
-% % for i=1:Nx
-% %   for j=1:Ny
-% %     if (isnan(thetabot(i,j)))
-% %       kmax = find(~isnan(theta(i,j,:)),1,'last');
-% %       if (~isempty(kmax))
-% %         thetabot(i,j) = theta(i,j,kmax);
-% %       end
-% %     end
-% %   end
-% % end
-% 
-% %%% Density bounds for water masses
-% dens_AABW = 27.85;
-% 
-% %%% Density grid indices for water masses
-% k_AABW = find(dens_levs==dens_AABW);
-% 
-% %%% AABW layer thickness
-% H_AABW_w = sum(uthic_tavg(:,:,k_AABW:end),3);
-% H_AABW_s = sum(vthic_tavg(:,:,k_AABW:end),3);
-% 
-% %%% Transports and TWA velocities 
-% hu_AABW = sum(uflux_tavg(:,:,k_AABW:end),3);
-% u_AABW = hu_AABW ./ H_AABW_w;
-% hv_AABW = sum(vflux_tavg(:,:,k_AABW:end),3);
-% v_AABW = hv_AABW ./ H_AABW_s;
-% 
-% %%% Remove boundaries
-% hu_AABW(:,end-spongethickness+1:end) = NaN;
-% hv_AABW(:,end-spongethickness+1:end) = NaN;
-% hu_AABW(end-spongethickness+1:end,:) = NaN;
-% hv_AABW(end-spongethickness+1:end,:) = NaN;
-% u_AABW(:,end-spongethickness+1:end) = NaN;
-% v_AABW(:,end-spongethickness+1:end) = NaN;
-% u_AABW(end-spongethickness+1:end,:) = NaN;
-% v_AABW(end-spongethickness+1:end,:) = NaN;
-% 
+
+%%% Density bounds for water masses
+dens_AABW = 27.85;
+
+%%% Density grid indices for water masses
+k_AABW = find(dens_levs==dens_AABW);
+
+%%% AABW layer thickness
+H_AABW_w = sum(uthic_tavg(:,:,k_AABW:end),3);
+H_AABW_s = sum(vthic_tavg(:,:,k_AABW:end),3);
+
+%%% Transports and TWA velocities 
+hu_AABW = sum(uflux_tavg(:,:,k_AABW:end),3);
+u_AABW = hu_AABW ./ H_AABW_w;
+hv_AABW = sum(vflux_tavg(:,:,k_AABW:end),3);
+v_AABW = hv_AABW ./ H_AABW_s;
+
+%%% Remove boundaries
+hu_AABW(:,end-spongethickness+1:end) = NaN;
+hv_AABW(:,end-spongethickness+1:end) = NaN;
+hu_AABW(end-spongethickness+1:end,:) = NaN;
+hv_AABW(end-spongethickness+1:end,:) = NaN;
+u_AABW(:,end-spongethickness+1:end) = NaN;
+v_AABW(:,end-spongethickness+1:end) = NaN;
+u_AABW(end-spongethickness+1:end,:) = NaN;
+v_AABW(end-spongethickness+1:end,:) = NaN;
+
 %%% Mean/eddy decomposition
 hu_AABW_mean = sum(uflux_mean(:,:,k_AABW:end),3);
 u_AABW_mean = hu_AABW_mean ./ H_AABW_w;
@@ -229,8 +229,10 @@ set(h,'Position',cbpos(1,:));
 
 %%% Add bathymetry contours
 hold on;
-[C,h] = contour(XC,YC,SHELFICEtopo-bathy,bathycntrs,'EdgeColor',[.3 .3 .3]); 
+[C,h] = contour(XC,YC,SHELFICEtopo-bathy,[3000 4000],'EdgeColor',[.3 .3 .3]); 
 clabel(C,h,'Color',[.3 .3 .3]);
+[C,h] = contour(XC,YC,SHELFICEtopo-bathy,[500 1000 2000],'EdgeColor','w'); 
+clabel(C,h,'Color','w');
 hold off
 
 %%% Labels
@@ -238,7 +240,7 @@ set(gca,'FontSize',fontsize);
 % xlabel('Longitude','interpreter','latex');
 ylabel('Latitude','interpreter','latex');
 axis([lonMin lonMax latMin latMax]);
-title('Potential temperature (^oC)');
+title('Potential temperature at 340m (^oC)');
 % set(gca,'Color',[.8 .8 .8]);
 
 

@@ -8,6 +8,8 @@
 expdir = '../experiments';
 expname = 'hires_seq_onetwelfth_RTOPO2';
 expname_notides = 'hires_seq_onetwelfth_notides_RTOPO2';
+% expname = 'hires_seq_onethird_RTOPO2';
+% expname_notides = 'hires_seq_onethird_notides_RTOPO2';
 
 %%% Options (see calcTSfluxes)
 deform_cavity = false;
@@ -36,6 +38,10 @@ sltflux_fluc_plot = sltflux_fluc;
 sltflux_eddy_plot = mean(sltflux_eddy,2);
 sltflux_tot_notides = sltflux_stand+sltflux_fluc+mean(sltflux_eddy,2);
 sltflux_tide_plot = sltflux_tot_tides - sltflux_tot_notides;
+thflux_eddy_adv_plot = mean(thflux_eddy_adv,2);
+thflux_eddy_stir_plot = mean(thflux_eddy_stir,2);
+sltflux_eddy_adv_plot = mean(sltflux_eddy_adv,2);
+sltflux_eddy_stir_plot = mean(sltflux_eddy_stir,2);
 
 
 
@@ -50,12 +56,16 @@ sltflux_tide_plot = sltflux_tot_tides - sltflux_tot_notides;
 fontsize = 14;
 bathycntrs = [0 250 500 1000 2000 3000 4000];
 axpos = zeros(4,4);
-axpos(1,:) = [0.07 0.54 .9 .43];
-axpos(2,:) = [0.07 0.05 .9 .43];
+axpos(1,:) = [0.07 0.54 .41 .41];
+axpos(2,:) = [0.56 0.54 .41 .41];
+axpos(3,:) = [0.07 0.05 .41 .41];
+axpos(4,:) = [0.56 0.05 .41 .41];
 cbpos = [0.95 0.05 0.015 .93];
 axlabels = {'(a)','(b)'};
 rho0 = 1027;
 Cp = 4000;
+colororder = get(gca,'ColorOrder');
+linewidth = 1.5;
 
 
 
@@ -63,16 +73,16 @@ Cp = 4000;
 figure(211)
 clf
 scrsz = get(0,'ScreenSize');
-set(gcf,'Position',[382    39   770   946]);
+set(gcf,'Position',[382    39   1000   946]);
 
 %%% Heat flux
 subplot('Position',axpos(1,:));
-plot(eta,rho0*Cp*thflux_mean_plot/1e12);
+plot(eta,rho0*Cp*thflux_mean_plot/1e12,'LineWidth',linewidth);
 hold on;
-plot(eta,rho0*Cp*thflux_fluc_plot/1e12);
-plot(eta,rho0*Cp*thflux_eddy_plot/1e12);
-plot(eta,rho0*Cp*thflux_tide_plot/1e12);
-plot(eta,rho0*Cp*thflux_tot_plot/1e12);
+plot(eta,rho0*Cp*thflux_fluc_plot/1e12,'LineWidth',linewidth);
+plot(eta,rho0*Cp*thflux_eddy_plot/1e12,'LineWidth',linewidth);
+plot(eta,rho0*Cp*thflux_tide_plot/1e12,'LineWidth',linewidth);
+plot(eta,rho0*Cp*thflux_tot_plot/1e12,'LineWidth',linewidth);
 plot(eta,0*eta,'k--');
 hold off;
 ylabel('Heat flux (TW)');
@@ -81,17 +91,89 @@ set(gca,'FontSize',fontsize);
 leghandle = legend('Mean','Seasonal/interannual','Eddy','Tide - No Tide','Total','Location','SouthWest');
 set(leghandle,'FontSize',fontsize);
 
+ax1 = gca;
+ax2 = axes('Position',get(ax1,'Position'));
+set(ax2,'Color','None');
+set(ax2,'XAxisLocation','Top');
+set(ax2,'YLim',get(ax1,'YLim'));
+set(ax2,'YTick',[]);
+box off;
+set(ax2,'XLim',get(ax1,'XLim')-78.16);
+set(ax2,'FontSize',fontsize);
+set(get(ax2,'XLabel'),'String','Pseudo-Latitude');
+
 %%% Salt flux
 subplot('Position',axpos(2,:));
-plot(eta,rho0*sltflux_mean_plot/1e9);
+plot(eta,rho0*sltflux_mean_plot/1e9,'LineWidth',linewidth);
 hold on;
-plot(eta,rho0*sltflux_fluc_plot/1e9);
-plot(eta,rho0*sltflux_eddy_plot/1e9);
-plot(eta,rho0*sltflux_tide_plot/1e9);
-plot(eta,rho0*sltflux_tot_plot/1e9);
+plot(eta,rho0*sltflux_fluc_plot/1e9,'LineWidth',linewidth);
+plot(eta,rho0*sltflux_eddy_plot/1e9,'LineWidth',linewidth);
+plot(eta,rho0*sltflux_tide_plot/1e9,'LineWidth',linewidth);
+plot(eta,rho0*sltflux_tot_plot/1e9,'LineWidth',linewidth);
+plot(eta,0*eta,'k--');
+hold off;
+ylabel('Salt flux (Gg/s)');
+% xlabel('MOC coordinate, \eta');
+axis([-8 10 -.4 1.4]);
+set(gca,'FontSize',fontsize);
+
+ax1 = gca;
+ax2 = axes('Position',get(ax1,'Position'));
+set(ax2,'Color','None');
+set(ax2,'XAxisLocation','Top');
+set(ax2,'YLim',get(ax1,'YLim'));
+set(ax2,'YTick',[]);
+box off;
+set(ax2,'XLim',get(ax1,'XLim')-78.16);
+set(ax2,'FontSize',fontsize);
+set(get(ax2,'XLabel'),'String','Pseudo-Latitude');
+
+%%% Eddy heat flux
+subplot('Position',axpos(3,:));
+plot(eta,rho0*Cp*thflux_eddy_plot/1e12,'Color',colororder(3,:),'LineWidth',linewidth);
+hold on;
+plot(eta,rho0*Cp*thflux_eddy_adv_plot/1e12,'Color',colororder(6,:),'LineWidth',linewidth);
+plot(eta,rho0*Cp*thflux_eddy_stir_plot/1e12,'Color',colororder(7,:),'LineWidth',linewidth);
+plot(eta,0*eta,'k--');
+hold off;
+ylabel('Heat flux (TW)');
+xlabel('MOC coordinate, \eta');
+axis([-8 10 -8 2]);
+set(gca,'FontSize',fontsize);
+leghandle = legend('Eddy','Eddy advection','Eddy stirring','Location','SouthWest');
+set(leghandle,'FontSize',fontsize);
+
+ax1 = gca;
+ax2 = axes('Position',get(ax1,'Position'));
+set(ax2,'Color','None');
+set(ax2,'XAxisLocation','Top');
+set(ax2,'YLim',get(ax1,'YLim'));
+set(ax2,'YTick',[]);
+box off;
+set(ax2,'XLim',get(ax1,'XLim')-78.16);
+set(ax2,'FontSize',fontsize);
+% set(get(ax2,'XLabel'),'String','Pseudo-Latitude');
+
+%%% Eddy salt flux
+subplot('Position',axpos(4,:));
+plot(eta,rho0*sltflux_eddy_plot/1e9,'Color',colororder(3,:),'LineWidth',linewidth);
+hold on;
+plot(eta,rho0*sltflux_eddy_adv_plot/1e9,'Color',colororder(6,:),'LineWidth',linewidth);
+plot(eta,rho0*sltflux_eddy_stir_plot/1e9,'Color',colororder(7,:),'LineWidth',linewidth);
 plot(eta,0*eta,'k--');
 hold off;
 ylabel('Salt flux (Gg/s)');
 xlabel('MOC coordinate, \eta');
-axis([-8 10 -.4 1.4]);
+axis([-8 10 -.1 .3]);
 set(gca,'FontSize',fontsize);
+
+ax1 = gca;
+ax2 = axes('Position',get(ax1,'Position'));
+set(ax2,'Color','None');
+set(ax2,'XAxisLocation','Top');
+set(ax2,'YLim',get(ax1,'YLim'));
+set(ax2,'YTick',[]);
+box off;
+set(ax2,'XLim',get(ax1,'XLim')-78.16);
+set(ax2,'FontSize',fontsize);
+% set(get(ax2,'XLabel'),'String','Pseudo-Latitude');

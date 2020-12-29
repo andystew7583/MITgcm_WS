@@ -17,6 +17,9 @@ function ETA = defineMOCgrid (XC,YC,icedraft,bathy,deform_cavity)
 
   %%% Rotated coordinate grid
   ETA0 = (YC-lat1)*cos(phic) - (XC-lon1)*sin(phic);
+  sin(phic)/cos(phic)
+  sin(phic)
+  cos(phic)
 
   %%% If needed, modify the coordinates within the FRIS cavity
   if (deform_cavity)

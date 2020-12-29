@@ -76,7 +76,7 @@ disp(6);
 
 %%% Plotting options
 fontsize = 14;
-linewidth = 1.5;
+linewidth = 1;
 latMin = min(min(YC_onetwelfth_tides));
 latMax = -72;
 lonMin = -80;

@@ -10,7 +10,7 @@
 
 %%% Options
 expdir = '../experiments';
-expname = 'hires_seq_onetwelfth_notides_RTOPO2';
+expname = 'hires_seq_onetwelfth_RTOPO2';
 loadexp;
 tmin = 1.05*t1year;
 tmax = 9.05*t1year;
@@ -281,8 +281,8 @@ shading interp;
 
 %%% Add colorbar and title
 h = colorbar;
-colormap(gca,cmocean('balance',50));
-caxis([-1 1]);
+colormap(gca,cmocean('balance',200));
+caxis([-.5 .5]);
 set(h,'Position',cbpos(3,:));
 title(h,'mm/s','Fontsize',fontsize,'interpreter','latex');
 

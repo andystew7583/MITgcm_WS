@@ -98,9 +98,9 @@ plot(-38*ones(1,Ny),YC(1,:),'k--','Color',[.3 .3 .3],'LineWidth',2);
 hold off;
 clabel(C,h);
 caxis([0 5000]);
-ylabel('Latitude');
-xlabel('Longitude');
-text(-13,-82,'Modified MOC coordinate, \eta','FontSize',fontsize+2);
+ylabel('Latitude','interpreter','latex');
+xlabel('Longitude','interpreter','latex');
+text(-13,-82,'Modified MOC coordinate, $\tilde{\eta}$','FontSize',fontsize+2,'interpreter','latex');
 set(gca,'FontSize',fontsize);
 set(gca,'Color',[.85 .85 .85]);
 cbhandle = colorbar;
@@ -122,13 +122,13 @@ set(gca,'YDir','reverse');
 set(gca,'YLim',ylim);
 set(gca,'XLim',[0 10.5]);
 colormap(gca,cmocean('balance',round(2*psimax/(psistep))));%,'pivot',0));
-xlabel('Modified MOC coordinate, \eta');
-ylabel('Potential density (kg/m^3)')
+xlabel('Modified MOC coordinate, $\tilde{\eta}$','interpreter','latex');
+ylabel('Potential density (kg/m$^3$)','interpreter','latex')
 set(gca,'FontSize',fontsize);
 cbhandle = colorbar;
 set(cbhandle,'Position',cb2_pos);
 title(cbhandle,'Sv');
-text(7,28.05,'Overturning streamfunction, \psi','FontSize',fontsize+2);
+text(7,28.05,'Overturning streamfunction, $\psi^\sigma$','FontSize',fontsize+2,'interpreter','latex');
 
 
 %%% Panel labels

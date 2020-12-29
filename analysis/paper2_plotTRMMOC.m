@@ -98,7 +98,7 @@ set(gca,'YLim',ylim);
 colormap(cmocean('balance',round(2*psimax/psistep)));
 xlabel('MOC coordinate, \eta');
 ylabel('Potential density (kg/m^3)');
-text(2.6,27.45,'LAYERS','FontSize',fontsize+2);
+text(2.6,27.45,'Diagnosed','FontSize',fontsize+2);
 set(gca,'FontSize',fontsize);
 box off;
 

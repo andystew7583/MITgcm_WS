@@ -20,7 +20,7 @@ clf
 scrsz = get(0,'ScreenSize');
 set(gcf,'Position',[417    34   681   926]);
 % fontsize = 18;
-
+fontsize = 12;
 
 
 

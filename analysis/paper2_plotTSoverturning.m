@@ -69,7 +69,7 @@ axlabels = {'(a)','(b)','(c)'};
 psimax = 7;
 psistep = 0.25;
 colorcntrs = [-psimax:psistep:psimax];
-linecntrs = [-8 -6 -4 -3 -2 -1 -0.25 0.25 0.5 1];
+linecntrs = [-8 -6 -4 -3 -2 -1 -0.25 0.2 0.4];
 % linecntrs = [];
 
 figure(205);                
@@ -149,7 +149,7 @@ set(gca,'FontSize',fontsize);
 cbhandle = colorbar;
 set(cbhandle,'Position',cb3_pos);
 title(cbhandle,'Sv');
-text(34.03,1,'T/S streamfunction','FontSize',fontsize+2,'fontweight','bold');
+text(34.03,1,'Thermohaline streamfunction','FontSize',fontsize+2,'fontweight','bold');
 text(34.8,-1.8,'HSSW','FontSize',fontsize);
 text(34.71,0.6,'WDW','FontSize',fontsize);
 text(34.75,-2.3,'ISW','FontSize',fontsize);

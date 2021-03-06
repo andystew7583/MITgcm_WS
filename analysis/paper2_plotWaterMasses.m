@@ -12,7 +12,7 @@
 expdir = '../experiments';
 % expname = 'hires_seq_onethird_RTOPO2';
 % expname = 'hires_seq_onesixth_notides_RTOPO2';
-expname = 'hires_seq_onetwelfth_notides_RTOPO2';
+expname = 'hires_seq_onetwelfth_RTOPO2';
 loadexp;
 
 
@@ -55,13 +55,16 @@ ETA = repmat(ETA,[1 1 Nr]);
 %%%%% LOAD REFERENCE STATE %%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%% Load data file
+%%% Load data filess
 outfname = [expname,'_TSfluxes'];
 outfname = [outfname,'.mat'];
 pt_ref = load(fullfile('products',outfname),'theta_tavg');
 pt_ref = pt_ref.theta_tavg;
 ss_ref = load(fullfile('products',outfname),'salt_tavg');
 ss_ref = ss_ref.salt_tavg;
+outfname = [expname,'_SeasonalStrat'];
+outfname = [outfname,'.mat'];
+load(fullfile('products',outfname));
 
 %%% Pressure is just Boussinesq hydrostatic reference pressure
 pp_ref = -gravity*rhoConst*repmat(RC,[Nx Ny 1])/1e4;
@@ -69,9 +72,15 @@ pp_ref = -gravity*rhoConst*repmat(RC,[Nx Ny 1])/1e4;
 %%% Remove topography
 pt_ref(hFacC==0) = NaN;
 ss_ref(hFacC==0) = NaN;
+theta_djf(hFacC==0) = NaN;
+theta_jja(hFacC==0) = NaN;
+salt_djf(hFacC==0) = NaN;
+salt_jja(hFacC==0) = NaN;
 
 %%% Potential density
 pd_ref = densjmd95(ss_ref,pt_ref,-gravity*rhoConst*repmat(RC(1),[Nx Ny Nr])/1e4);
+pd_djf = densjmd95(salt_djf,theta_djf,-gravity*rhoConst*repmat(RC(1),[Nx Ny Nr])/1e4);
+pd_jja = densjmd95(salt_jja,theta_jja,-gravity*rhoConst*repmat(RC(1),[Nx Ny Nr])/1e4);
 
 
 
@@ -114,17 +123,17 @@ load_NARE85_IC92;
 %%%%%%%%%%%%%%%%%%%%%%%%%%
                 
                 
-fontsize = 14;
+fontsize = 12;
 framepos = [417    34   864   926];
 labelspacing = 200;
 axpos = zeros(6,4);
-axpos(1,:) = [0.08 0.66 0.41 0.32];
+axpos(1,:) = [0.08 0.66 0.39 0.3];
 axpos(2,:) = [0.59 0.65 0.37 0.3];
 axpos(3,:) = [0.08 0.35 0.38 0.25];
 axpos(4,:) = [0.54 0.35 0.38 0.25];
 axpos(5,:) = [0.08 0.05 0.38 0.25];
 axpos(6,:) = [0.54 0.05 0.38 0.25];
-cb1_pos = [0.5 0.66 0.02 0.32];
+cb1_pos = [0.48 0.66 0.02 0.3];
 cb2_pos = [0.93 0.65 0.02 0.15];
 cb3_pos = [0.94 0.35 0.02 0.25];
 cb4_pos = [0.94 0.05 0.02 0.25];
@@ -150,9 +159,9 @@ TSvol_plot(TSvol_full==0) = NaN;
 subplot('Position',axpos(1,:));
 pcolor(SSS,TTT,log10(TSvol_plot));
 hold on;
-[C,h] = contour(SSS,TTT,DDD,[27:.1:29],'EdgeColor','k');
+[C,h] = contour(SSS,TTT,DDD,[27:.1:29],'EdgeColor',[0.5 0.5 0.5]);
 hold off;
-clabel(C,h,'LabelSpacing',labelspacing);
+clabel(C,h,'Color',[.5 .5 .5]);
 % pcolor(SSS,TTT,(TSvol));
 shading flat;
 xlabel('Salinity (g/kg)');
@@ -163,14 +172,17 @@ set(cbhandle,'Position',cb1_pos);
 colormap(gca,cmocean('amp'));
 % colormap(gca,flip(hot));
 caxis([10 14]);
+set(cbhandle,'YTick',[10 11 12 13 14]);
+set(cbhandle,'YTickLabel',{'10^1^0','10^1^1','10^1^2','10^1^3','10^1^4'});
+title(cbhandle,'m^3')
 axis([33.7 35 -2.7 1.2]);
 set(gca,'Position',axpos(1,:));
 set(gca,'FontSize',fontsize);
-text(34.8,-1.8,'HSSW','FontSize',fontsize);
-text(34.71,0.6,'WDW','FontSize',fontsize);
-text(34.75,-2.3,'ISW','FontSize',fontsize);
-text(34.4,-2,'WW','FontSize',fontsize);
-text(34.1,-0.5,'AASW','FontSize',fontsize);
+text(34.8,-1.8,'HSSW','FontSize',fontsize-2);
+text(34.71,0.6,'WDW','FontSize',fontsize-2);
+text(34.75,-2.3,'ISW','FontSize',fontsize-2);
+text(34.4,-2,'WW','FontSize',fontsize-2);
+text(34.1,-0.5,'AASW','FontSize',fontsize-2);
 
 
 
@@ -260,13 +272,13 @@ end
 %%% Make plots
 subplot('Position',axpos(3,:));
 colormap jet;
-pcolor(XX,-ZZ,squeeze(pt_ref(:,jidx,:)))
+pcolor(XX,-ZZ,squeeze(theta_djf(:,jidx,:)))
 shading interp
 hold on;
-[C,h]=contour(XX,-ZZ,squeeze(pd_ref(:,jidx,:)-1000),[27.4:.1:28.4],'EdgeColor',[.8 .8 .8]);
+[C,h]=contour(XX,-ZZ,squeeze(pd_djf(:,jidx,:)-1000),[27.4:.1:28.4],'EdgeColor',[.8 .8 .8]);
 clabel(C,h,'Color',[.8 .8 .8],'LabelSpacing',labelspacing);
 plot(XX(:,1),-bathy(:,jidx),'k-','LineWidth',2);
-contour(XX,-ZZ,squeeze(pt_ref(:,jidx,:)),[-1.9 -1.9],'EdgeColor','w','LineWidth',1.5,'LineStyle','--');
+contour(XX,-ZZ,squeeze(theta_djf(:,jidx,:)),[-1.9 -1.9],'EdgeColor','w','LineWidth',1.5,'LineStyle','--');
 hold off;
 caxis([pt_min pt_max]);
 colormap(gca,cmocean('thermal'));
@@ -293,6 +305,9 @@ hold on;
 clabel(C,h,'Color',[.8 .8 .8],'LabelSpacing',labelspacing);
 plot(NARE85_lon,-NARE85_maxdepth,'k-','LineWidth',2);
 contour(NARE85_HH,NARE85_ZZ,NARE85_pt,[-1.9 -1.9],'EdgeColor','w','LineWidth',1.5,'LineStyle','--');
+for i=1:size(IC92_HH,1)
+  plot([NARE85_HH(i,1) NARE85_HH(i,1)],[0 NARE85_ZZ(i,end)],'--','Color',[1 1 1],'LineWidth',0.5);
+end
 hold off;
 set(gca,'YDir','reverse');
 colormap(gca,cmocean('thermal'));
@@ -331,16 +346,17 @@ for i=1:Nx
   kbot = find(hFacC(i,jidx,:)>0,1,'last');
   if (~isempty(kbot))
     ZZ(i,kbot) = -sum(hFacC(i,jidx,1:kbot-1).*DRF(1:kbot-1),3)-hFacC(i,jidx,kbot)*DRF(kbot)/2;
+    ZZ(i,kbot) = bathy(i,jidx);
   end
 end
 
 %%% Make plots
 subplot('Position',axpos(5,:));
 colormap jet;
-pcolor(XX,-ZZ,squeeze(pt_ref(:,jidx,:)))
+pcolor(XX,-ZZ,squeeze(theta_jja(:,jidx,:)))
 shading interp
 hold on;
-[C,h]=contour(XX,-ZZ,squeeze(pd_ref(:,jidx,:)-1000),[27.4:.1:27.7 27.75:.05:28.4],'EdgeColor',[.8 .8 .8]);
+[C,h]=contour(XX,-ZZ,squeeze(pd_jja(:,jidx,:)-1000),[27.4:.1:27.7 27.75:.05:27.8 27.85],'EdgeColor',[.8 .8 .8]);
 clabel(C,h,'Color',[.8 .8 .8],'LabelSpacing',labelspacing);
 plot(XX(:,1),-bathy(:,jidx),'k-','LineWidth',2);
 hold off;
@@ -370,6 +386,9 @@ hold on;
 [C,h]=contour(IC92_HH,IC92_ZZ,IC92_pd,[27.4:.1:27.7 27.75:.05:28.4],'EdgeColor',[.8 .8 .8]);
 clabel(C,h,'Color',[.8 .8 .8],'LabelSpacing',labelspacing);
 plot(IC92_lon,-IC92_maxdepth,'k-','LineWidth',2);
+for i=1:size(IC92_HH,1)
+  plot([IC92_HH(i,1) IC92_HH(i,1)],[0 IC92_ZZ(i,end)],'--','Color',[1 1 1],'LineWidth',0.5);
+end
 hold off;
 set(gca,'YDir','reverse');
 xlabel('Longitude')

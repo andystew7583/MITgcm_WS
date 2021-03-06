@@ -192,6 +192,17 @@ TwistedSaltPretzal(TwistedSaltPretzal>Salt_max) = Salt_max;
 TwistedSaltPretzal(TwistedSaltPretzal<Salt_min) = Salt_min;
 
 
+writeDataset(TwistedSaltPretzal,fullfile(inputconfigdir,hydrogSaltFile),ieee,prec);
+clear TwistedSaltPretzal
+
+
+
+
+
+
+
+
+
 
 
 
@@ -223,7 +234,8 @@ MTwistUvel(MTwistUvel>Uvel_max) = Uvel_max;
 MTwistUvel(MTwistUvel<Uvel_min) = Uvel_min;
 
 
-
+writeDataset(MTwistUvel,fullfile(inputconfigdir,uVelInitFile),ieee,prec);
+clear MTwistUvel
 
 
 
@@ -254,6 +266,8 @@ MTwistVvel(MTwistVvel>Vvel_max) = Vvel_max;
 MTwistVvel(MTwistVvel<Vvel_min) = Vvel_min;
 
 
+writeDataset(MTwistVvel,fullfile(inputconfigdir,vVelInitFile),ieee,prec);
+clear MTwistVvel
 
 
 
@@ -292,8 +306,12 @@ Twisted_SSH_anom = (Modelsurfacepressure/g);
 
 %%% Write initial model surface height anomaly to filename.  Try making it
 %%% zero....Initiaize with zero deviations from free surface
-Modelsurfaceheight = zeros(size(TwistedSaltPretzal,1),size(TwistedSaltPretzal,2));
+Modelsurfaceheight = zeros(Nx,Ny);
 
+
+data = Modelsurfaceheight;
+writeDataset(data,fullfile(inputconfigdir,pSurfInitFile),ieee,prec);
+clear data
 
 
 
@@ -324,6 +342,8 @@ ModelTwistedTheta(ModelTwistedTheta>Theta_max) = Theta_max;
 ModelTwistedTheta(ModelTwistedTheta<Theta_min) = Theta_min;
 
 
+writeDataset(ModelTwistedTheta,fullfile(inputconfigdir,hydrogThetaFile),ieee,prec);
+clear ModelTwistedTheta
 
 
 
@@ -449,6 +469,7 @@ salt_ref = 34;
 temp_ref = -1.9;
 MIce_Anom = zeros(Nx,Ny);
 for i=1:Nx
+  disp(i);
   for j=1:Ny
 
       MIce_Anom(i,j) = rho0*Modelsurfaceheight(i,j);
@@ -479,36 +500,6 @@ clear data
 
 
 
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% WRITING FILES TO INPUT PATH FOR INTITIALIZATION %%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-data = ModelTwistedTheta;
-writeDataset(data,fullfile(inputconfigdir,hydrogThetaFile),ieee,prec);
-clear data
-
-
-data = TwistedSaltPretzal;
-writeDataset(data,fullfile(inputconfigdir,hydrogSaltFile),ieee,prec);
-clear data
-
-
-data = MTwistUvel;
-writeDataset(data,fullfile(inputconfigdir,uVelInitFile),ieee,prec);
-clear data
-
-
-data = MTwistVvel;
-writeDataset(data,fullfile(inputconfigdir,vVelInitFile),ieee,prec);
-clear data
-
-
-data = Modelsurfaceheight;
-writeDataset(data,fullfile(inputconfigdir,pSurfInitFile),ieee,prec);
-clear data
 
 
 

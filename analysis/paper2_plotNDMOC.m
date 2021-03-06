@@ -154,7 +154,7 @@ xlabel('Latitude');
 ylabel('Depth (m)');
 set(gca,'YDir','reverse');
 set(gca,'Color',[.85 .85 .85]);
-axis([-81 YC(1,end-spongethickness) 0 4000]);
+axis([-80.85 YC(1,end-spongethickness) 0 4000]);
 cbhandle = colorbar;
 set(cbhandle,'Position',cb1_pos);
 title(cbhandle,'kg/m^3');
@@ -216,21 +216,20 @@ set(gca,'YLim',ylim);
 set(gca,'XLim',[-7 10.5]);
 colormap(gca,cmocean('balance',round(2*psimax/(psistep))));%,'pivot',0));
 xlabel('MOC coordinate, \eta');
-ylabel('Neutra density, \gamma (kg/m^3)')
+ylabel('Neutral density, \gamma (kg/m^3)')
 set(gca,'FontSize',fontsize);
 cbhandle = colorbar;
 set(cbhandle,'Position',cb3_pos);
 title(cbhandle,'Sv');
 text(-6.5,27.4,'Overturning streamfunction (mean component)','FontSize',fontsize+2);
+set(gca,'XAxisLocation','Bottom');
+set(gca,'YAxisLocation','Left');
 
 ax1 = gca;
 ax2 = axes('Position',get(ax1,'Position'));
-% plot(tt_onethird_notides/t1year+2007-18,0*tt_onethird_notides,'k-','LineWidth',0.5);
-% hold on;
-% plot(tt_onethird_notides/t1year+2007-18,0*tt_onethird_notides,'k--','LineWidth',0.5);
-% hold off;
 set(ax2,'Color','None');
 set(ax2,'XAxisLocation','Top');
+set(ax2,'YAxisLocation','Right');
 set(ax2,'YLim',get(ax1,'YLim'));
 set(ax2,'YTick',[]);
 box off;

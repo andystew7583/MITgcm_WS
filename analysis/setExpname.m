@@ -40,7 +40,8 @@ expdir = basedir;
 % expname = 'hires_seq_onesixth_modbdrystrat';
 % expname = 'hires_seq_onesixth_notides';
 % expname = 'hires_seq_onesixth_RTOPO2';
-expname = 'hires_seq_onetwelfth_RTOPO2';
+% expname = 'hires_seq_onetwelfth_RTOPO2';
+expname = 'hires_seq_onetwentyfourth_RTOPO2';
 
 %%% Julia's control experiments
 % expname = 'n_34452';

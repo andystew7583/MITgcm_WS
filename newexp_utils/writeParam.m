@@ -28,6 +28,8 @@ function writeParam (fid,parmobj,realfmt)
       paramStr = list2str(paramVal,'%d');
     case PARM_REALS
       paramStr = list2str(paramVal,realfmt);
+    case PARM_MISC
+      paramStr = paramVal;
     otherwise
       error(['Parameter type ',paramType,' not recognised for parameter ',paramName]);
   end      

@@ -59,6 +59,8 @@ function write_matlab_params(dirname,PARM,realfmt)
           paramStr = ['[ ',num2str(paramVal,'%d '),' ]'];
         case PARM_REALS          
           paramStr = ['[ ',num2str(reshape(paramVal,[1 length(paramVal)]),[realfmt,' ']),' ]'];
+        case PARM_MISC
+          paramStr = paramVal;
         otherwise
           error(['Parameter type ',paramType,' not recognised for parameter ',paramName]);
       end    

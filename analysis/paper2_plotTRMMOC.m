@@ -4,11 +4,9 @@
 %%% Compares eddy-induced overturning from LAYERS and TRM.
 %%%
 
-addpath CDT/cdt;
-
 %%% Load experiment
 expdir = '../experiments';
-expname = 'hires_seq_onesixth_RTOPO2';
+expname = 'hires_seq_onetwelfth_notides_RTOPO2';
 
 %%% Options (see calcOverturning)
 calc_psi_eddy = true;
@@ -16,7 +14,7 @@ deform_cavity = false;
 densvar = 'PD0';
 % psimax = 6;
 % psistep = 0.5;
-psimax = 2.5;
+psimax = 2;
 psistep = 0.1;
 
 
@@ -102,11 +100,13 @@ xlabel('MOC coordinate, \eta');
 ylabel('Potential density (kg/m^3)');
 text(2.6,27.45,'LAYERS','FontSize',fontsize+2);
 set(gca,'FontSize',fontsize);
+box off;
 
 ax1 = gca;
 ax2 = axes('Position',get(ax1,'Position'));
 set(ax2,'Color','None');
 set(ax2,'XAxisLocation','Top');
+set(ax2,'YAxisLocation','Right');
 set(ax2,'YLim',get(ax1,'YLim'));
 set(ax2,'YTick',[]);
 box off;
@@ -129,11 +129,13 @@ xlabel('MOC coordinate, \eta');
 % ylabel('Potential density (kg/m^3)');
 set(gca,'FontSize',fontsize);
 text(2.6,27.45,'NTRM','FontSize',fontsize+2);
+box off;
 
 ax1 = gca;
 ax2 = axes('Position',get(ax1,'Position'));
 set(ax2,'Color','None');
 set(ax2,'XAxisLocation','Top');
+set(ax2,'YAxisLocation','Right');
 set(ax2,'YLim',get(ax1,'YLim'));
 set(ax2,'YTick',[]);
 box off;

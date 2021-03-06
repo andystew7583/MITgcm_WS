@@ -44,33 +44,11 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   parm04 = parmlist;
   parm05 = parmlist;
   PARM={parm01,parm02,parm03,parm04,parm05}; 
-  
-  %%% Seconds in one hour
-  t1min = 60;
-  %%% Seconds in one hour
-  t1hour = 60*t1min;
-  %%% hours in one day
-  t1day = 24*t1hour;
-  %%% Metres in one kilometre
-  m1km = 1000;
-  
+
   %%% Model grid is defined externally
   run defineGrid.m   
   
-  
-  
-  %%%%%%%%%%%%%%%% Total simulation time %%%%%%%%%
-  Nyears = 9;  
-  simTime = 0;
-  for i = 1:Nyears
-    if (is_leap_year(mod(i-1,length(is_leap_year))+1))      
-      simTime = simTime + 366*t1day;
-    else      
-      simTime = simTime + 365*t1day;
-    end
-  end
-  t1year = simTime/Nyears;
-  t1month = t1year/12;
+ 
   
   
   
@@ -85,7 +63,8 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   viscAh = 0; %%% Horizontal viscosity    
   viscA4 = 0; %%% Biharmonic viscosity
   viscAhGrid = 0; %%% Grid-dependent viscosity
-  viscA4Grid = 0.1; %%% Grid-dependent biharmonic viscosity
+  viscA4Grid = 0; %%% Grid-dependent biharmonic viscosity
+  viscC4smag = 4; %%% Smagorninsky hyperviscosity parameter
   %%%%viscC4Leith=2.15;
   %%%%viscC4Leithd=2.15; %%%%% Modified Leith non-dimensional viscosity factor 
   viscAr = 3e-4; %%% Vertical viscosity
@@ -109,7 +88,7 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   parm01.addParm('useFullLeith',true,PARM_BOOL);
   parm01.addParm('viscC4leith',0,PARM_REAL);
   parm01.addParm('viscC4leithD',0,PARM_REAL);  
-  
+  parm01.addParm('viscC4smag',viscC4smag,PARM_REAL);  
 %   parm01.addParm('viscC4leith',2.15,PARM_REAL);
 %   parm01.addParm('viscC4leithD',2.15,PARM_REAL);
   parm01.addParm('viscC2leith',0,PARM_REAL);
@@ -245,6 +224,7 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %%% Eliminate any spurious openings at the northern boundary
   idx_obcs_n = find(h(:,end)>=0,1,'last');
   h(1:idx_obcs_n,end) = 0;
+  idx_obcs_e = find(h(end,:)>=0,1,'last');
  
   %%% Overwrite bathymetry data file
   writeDataset(h,fullfile(inputpath,bathyFile),ieee,prec);
@@ -747,9 +727,14 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
     Vrelaxobcsinner = 864000;
     Vrelaxobcsbound = 43200;
     
-%%%%%% sponge thickness
+%%%%%% sponge thickness - finer in high-res simulation due to placement of
+%%%%%% eastern boundary, increased number of gridpoints
+  if (res_fac == 24)
+    spongethickness = 48;
+  else
     spongethickness = round(10*res_fac/3);
 %     spongethickness = 5;
+  end
 
  
   obcs_parm03.addParm('Urelaxobcsinner',Urelaxobcsinner,PARM_REAL);
@@ -929,51 +914,51 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
     
     
 % "*period=-12" specifies monthly-mean forcing
-   apressurestartdate1 = 20070101;
+   apressurestartdate1 = str2num([num2str(start_year),'0101']);
    apressurestartdate2 = 000000;
    apressureperiod     = 86400.0;
 %    apressureperiod     = 10800.0;
     
-    aqhstartdate1 = 20070101;
+    aqhstartdate1 = str2num([num2str(start_year),'0101']);
     aqhstartdate2 = 000000;
     aqhperiod = 86400.0;
 %     aqhperiod           = 10800.0;
 
-    atempstartdate1 = 20070101;
+    atempstartdate1 = str2num([num2str(start_year),'0101']);
     atempstartdate2 = 000000;
     atempperiod = 86400.0;
 %     atempperiod         = 10800.0;
  
 
-    uwindstartdate1 = 20070101;
+    uwindstartdate1 = str2num([num2str(start_year),'0101']);
     uwindstartdate2 = 000000;
    uwindperiod = 86400.0;
 %     uwindperiod   = 10800.0;
  
-    vwindstartdate1 = 20070101;
+    vwindstartdate1 = str2num([num2str(start_year),'0101']);
     vwindstartdate2 = 000000;
     vwindperiod = 86400.0;
 %     vwindperiod         = 10800.0; 
  
-    precipstartdate1 = 20070101;
+    precipstartdate1 = str2num([num2str(start_year),'0101']);
     precipstartdate2 = 000000;
     precipperiod = 86400.0;
 %     precipperiod        = 10800.0; 
  
 
-    swdownstartdate1 = 20070101;
+    swdownstartdate1 = str2num([num2str(start_year),'0101']);
     swdownstartdate2 = 000000;
     swdownperiod = 86400.0;
 %     swdownperiod        = 10800.0;
 % 
 
-    lwdownstartdate1 = 20070101;
+    lwdownstartdate1 = str2num([num2str(start_year),'0101']);
     lwdownstartdate2 = 000000;
     lwdownperiod = 86400.0;
 %     lwdownperiod        = 10800.0;
 
 
-%     runoffstartdate1 = 20070101;
+%     runoffstartdate1 = str2num([num2str(start_year),'0101']);
 %     runoffstartdate2 = 000000;
 %     runoffperiod = 2592000.0;
 %    runoffperiod        = 10800.0;
@@ -982,66 +967,66 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
    EXF_dmyg = EXF_dmyg*(sum(EXF_dmyg)/sum(EXF_dmyg(1:end-1)));
    
  
-   precip_lon0 = xmin;
+   precip_lon0 = EXF_xmin;
    precip_lon_inc = EXF_dmxg(1);
-   precip_lat0 = ymin;
+   precip_lat0 = EXF_ymin;
    precip_lat_inc = EXF_dmyg(1:end-1);
    precip_nlon = EXF_Nx;
    precip_nlat = EXF_Ny;
    
-   atemp_lon0 = xmin;
+   atemp_lon0 = EXF_xmin;
    atemp_lon_inc = EXF_dmxg(1);
-   atemp_lat0 = ymin;
+   atemp_lat0 = EXF_ymin;
    atemp_lat_inc = EXF_dmyg(1:end-1);
    atemp_nlon = EXF_Nx;
    atemp_nlat = EXF_Ny;
    
-   apressure_lon0 = xmin;
+   apressure_lon0 = EXF_xmin;
    apressure_lon_inc = EXF_dmxg(1);
-   apressure_lat0 = ymin;
+   apressure_lat0 = EXF_ymin;
    apressure_lat_inc = EXF_dmyg(1:end-1);
    apressure_nlon = EXF_Nx;
    apressure_nlat = EXF_Ny;
     
-   aqh_lon0 = xmin;
+   aqh_lon0 = EXF_xmin;
    aqh_lon_inc = EXF_dmxg(1);
-   aqh_lat0 = ymin;
+   aqh_lat0 = EXF_ymin;
    aqh_lat_inc = EXF_dmyg(1:end-1);
    aqh_nlon = EXF_Nx;
    aqh_nlat = EXF_Ny;
    
-   uwind_lon0 = xmin;
+   uwind_lon0 = EXF_xmin;
    uwind_lon_inc = EXF_dmxg(1);
-   uwind_lat0 = ymin;
+   uwind_lat0 = EXF_ymin;
    uwind_lat_inc = EXF_dmyg(1:end-1);
    uwind_nlon = EXF_Nx;
    uwind_nlat = EXF_Ny;
    
    
-   vwind_lon0 = xmin;
+   vwind_lon0 = EXF_xmin;
    vwind_lon_inc = EXF_dmxg(1);
-   vwind_lat0 = ymin;
+   vwind_lat0 = EXF_ymin;
    vwind_lat_inc = EXF_dmyg(1:end-1);
    vwind_nlon = EXF_Nx;
    vwind_nlat = EXF_Ny;
    
-   swdown_lon0 = xmin;
+   swdown_lon0 = EXF_xmin;
    swdown_lon_inc = EXF_dmxg(1);
-   swdown_lat0 = ymin;
+   swdown_lat0 = EXF_ymin;
    swdown_lat_inc = EXF_dmyg(1:end-1);
    swdown_nlon = EXF_Nx;
    swdown_nlat = EXF_Ny;
    
-   lwdown_lon0 = xmin;
+   lwdown_lon0 = EXF_xmin;
    lwdown_lon_inc = EXF_dmxg(1);
-   lwdown_lat0 = ymin;
+   lwdown_lat0 = EXF_ymin;
    lwdown_lat_inc = EXF_dmyg(1:end-1);
    lwdown_nlon = EXF_Nx;
    lwdown_nlat = EXF_Ny;
 
-%    runoff_lon0 = xmin;
+%    runoff_lon0 = EXF_xmin;
 %    runoff_lon_inc = dmxg(1);
-%    runoff_lat0 = ymin;
+%    runoff_lat0 = EXF_ymin;
 %    runoff_lat_inc = dmyg;
 %    runoff_nlon = Nx;
 %    runoff_nlat = Ny;
@@ -1049,44 +1034,75 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
  
   %%%%%%%%%%%%%%%%%%% EXF_NML_OBCS %%%%%%%%%%%%%%%%%%%%
   
-%  obcsNstartdate1   = 20070101;
-%  obcsNstartdate2   = 000000;
- obcsNperiod       = -12;
- 
-%  obcsEstartdate1   = 20070101;
-%  obcsEstartdate2   = 000000;
- obcsEperiod       = -12;
+  %%% High-res configuration uses monthly means from lower-res simulations
+  if (res_fac == 24)
+        
+    obcsPeriod = round(t1month);
+    obcsstartdate =  datenum([num2str(start_year),'-01-01'])-t1month/2/t1day;
+    obcsstartdate1 = datestr(obcsstartdate,'yyyymmdd');
+    obcsstartdate2 = datestr(obcsstartdate,'HHMMSS');
+
+    EXF_NML_OBCS.addParm('obcsNstartdate1',obcsstartdate1,PARM_MISC);
+    EXF_NML_OBCS.addParm('obcsNstartdate2',obcsstartdate2,PARM_MISC);
+    
+    EXF_NML_OBCS.addParm('obcsEstartdate1',obcsstartdate1,PARM_MISC);
+    EXF_NML_OBCS.addParm('obcsEstartdate2',obcsstartdate2,PARM_MISC);
+   
+    EXF_NML_OBCS.addParm('siobEstartdate1',obcsstartdate1,PARM_MISC);
+    EXF_NML_OBCS.addParm('siobEstartdate2',obcsstartdate2,PARM_MISC);
+    
+    EXF_NML_OBCS.addParm('siobNstartdate1',obcsstartdate1,PARM_MISC);
+    EXF_NML_OBCS.addParm('siobNstartdate2',obcsstartdate2,PARM_MISC);
+
+    EXF_NML_OBCS.addParm('obcsNperiod',obcsPeriod,PARM_REAL);
+    EXF_NML_OBCS.addParm('obcsEperiod',obcsPeriod,PARM_REAL);
+
+    EXF_NML_OBCS.addParm('siobNperiod',obcsPeriod,PARM_REAL);
+    EXF_NML_OBCS.addParm('siobEperiod',obcsPeriod,PARM_REAL);
+
+    
+  else
+
+  %  obcsNstartdate1   = str2num([num2str(start_year),'0101']);
+  %  obcsNstartdate2   = 000000;
+   obcsNperiod       = -12;
+
+  %  obcsEstartdate1   = str2num([num2str(start_year),'0101']);
+  %  obcsEstartdate2   = 000000;
+   obcsEperiod       = -12;
 
 
-%  siobNstartdate1   = 20070101;
-%  siobNstartdate2   = 000000;
- siobNperiod       = -12;
- 
-%  siobEstartdate1   = 20070101;
-%  siobEstartdate2   = 000000;
- siobEperiod       = -12;
+  %  siobNstartdate1   = str2num([num2str(start_year),'0101']);
+  %  siobNstartdate2   = 000000;
+   siobNperiod       = -12;
 
- 
- 
-%   EXF_NML_OBCS.addParm('obcsNstartdate1',obcsNstartdate1,PARM_INT);
-%   EXF_NML_OBCS.addParm('obcsNstartdate2',obcsNstartdate2,PARM_INT);
-%   
-%   EXF_NML_OBCS.addParm('obcsEstartdate1',obcsEstartdate1,PARM_INT);
-%   EXF_NML_OBCS.addParm('obcsEstartdate2',obcsEstartdate2,PARM_INT);
-%  
-%   EXF_NML_OBCS.addParm('siobEstartdate1',siobEstartdate1,PARM_INT);
-%   EXF_NML_OBCS.addParm('siobEstartdate2',siobEstartdate2,PARM_INT);
-%   
-%   EXF_NML_OBCS.addParm('siobNstartdate1',siobNstartdate1,PARM_INT);
-%   EXF_NML_OBCS.addParm('siobNstartdate2',siobNstartdate2,PARM_INT);
-  
-  EXF_NML_OBCS.addParm('obcsNperiod',obcsNperiod,PARM_REAL);
-  EXF_NML_OBCS.addParm('obcsEperiod',obcsEperiod,PARM_REAL);
-%   EXF_NML_OBCS.addParm('obcsWperiod',obcsWperiod,PARM_REAL);
-  
-  EXF_NML_OBCS.addParm('siobNperiod',siobNperiod,PARM_REAL);
-  EXF_NML_OBCS.addParm('siobEperiod',siobEperiod,PARM_REAL);
-%   EXF_NML_OBCS.addParm('siobWperiod',siobWperiod,PARM_REAL);
+  %  siobEstartdate1   = str2num([num2str(start_year),'0101']);
+  %  siobEstartdate2   = 000000;
+   siobEperiod       = -12;
+
+
+
+  %   EXF_NML_OBCS.addParm('obcsNstartdate1',obcsNstartdate1,PARM_INT);
+  %   EXF_NML_OBCS.addParm('obcsNstartdate2',obcsNstartdate2,PARM_INT);
+  %   
+  %   EXF_NML_OBCS.addParm('obcsEstartdate1',obcsEstartdate1,PARM_INT);
+  %   EXF_NML_OBCS.addParm('obcsEstartdate2',obcsEstartdate2,PARM_INT);
+  %  
+  %   EXF_NML_OBCS.addParm('siobEstartdate1',siobEstartdate1,PARM_INT);
+  %   EXF_NML_OBCS.addParm('siobEstartdate2',siobEstartdate2,PARM_INT);
+  %   
+  %   EXF_NML_OBCS.addParm('siobNstartdate1',siobNstartdate1,PARM_INT);
+  %   EXF_NML_OBCS.addParm('siobNstartdate2',siobNstartdate2,PARM_INT);
+
+    EXF_NML_OBCS.addParm('obcsNperiod',obcsNperiod,PARM_REAL);
+    EXF_NML_OBCS.addParm('obcsEperiod',obcsEperiod,PARM_REAL);
+  %   EXF_NML_OBCS.addParm('obcsWperiod',obcsWperiod,PARM_REAL);
+
+    EXF_NML_OBCS.addParm('siobNperiod',siobNperiod,PARM_REAL);
+    EXF_NML_OBCS.addParm('siobEperiod',siobEperiod,PARM_REAL);
+  %   EXF_NML_OBCS.addParm('siobWperiod',siobWperiod,PARM_REAL);
+
+  end
 
      
 %%%%%%%%%%%%%%%%%%%% ADD PARAMETERS
@@ -1215,18 +1231,61 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   write_data_exf(inputpath,EXF_PARM,listterm,realfmt);
 
 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  %%%%%%%%%%%%%%%%%%
+  %%%%%%%%%%%%%%%%%%
+  %%%%% CAL%%% %%%%%
+  %%%%%%%%%%%%%%%%%%
+  %%%%%%%%%%%%%%%%%%
+  
+  
+  
+  
+  
+  %%%%%%%%%%%%%%%%%%%%%%%%%
+  %%%%% CAL    SET-UP %%%%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%
+  
+  
+  %%% To store parameter names and values
+  
+  cal_parm01 = parmlist;
+  CAL_PARM = {cal_parm01};
+  
+  cal_parm01.addParm('TheCalendar','gregorian',PARM_STR);
+  cal_parm01.addParm('startDate_1',str2num([num2str(start_year),'0101']),PARM_INT);
+  cal_parm01.addParm('startDate_2',000000,PARM_INT);
+  cal_parm01.addParm('calendarDumps',false,PARM_BOOL);
+  
+  %%z% Create the data.cal file
+  write_data_cal(inputpath,CAL_PARM,listterm,realfmt);
+  
+  
+  
+  
+  
+  
 
 
 
-%   %%%%%%%%%%%%%%%%%%
-%   %%%%%%%%%%%%%%%%%%
-%   %%%%% KPP%%% %%%%%
-%   %%%%%%%%%%%%%%%%%%
-%   %%%%%%%%%%%%%%%%%%
-%   
-%   
-%   
-%   
+  %%%%%%%%%%%%%%%%%%
+  %%%%%%%%%%%%%%%%%%
+  %%%%% KPP%%% %%%%%
+  %%%%%%%%%%%%%%%%%%
+  %%%%%%%%%%%%%%%%%%
+  
+  
+  
+  
   
   %%%%%%%%%%%%%%%%%%%%%%%%%
   %%%%% KPP    SET-UP %%%%%
@@ -1244,10 +1303,6 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   KPP_PARM = {kpp_parm01};
   KPPmixingMaps   = false;
   KPPwriteState   = true;
-  
-  
-  write_data_kpp(inputpath,KPP_PARM,listterm,realfmt);
-  
   
   kpp_parm01.addParm('KPPmixingMaps',KPPmixingMaps,PARM_BOOL);  
   kpp_parm01.addParm('KPPwriteState',KPPwriteState,PARM_BOOL)
@@ -1646,6 +1701,6 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %%% Creates a matlab file defining all input parameters
 %   write_matlab_params(inputpath,[PARM DIAG_MATLAB_PARM],realfmt);
 %   write_matlab_params(inputpath,[PARM SHELFICE_PARM EXF_PARM DIAG_MATLAB_PARM],realfmt);
-  write_matlab_params(inputpath,[PARM RBCS_PARM KPP_PARM OBCS_PARM SHELFICE_PARM SEAICE_PARM EXF_PARM LAYERS_PARM DIAG_MATLAB_PARM PACKAGE_PARM],realfmt);
+  write_matlab_params(inputpath,[PARM RBCS_PARM KPP_PARM OBCS_PARM SHELFICE_PARM SEAICE_PARM EXF_PARM CAL_PARM LAYERS_PARM DIAG_MATLAB_PARM PACKAGE_PARM],realfmt);
   
 end

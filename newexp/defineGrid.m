@@ -92,12 +92,23 @@ H = 5000;
 
 
 xmin = -83;
-% xmax = 40;
-
-%%%option to print tides
-xmax = 21;
 ymin = -83.5;
-ymax = -64;
+
+switch (res_fac)
+  case 24    
+    %%% Southern WS subdomain
+    xmax = -20;
+    ymax = -70;
+  otherwise
+    %%% Full MITgcm_WS domain
+    xmax = 21;
+    ymax = -64;
+end
+
+EXF_xmin = xmin;
+EXF_ymin = ymin;
+EXF_xmax = 21;
+EXF_ymax = -64;
 
 zmin = 0;
 zmax = -H;
@@ -108,31 +119,52 @@ zmax = -H;
 %%% ATMOSPHERIC FORCING CYCLE %%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%% Beginning Data from 2007  ( first full year we have)
+  
+%%% Seconds in one hour
+t1min = 60;
+%%% Seconds in one hour
+t1hour = 60*t1min;
+%%% hours in one day
+t1day = 24*t1hour;
+%%% Metres in one kilometre
+m1km = 1000;
+
+
+%%% High-res subdomain needs to start from 2008 because we don't have all
+%%% lower-res data required for 2007
+switch (res_fac)
+  case 24
+    start_year = 2008;
+  otherwise
+    start_year = 2007;
+end
 base_year = 2006;
-start_year = 2007;
-endyr = 2015;
+endyr = 2014;
 
 start_month = 1;
 end_month = 12;
 
 %%%%  total years, months
 Nmon = 12;
-Nyears = 9;
-Nmonths = 108;
+Nyears = endyr-start_year+1;
+Nmonths = Nmon*Nyears;
 
 %%%% Finding if current year is a leap year
 %%% N.B. only works because we happen to be using the period 2007-2015
 Ndays = 0;
 is_leap_year = zeros(Nyears,1);
 for i=1:Nyears
-  if (mod(i+2,4)==0) %%% At i=2, the year is 2008, e.g.
+  currentyear = start_year + i - 1;
+  if (mod(currentyear,4)==0) %%% Only works because of the particular period we're looking at
     is_leap_year(i) = 1;
     Ndays = Ndays + 366;
   else
     Ndays = Ndays + 365;
   end
 end
+simTime = Ndays*86400;
+t1year = simTime/Nyears;
+t1month = t1year/12;
 
 
 
@@ -160,6 +192,9 @@ hFacMinDr = 10;
 Lx = xmax-xmin;
 Ly = ymax-ymin;
 Lz = zmax-zmin;
+
+EXF_Lx = EXF_xmax-EXF_xmin;
+EXF_Ly = EXF_ymax-EXF_ymin;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -247,7 +282,7 @@ sNy = (Ny)/nPy;  %%% no. of y-gridpoints per tile
 %%% Grid sizes
 EXF_nPx = 16; %%% Need to be defined to make sure EXF grid matches the grid 
 EXF_nPy = 8; %%% used to generate the surface forcing dataset
-EXF_Nx = (xmax-xmin)*3;
+EXF_Nx = (EXF_xmax-EXF_xmin)*3;
 EXF_Nx = floor(EXF_Nx/EXF_nPx)*EXF_nPx;
 
 
@@ -256,11 +291,11 @@ EXF_Nx = floor(EXF_Nx/EXF_nPx)*EXF_nPx;
 %%%%%%%%%% Zonal grid %%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-EXF_dmxg = Lx/EXF_Nx*ones(EXF_Nx,1);
-EXF_xmc = xmin+EXF_dmxg/2:EXF_dmxg:xmax-EXF_dmxg/2; 
+EXF_dmxg = EXF_Lx/EXF_Nx*ones(EXF_Nx,1);
+EXF_xmc = EXF_xmin+EXF_dmxg/2:EXF_dmxg:EXF_xmax-EXF_dmxg/2; 
 EXF_xmc = EXF_xmc';
 EXF_xvmg = EXF_xmc;
-EXF_xumg = xmin:EXF_dmxg:xmax-EXF_dmxg;
+EXF_xumg = EXF_xmin:EXF_dmxg:EXF_xmax-EXF_dmxg;
 
 
 
@@ -271,9 +306,9 @@ EXF_xumg = xmin:EXF_dmxg:xmax-EXF_dmxg;
 
 
 %%% First pass - create approximate dmyg
-EXF_yval = ymin;
+EXF_yval = EXF_ymin;
 EXF_dmyg = [];
-while (EXF_yval < ymax)
+while (EXF_yval < EXF_ymax)
   EXF_dyval = cosd(EXF_yval)*EXF_dmxg(1);
   EXF_dmyg = [EXF_dmyg EXF_dyval];
   EXF_yval = EXF_yval + EXF_dyval;
@@ -285,7 +320,7 @@ EXF_dmyg = EXF_dmyg(1:EXF_Ny);
 
 %%% Third pass - resize dmyg so that its total length is equal to the
 %%% domain size
-EXF_dmyg = EXF_dmyg*(Ly/sum(EXF_dmyg));
+EXF_dmyg = EXF_dmyg*(EXF_Ly/sum(EXF_dmyg));
 
 %%% Other y-grids
 EXF_yvmg = ymin + cumsum([0 EXF_dmyg(1:EXF_Ny-1)]);

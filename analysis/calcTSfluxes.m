@@ -20,13 +20,16 @@ expdir = '../experiments';
 % expname = 'hires_seq_onesixth_notides_RTOPO2';
 % tmin = 10.05;
 % tmax = 18.05;
-expname = 'hires_seq_onetwelfth_RTOPO2';
+expname = 'hires_seq_onetwelfth_notides_RTOPO2';
 tmin = 1.05;
 tmax = 9.05;
 loadexp;
 
 %%% Set true to deform coordinates in the cavity
 deform_cavity = false;
+
+%%% Set true to decompose eddy fluxes
+calc_eddy_decomp = true;
 
 %%% Define coordinate system for integrating to compute streamfunction
 ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity);
@@ -88,21 +91,13 @@ Ntime = length(itersToRead);
 thflux_tot = zeros(Neta,Ntime);
 thflux_mean = zeros(Neta,Ntime);
 thflux_eddy = zeros(Neta,Ntime);
+thflux_eddy_adv = zeros(Neta,Ntime);
+thflux_eddy_stir = zeros(Neta,Ntime);
 sltflux_tot = zeros(Neta,Ntime);
 sltflux_mean = zeros(Neta,Ntime);
 sltflux_eddy = zeros(Neta,Ntime);
-uvel_tavg = zeros(Nx,Ny,Nr);
-vvel_tavg = zeros(Nx,Ny,Nr);
-theta_tavg = zeros(Nx,Ny,Nr);
-salt_tavg = zeros(Nx,Ny,Nr);
-uvelth_tavg = zeros(Nx,Ny,Nr);
-vvelth_tavg = zeros(Nx,Ny,Nr);
-uvelslt_tavg = zeros(Nx,Ny,Nr);
-vvelslt_tavg = zeros(Nx,Ny,Nr);
-tflux_tavg = zeros(Nx,Ny);
-sflux_tavg = zeros(Nx,Ny);
-SHIfwFlx_tavg = zeros(Nx,Ny);
-SHIhtFlx_tavg = zeros(Nx,Ny);
+sltflux_eddy_adv = zeros(Neta,Ntime);
+sltflux_eddy_stir = zeros(Neta,Ntime);
 for n=1:Ntime
  
   %%% Print current time to keep track of calculation
@@ -118,13 +113,8 @@ for n=1:Ntime
   vvelth  = rdmdsWrapper(fullfile(exppath,'/results/VVELTH'),itersToRead(n));
   uvelslt  = rdmdsWrapper(fullfile(exppath,'/results/UVELSLT'),itersToRead(n));
   vvelslt  = rdmdsWrapper(fullfile(exppath,'/results/VVELSLT'),itersToRead(n));
-  tflux  = rdmdsWrapper(fullfile(exppath,'/results/TFLUX'),itersToRead(n));
-  sflux  = rdmdsWrapper(fullfile(exppath,'/results/SFLUX'),itersToRead(n));
-  SHIfwFlx  = rdmdsWrapper(fullfile(exppath,'/results/SHIfwFlx'),itersToRead(n));
-  SHIhtFlx  = rdmdsWrapper(fullfile(exppath,'/results/SHIhtFlx'),itersToRead(n));
   if (isempty(uvel) || isempty(vvel) || isempty(theta) || isempty(salt) ...
-      || isempty(uvelth) || isempty(vvelth) || isempty(uvelslt) || isempty(vvelslt) ...
-      || isempty(tflux) || isempty(sflux) || isempty(SHIfwFlx) || isempty(SHIhtFlx))
+      || isempty(uvelth) || isempty(vvelth) || isempty(uvelslt) || isempty(vvelslt) )
     ['Ran out of data at n=',num2str(n),'/',num2str(nDumps),' t=',num2str(tyears),' days.']
     break;
   end
@@ -144,22 +134,60 @@ for n=1:Ntime
   sltflux_tot(:,n) = eflux_tot;
   sltflux_mean(:,n) = eflux_mean;
   sltflux_eddy(:,n) = eflux_eddy;
-  
-  %%% Add to time averages
-  uvel_tavg = uvel_tavg + uvel/Ntime;
-  vvel_tavg = vvel_tavg + vvel/Ntime;  
-  theta_tavg = theta_tavg + theta/Ntime;
-  salt_tavg = salt_tavg + salt/Ntime;  
-  uvelth_tavg = uvelth_tavg + uvelth/Ntime;
-  vvelth_tavg = vvelth_tavg + vvelth/Ntime;
-  uvelslt_tavg = uvelslt_tavg + uvelslt/Ntime;
-  vvelslt_tavg = vvelslt_tavg + vvelslt/Ntime;
-  tflux_tavg = tflux_tavg + tflux/Ntime;
-  sflux_tavg = sflux_tavg + sflux/Ntime;
-  SHIfwFlx_tavg = SHIfwFlx_tavg + SHIfwFlx/Ntime;
-  SHIhtFlx_tavg = SHIhtFlx_tavg + SHIhtFlx/Ntime;
+
+  if (calc_eddy_decomp)
+    
+    %%% Load heat and salt fluxes         
+    wvel  = rdmdsWrapper(fullfile(exppath,'/results/WVEL'),itersToRead(n));  
+    wvelth = rdmdsWrapper(fullfile(exppath,'/results/WVELTH'),itersToRead(n));
+    wvelslt = rdmdsWrapper(fullfile(exppath,'/results/WVELSLT'),itersToRead(n));
+
+    %%% Compute eddy-induced velocities
+    [u_eddy,v_eddy,w_eddy] = calcTRMvelocity (...
+      uvel,vvel,wvel,theta,salt, ...
+      uvelth,vvelth,wvelth, ...
+      uvelslt,vvelslt,wvelslt, ...
+      hFacC,hFacW,hFacS, ...
+      DXG,DYG,RAC,DXC,DYC, ...
+      DRF,DRC,RC,RF,...
+      rhoConst,gravity);
+    
+    %%% Clear memory
+    clear('uvel','vvel','wvel','uvelth','vvelth','wvelth','uvelslt','vvelslt','wvelslt','w_eddy');
+    
+    %%% Compute mean and eddy fluxes in quasi-latitude coordinates
+    [eflux_tot,eflux_mean,eflux_eddy] = calcMeanEddyFluxes (...
+      u_eddy,v_eddy,theta,0*u_eddy,0*v_eddy, ...
+      Nx,Ny,Neta, ...  
+      DXG_3D,DYG_3D,DRF_3D,hFacW,hFacS,ETA,eta);
+    thflux_eddy_adv(:,n) = eflux_mean;
+    thflux_eddy_stir(:,n) = thflux_eddy(:,n) - thflux_eddy_adv(:,n);
+    [eflux_tot,eflux_mean,eflux_eddy] = calcMeanEddyFluxes (...
+      u_eddy,v_eddy,salt,0*u_eddy,0*v_eddy, ...
+      Nx,Ny,Neta, ...  
+      DXG_3D,DYG_3D,DRF_3D,hFacW,hFacS,ETA,eta);
+    sltflux_eddy_adv(:,n) = eflux_mean;
+    sltflux_eddy_stir(:,n) = sltflux_eddy(:,n) - sltflux_eddy_adv(:,n);
+    
+    clear('u_eddy','v_eddy','theta','salt');
+    
+  end
   
 end
+
+%%% Read time-averaged variables
+uvel_tavg = readIters(exppath,'UVEL',dumpIters,deltaT,tmin*t1year,tmax*t1year,Nx,Ny,Nr);
+vvel_tavg = readIters(exppath,'VVEL',dumpIters,deltaT,tmin*t1year,tmax*t1year,Nx,Ny,Nr);
+theta_tavg = readIters(exppath,'THETA',dumpIters,deltaT,tmin*t1year,tmax*t1year,Nx,Ny,Nr);
+salt_tavg = readIters(exppath,'SALT',dumpIters,deltaT,tmin*t1year,tmax*t1year,Nx,Ny,Nr);
+uvelth_tavg = readIters(exppath,'UVELTH',dumpIters,deltaT,tmin*t1year,tmax*t1year,Nx,Ny,Nr);
+vvelth_tavg = readIters(exppath,'VVELTH',dumpIters,deltaT,tmin*t1year,tmax*t1year,Nx,Ny,Nr);
+uvelslt_tavg = readIters(exppath,'UVELSLT',dumpIters,deltaT,tmin*t1year,tmax*t1year,Nx,Ny,Nr);
+vvelslt_tavg = readIters(exppath,'VVELSLT',dumpIters,deltaT,tmin*t1year,tmax*t1year,Nx,Ny,Nr);
+tflux_tavg = readIters(exppath,'TFLUX',dumpIters,deltaT,tmin*t1year,tmax*t1year,Nx,Ny,1);
+sflux_tavg = readIters(exppath,'SFLUX',dumpIters,deltaT,tmin*t1year,tmax*t1year,Nx,Ny,1);
+SHIfwFlx_tavg = readIters(exppath,'SHIfwFlx',dumpIters,deltaT,tmin*t1year,tmax*t1year,Nx,Ny,1);
+SHIhtFlx_tavg = readIters(exppath,'SHIhtFlx',dumpIters,deltaT,tmin*t1year,tmax*t1year,Nx,Ny,1);
 
 %%% Compute multi-annual mean mean and eddy fluxes in quasi-latitude coordinates
 %%% N.B. Total multi-annual mean flux = flux_stand + flux_fluc + flux_eddy
@@ -187,11 +215,15 @@ save(fullfile('products',outfname), ...
   'eta','ETA','times', ...
   'thflux_stand','thflux_fluc','thflux_eddy',...
   'sltflux_stand','sltflux_fluc','sltflux_eddy',...
-  'uvel_tavg','vvel_tavg','theta_tavg','salt_tavg', ...
+  'uvel_tavg','vvel_tavg','theta_tavg','salt_tavg', ... 
   'uvelth_tavg','vvelth_tavg','uvelslt_tavg','vvelslt_tavg', ...
   'tflux_tavg','sflux_tavg','SHIfwFlx_tavg','SHIhtFlx_tavg');
-
-
+if (calc_eddy_decomp)
+  save(fullfile('products',outfname), ...
+    'thflux_eddy_adv','thflux_eddy_stir', ...
+    'sltflux_eddy_adv','sltflux_eddy_stir', ...
+    '-append');
+end
 
 
 

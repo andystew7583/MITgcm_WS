@@ -109,9 +109,9 @@ Cp = 4e3;
 
 
 atmos_forcing = 0;
-open_boundaries = 1;
+open_boundaries = 0;
 initialconditions = 0;
-tides = 1;
+tides = 0;
 
 
 %%% Load data files

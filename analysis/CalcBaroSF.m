@@ -12,7 +12,7 @@ expdir = '../experiments';
 % tmax = 18.05*86400*365;
 expname = 'hires_seq_onetwelfth_RTOPO2';
 tmin = 1.05*86400*365;
-tmax = 5.05*86400*365;
+tmax = 9.05*86400*365;
 
 %%% Load velocity
 loadexp;

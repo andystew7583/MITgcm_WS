@@ -11,3 +11,4 @@ PARM_STR = 3; %%% String literal
 PARM_BOOL = 4; %%% Boolean expression
 PARM_INTS = 5; %%% List of integer values
 PARM_REALS = 6; %%% List of real values
+PARM_MISC = 7; %%% Miscellaneous, indicates a string that should just be printed directly to the input file without quotation marks

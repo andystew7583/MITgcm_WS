@@ -41,13 +41,14 @@ function [u_eddy,v_eddy,w_eddy] = calcTRMvelocity (...
  
   %%% Compute thermal expansion and haline contraction coefficients
   press_c = -rhoConst*gravity*repmat(RC,[Nx Ny 1])/1e4; %%% N.B. Units in dbar
-  press_w = -rhoConst*gravity*repmat(RF,[Nx Ny 1])/1e4;
 %   press_c = -rhoConst*gravity*repmat(RC(1),[Nx Ny Nr])/1e4; %%% N.B. Units in dbar
 %   press_w = -rhoConst*gravity*repmat(RC(1),[Nx Ny Nr+1])/1e4;
   [alpha_u,beta_u] = calcAlphaBeta(salt_u,theta_u,press_c);
   [alpha_v,beta_v] = calcAlphaBeta(salt_v,theta_v,press_c);
+  clear('press_c');
+  press_w = -rhoConst*gravity*repmat(RF,[Nx Ny 1])/1e4;
   [alpha_w,beta_w] = calcAlphaBeta(salt_w,theta_w,press_w);
-  clear('press_c','press_w');
+  clear('press_w');
  
   %%% Compute eddy heat and salt fluxes on cell faces
   uvelslt_eddy = uvelslt - uvel .* salt_u;

@@ -45,15 +45,14 @@ DDD = densjmd95(SSS,TTT,-RC(1)*gravity*rhoConst/1e4*ones(size(SSS))) - 1000;
 load(fullfile('products',outfname_tides));
 psi_mean_tides = -mean(psi_TS_mean_intT,3)/1e6;
 psi_eddy_tides = -mean(psi_TS_eddy_intT,3)/1e6;
-psi_mean_plot = -mean(psi_TS_mean_stand_intT,3)/1e6;
-% psi_fluc_plot = -mean(psi_TS_mean_fluc_intT,3)/1e6;
-psi_fluc_plot = -(mean(psi_TS_mean_intT,3)/1e6-mean(psi_TS_mean_stand_intT,3)/1e6);
-psi_eddy_plot = -mean(psi_TS_eddy_intT,3)/1e6;
 psi_tot_tides = -mean(psi_TS_mean_intT+psi_TS_eddy_intT,3)/1e6;
 load(fullfile('products',outfname_notides));
 psi_mean_notides = -mean(psi_TS_mean_intT,3)/1e6;
 psi_eddy_notides = -mean(psi_TS_eddy_intT,3)/1e6;
 psi_tot_notides = -mean(psi_TS_mean_intT+psi_TS_eddy_intT,3)/1e6;
+psi_mean_plot = -mean(psi_TS_mean_stand_intT,3)/1e6;
+psi_fluc_plot = -(mean(psi_TS_mean_intT,3)/1e6-mean(psi_TS_mean_stand_intT,3)/1e6);
+psi_eddy_plot = -mean(psi_TS_eddy_intT,3)/1e6;
 psi_tide_plot = psi_tot_tides-psi_tot_notides;
 
 

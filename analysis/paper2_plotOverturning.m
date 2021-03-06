@@ -11,7 +11,7 @@
 
 %%% Load experiment
 expdir = '../experiments';
-expname = 'hires_seq_onesixth_RTOPO2';
+expname = 'hires_seq_onetwelfth_RTOPO2';
 loadexp;
 
 %%% Options (see calcOverturning)
@@ -139,6 +139,8 @@ shading interp;
 hold on;
 [C,h] = contour(EE,DD,psi_plot,[-6 -5 -4 -3 -2 -1 -0.5 -0.25 0.25 0.5 1],'EdgeColor','k');
 clabel(C,h);
+plot([4 4],ylim,'--','Color',[.3 .3 .3]);
+plot([0 0],ylim,'--','Color',[.3 .3 .3]);
 hold off;
 caxis([-psimax psimax]);
 set(gca,'YDir','reverse');
@@ -151,7 +153,10 @@ set(gca,'FontSize',fontsize);
 cbhandle = colorbar;
 set(cbhandle,'Position',cb3_pos);
 title(cbhandle,'Sv');
-text(-6.5,27.4,'Overturning streamfunction, \psi','FontSize',fontsize+2);
+text(-6.5,27.4,'Overturning streamfunction, \psi^\sigma','FontSize',fontsize+2);
+text(-4.5,28.15,'FRIS','FontSize',fontsize);
+text(1.3,28.15,'Shelf','FontSize',fontsize);
+text(5.5,28.15,'Weddell Sea','FontSize',fontsize);
 
 ax1 = gca;
 ax2 = axes('Position',get(ax1,'Position'));

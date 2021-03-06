@@ -11,7 +11,7 @@
 
 %%% Load experiment
 expdir = '../experiments';
-expname = 'hires_seq_onesixth_RTOPO2';
+expname = 'hires_seq_onesixth_notides_RTOPO2';
 loadexp;
 
 %%% Options (see calcOverturning)
@@ -24,7 +24,7 @@ psistep = 0.25;
 % psimax = 2;
 % psistep = 0.1;
 % ylim = [27.3 28.2];
-ylim = [27.3 29];
+ylim = [27.3 29.1];
 
 %%% Construct output file name
 outfname = [expname,'_MOC_',densvar];
@@ -209,6 +209,8 @@ shading interp;
 hold on;
 [C,h] = contour(EE,DD,psi_plot,[-6 -5 -4 -3 -2 -1 -0.5 -0.25 0.25 0.5 1],'EdgeColor','k');
 clabel(C,h);
+plot([4 4],ylim,'--','Color',[.3 .3 .3]);
+plot([0 0],ylim,'--','Color',[.3 .3 .3]);
 hold off;
 caxis([-psimax psimax]);
 set(gca,'YDir','reverse');
@@ -224,6 +226,9 @@ title(cbhandle,'Sv');
 text(-6.5,27.4,'Overturning streamfunction (mean component)','FontSize',fontsize+2);
 set(gca,'XAxisLocation','Bottom');
 set(gca,'YAxisLocation','Left');
+text(-4.5,29,'FRIS','FontSize',fontsize);
+text(1.3,29,'Shelf','FontSize',fontsize);
+text(5.5,29,'Weddell Sea','FontSize',fontsize);
 
 ax1 = gca;
 ax2 = axes('Position',get(ax1,'Position'));

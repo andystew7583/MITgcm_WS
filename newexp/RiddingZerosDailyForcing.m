@@ -22,7 +22,7 @@ fix_vwind = true;
 addpath ../newexp_utils
 
 % days = 26292;
-days = 3287;
+days = EXF_Ndays;
 gendir = '/data3';
 
 inputfr = '/data3/MITgcm_WS/newexp/DEFAULTS/input/';
@@ -47,7 +47,7 @@ if (fix_temp)
 
   forcingvar1_mean = squeeze(mean(mean(forcingvar1,2),1));
   k = 1;
-  while (k <= Ndays)
+  while (k <= EXF_Ndays)
 
     %%% Check whether this day is missing data
     if (forcingvar1_mean(k) < -60)
@@ -98,7 +98,7 @@ if (fix_sw)
 
   forcingvar1_mean = squeeze(mean(mean(forcingvar1,2),1));
   k = 1;
-  while (k <= Ndays)
+  while (k <= EXF_Ndays)
 
     %%% Check whether this day is missing data
     if ((forcingvar1_mean(k)==0) || ((k>1) && (abs(forcingvar1_mean(k)-forcingvar1_mean(k-1))>50)))
@@ -154,7 +154,7 @@ if (fix_rh)
 
   forcingvar1_mean = squeeze(mean(mean(forcingvar1,2),1));
   k = 1;
-  while (k <= Ndays)
+  while (k <= EXF_Ndays)
 
     %%% Check whether this day is missing data
     if (forcingvar1_mean(k) == 0)
@@ -209,7 +209,7 @@ if (fix_uwind)
 
   forcingvar1_mean = squeeze(mean(mean(forcingvar1,2),1));
   k = 1;
-  while (k <= Ndays)
+  while (k <= EXF_Ndays)
 
     %%% Check whether this day is missing data
     if (forcingvar1_mean(k) == 0)
@@ -262,7 +262,7 @@ if (fix_vwind)
 
   forcingvar1_mean = squeeze(mean(mean(forcingvar1,2),1));
   k = 1;
-  while (k <= Ndays)
+  while (k <= EXF_Ndays)
 
     %%% Check whether this day is missing data
     if (forcingvar1_mean(k) == 0)
@@ -316,7 +316,7 @@ if (fix_lw)
 
   forcingvar1_mean = squeeze(mean(mean(forcingvar1,2),1));
   k = 1;
-  while (k <= Ndays)
+  while (k <= EXF_Ndays)
 
     %%% Check whether this day is missing data
     if (forcingvar1_mean(k) == 0)
@@ -403,7 +403,7 @@ if (fix_pressure)
 
   forcingvar1_mean = squeeze(mean(mean(forcingvar1,2),1));
   k = 1;
-  while (k <= Ndays)
+  while (k <= EXF_Ndays)
 
     %%% Check whether this day is missing data
     if (forcingvar1_mean(k) < 8.6e4)

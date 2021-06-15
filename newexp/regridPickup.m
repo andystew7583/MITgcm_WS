@@ -14,7 +14,7 @@ defineGrid;
 
 %%% Load low-resolution grid
 expdir_lo = '../experiments/';
-expname_lo = 'hires_seq_onetwelfth_RTOPO2';
+expname_lo = 'hires_seq_onetwelfth_notides_RTOPO2';
 inputdir = fullfile(expdir_lo,expname_lo,'results');
 XC_lo = rdmds(fullfile(inputdir,'XC'));
 YC_lo = rdmds(fullfile(inputdir,'YC'));
@@ -32,7 +32,8 @@ hFacC_lo = rdmds(fullfile(inputdir,'hFacC'));
 % outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onetwelfth/results';
 % outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onethird_RTOPO2/results';
 % outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onetwelfth_RTOPO2/results';
-outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onetwentyfourth_RTOPO2/results';
+outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onetwentyfourth_notides_RTOPO2/results';
+% outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onetwentyfourth_RTOPO2/results';
 % outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onetwelfth_notides_RTOPO2/results';
 
 % expiter_in = 1183320;

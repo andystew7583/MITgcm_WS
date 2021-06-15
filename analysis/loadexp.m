@@ -175,7 +175,7 @@ if open_boundaries ==1
     end
     fclose(fid);
 
-    OBNt = zeros(Nx,Nr,12);
+    OBNt = zeros(Nx,Nr,24);
     fid = fopen(fullfile(inputpath,OBNtFile),'r','b');
     for k=1:12
         OBNt(:,:,k) = fread(fid,[Nx Nr],'real*8');

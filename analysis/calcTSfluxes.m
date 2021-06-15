@@ -20,16 +20,19 @@ expdir = '../experiments';
 % expname = 'hires_seq_onesixth_notides_RTOPO2';
 % tmin = 10.05;
 % tmax = 18.05;
-expname = 'hires_seq_onetwelfth_notides_RTOPO2';
-tmin = 1.05;
-tmax = 9.05;
+% expname = 'hires_seq_onetwelfth_notides_RTOPO2';
+% tmin = 1.05;
+% tmax = 9.05;
+expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+tmin = 2.05;
+tmax = 3.05;
 loadexp;
 
 %%% Set true to deform coordinates in the cavity
 deform_cavity = false;
 
 %%% Set true to decompose eddy fluxes
-calc_eddy_decomp = true;
+calc_eddy_decomp = false;
 
 %%% Define coordinate system for integrating to compute streamfunction
 ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity);
@@ -171,7 +174,13 @@ for n=1:Ntime
     
     clear('u_eddy','v_eddy','theta','salt');
     
+  else
+    
+    %%% Just clear memory
+    clear('uvel','vvel','theta','salt','uvelth','vvelth','uvelslt','vvelslt');
+    
   end
+  
   
 end
 
@@ -217,12 +226,12 @@ save(fullfile('products',outfname), ...
   'sltflux_stand','sltflux_fluc','sltflux_eddy',...
   'uvel_tavg','vvel_tavg','theta_tavg','salt_tavg', ... 
   'uvelth_tavg','vvelth_tavg','uvelslt_tavg','vvelslt_tavg', ...
-  'tflux_tavg','sflux_tavg','SHIfwFlx_tavg','SHIhtFlx_tavg');
+  'tflux_tavg','sflux_tavg','SHIfwFlx_tavg','SHIhtFlx_tavg','-v7.3');
 if (calc_eddy_decomp)
   save(fullfile('products',outfname), ...
     'thflux_eddy_adv','thflux_eddy_stir', ...
     'sltflux_eddy_adv','sltflux_eddy_stir', ...
-    '-append');
+    '-append','-v7.3');
 end
 
 

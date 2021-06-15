@@ -135,11 +135,12 @@ m1km = 1000;
 switch (res_fac)
   case 24
     start_year = 2008;
+    endyr = 2014;
   otherwise
     start_year = 2007;
+    endyr = 2015;
 end
 base_year = 2006;
-endyr = 2014;
 
 start_month = 1;
 end_month = 12;
@@ -285,6 +286,25 @@ EXF_nPy = 8; %%% used to generate the surface forcing dataset
 EXF_Nx = (EXF_xmax-EXF_xmin)*3;
 EXF_Nx = floor(EXF_Nx/EXF_nPx)*EXF_nPx;
 
+%%% Time frame
+EXF_start_year = 2007;
+EXF_endyr = 2015;
+EXF_Nyears = EXF_endyr-EXF_start_year+1;
+EXF_Nmonths = Nmon*Nyears;
+
+%%%% Finding if current year is a leap year
+%%% N.B. only works because we happen to be using the period 2007-2015
+EXF_Ndays = 0;
+is_leap_year = zeros(EXF_Nyears,1);
+for i=1:EXF_Nyears
+  currentyear = EXF_start_year + i - 1;
+  if (mod(currentyear,4)==0) %%% Only works because of the particular period we're looking at
+    is_leap_year(i) = 1;
+    EXF_Ndays = EXF_Ndays + 366;
+  else
+    EXF_Ndays = EXF_Ndays + 365;
+  end
+end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

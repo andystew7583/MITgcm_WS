@@ -141,11 +141,13 @@ hold on;
 clabel(C,h);
 plot([4 4],ylim,'--','Color',[.3 .3 .3]);
 plot([0 0],ylim,'--','Color',[.3 .3 .3]);
+plot(eta,27.83*ones(size(eta)),'k:')
 hold off;
 caxis([-psimax psimax]);
 set(gca,'YDir','reverse');
 set(gca,'YLim',ylim);
 set(gca,'XLim',[-7 10.5]);
+% grid on;
 colormap(gca,cmocean('balance',round(2*psimax/(psistep))));%,'pivot',0));
 xlabel('MOC coordinate, \eta');
 ylabel('Potential density (kg/m^3)')

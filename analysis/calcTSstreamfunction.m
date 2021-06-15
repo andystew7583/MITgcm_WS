@@ -5,17 +5,17 @@
 %%%
 
 %%% Read experiment data
-% expname = 'hires_seq_onethird_notides_RTOPO2';
+expname = 'hires_seq_onethird_RTOPO2';
 % expname = 'hires_seq_onesixth_RTOPO2';
-expname = 'hires_seq_onetwelfth_RTOPO2';
+% expname = 'hires_seq_onetwelfth_RTOPO2';
 expdir = '/data3/MITgcm_WS/experiments';
 loadexp;
-% tmin = 18.05;
-% tmax = 27.05;
+tmin = 18.05;
+tmax = 27.05;
 % tmin = 9.05;
 % tmax = 18.05;
-tmin = 1.05;
-tmax = 9.05;
+% tmin = 1.05;
+% tmax = 9.05;
 
 %%% Set true to calculate streamfunction by integrating w.r.t. S as well as
 %%% w.r.t. T
@@ -227,77 +227,77 @@ function [Tu,Tv,Tw] = wrapBdryTransport (...
   uvel,vvel,wvel, ...
   Nx,Ny,Nr,Ayz,Axz,Axy)
   
-  %%% BOUNDARY-MEAN FLOW %%%
-  
-  NEtransport = sum(sum(vvel(1:Nx-1,Ny,:).*Axz(1:Nx-1,Ny,:))) ...
-              + sum(sum(uvel(Nx,1:Ny-1,:).*Ayz(Nx,1:Ny-1,:)));              
-  NEarea = sum(sum(Axz(1:Nx-1,Ny,:))) + sum(sum(Ayz(Nx,1:Ny-1,:)));
-  Ubdry = NEtransport / NEarea;
-  
-  %%% NORTHERN BOUNDARY %%%
-  
-  for i=1:Nx-1
-
-    %%% Compute N boundary flux divergence
-    fluxconv = sum(vvel(i,Ny,:).*Axz(i,Ny,:) - Ubdry.*Axz(i,Ny,:) + uvel(i,Ny,:).*Ayz(i,Ny,:) - uvel(i+1,Ny,:).*Ayz(i+1,Ny,:), 3);
-    wcarea = sum(Ayz(i+1,Ny,:),3);
-
-    %%% Avoid NaNs
-    if (wcarea > 0)
-
-      %%% Add barotropic correction to eliminate boundary flux divergence
-      uanom = fluxconv / wcarea;
-      uvel(i+1,Ny,:) = uvel(i+1,Ny,:) + uanom;
-
-      %%% Recompute flux convergence in order to recompute vertical velocity
-      fluxconv = vvel(i,Ny,:).*Axz(i,Ny,:) - Ubdry.*Axz(i,Ny,:) + uvel(i,Ny,:).*Ayz(i,Ny,:) - uvel(i+1,Ny,:).*Ayz(i+1,Ny,:);
-      wvel(i,Ny,2:Nr) = - cumsum(fluxconv(:,:,1:Nr-1),3) / Axy(i,Ny);
-
-    end
-
-  end
-  
-  %%% NORTHEAST CORNER %%%
-  
-  %%% Compute NE corner flux divergence
-  fluxconv = sum(vvel(Nx,Ny,:).*Axz(Nx,Ny,:) - Ubdry.*Axz(Nx,Ny,:) + uvel(Nx,Ny,:).*Ayz(Nx,Ny,:) - Ubdry.*Ayz(Nx,Ny,:), 3);
-
-  %%% Avoid NaNs
-  wcarea = sum(Axz(Nx,Ny,:),3);
-  if (wcarea > 0) 
-
-    %%% Add barotropic correction to eliminate boundary flux divergence
-    vanom = fluxconv / wcarea;
-    vvel(Nx,Ny,:) = vvel(Nx,Ny,:) - vanom;
-
-    %%% Recompute flux convergence in order to recompute vertical velocity
-    fluxconv = vvel(Nx,Ny,:).*Axz(Nx,Ny,:) - Ubdry.*Axz(Nx,Ny,:) + uvel(Nx,Ny,:).*Ayz(Nx,Ny,:) - Ubdry.*Ayz(Nx,Ny,:);
-    wvel(Nx,Ny,2:Nr) = - cumsum(fluxconv(:,:,1:Nr-1),3) / Axy(Nx,Ny);
-
-  end
-  
-  %%% EASTERN BOUNDARY %%%
-  
-  for j=Ny-1:-1:1
-
-    %%% Compute E boundary flux divergence
-    fluxconv = sum(vvel(Nx,j,:).*Axz(Nx,j,:) - vvel(Nx,j+1,:).*Axz(Nx,j+1,:) + uvel(Nx,j,:).*Ayz(Nx,j,:) - Ubdry.*Ayz(Nx,j,:), 3);
-
-    %%% Avoid NaNs
-    wcarea = sum(Axz(Nx,j,:),3);
-    if (wcarea > 0)
-
-      %%% Add barotropic correction to eliminate boundary flux divergence
-      vanom = fluxconv / wcarea;
-      vvel(Nx,j,:) = vvel(Nx,j,:) - vanom;
-
-      %%% Recompute flux convergence in order to recompute vertical velocity
-      fluxconv = vvel(Nx,j,:).*Axz(Nx,j,:) - vvel(Nx,j+1,:).*Axz(Nx,j+1,:) + uvel(Nx,j,:).*Ayz(Nx,j,:) - Ubdry.*Ayz(Nx,j,:);
-      wvel(Nx,j,2:Nr) = - cumsum(fluxconv(:,:,1:Nr-1),3) / Axy(Nx,j);
-
-    end
-
-  end
+%   %%% BOUNDARY-MEAN FLOW %%%
+%   
+%   NEtransport = sum(sum(vvel(1:Nx-1,Ny,:).*Axz(1:Nx-1,Ny,:))) ...
+%               + sum(sum(uvel(Nx,1:Ny-1,:).*Ayz(Nx,1:Ny-1,:)));              
+%   NEarea = sum(sum(Axz(1:Nx-1,Ny,:))) + sum(sum(Ayz(Nx,1:Ny-1,:)));
+%   Ubdry = NEtransport / NEarea;
+%   
+%   %%% NORTHERN BOUNDARY %%%
+%   
+%   for i=1:Nx-1
+% 
+%     %%% Compute N boundary flux divergence
+%     fluxconv = sum(vvel(i,Ny,:).*Axz(i,Ny,:) - Ubdry.*Axz(i,Ny,:) + uvel(i,Ny,:).*Ayz(i,Ny,:) - uvel(i+1,Ny,:).*Ayz(i+1,Ny,:), 3);
+%     wcarea = sum(Ayz(i+1,Ny,:),3);
+% 
+%     %%% Avoid NaNs
+%     if (wcarea > 0)
+% 
+%       %%% Add barotropic correction to eliminate boundary flux divergence
+%       uanom = fluxconv / wcarea;
+%       uvel(i+1,Ny,:) = uvel(i+1,Ny,:) + uanom;
+% 
+%       %%% Recompute flux convergence in order to recompute vertical velocity
+%       fluxconv = vvel(i,Ny,:).*Axz(i,Ny,:) - Ubdry.*Axz(i,Ny,:) + uvel(i,Ny,:).*Ayz(i,Ny,:) - uvel(i+1,Ny,:).*Ayz(i+1,Ny,:);
+%       wvel(i,Ny,2:Nr) = - cumsum(fluxconv(:,:,1:Nr-1),3) / Axy(i,Ny);
+% 
+%     end
+% 
+%   end
+%   
+%   %%% NORTHEAST CORNER %%%
+%   
+%   %%% Compute NE corner flux divergence
+%   fluxconv = sum(vvel(Nx,Ny,:).*Axz(Nx,Ny,:) - Ubdry.*Axz(Nx,Ny,:) + uvel(Nx,Ny,:).*Ayz(Nx,Ny,:) - Ubdry.*Ayz(Nx,Ny,:), 3);
+% 
+%   %%% Avoid NaNs
+%   wcarea = sum(Axz(Nx,Ny,:),3);
+%   if (wcarea > 0) 
+% 
+%     %%% Add barotropic correction to eliminate boundary flux divergence
+%     vanom = fluxconv / wcarea;
+%     vvel(Nx,Ny,:) = vvel(Nx,Ny,:) - vanom;
+% 
+%     %%% Recompute flux convergence in order to recompute vertical velocity
+%     fluxconv = vvel(Nx,Ny,:).*Axz(Nx,Ny,:) - Ubdry.*Axz(Nx,Ny,:) + uvel(Nx,Ny,:).*Ayz(Nx,Ny,:) - Ubdry.*Ayz(Nx,Ny,:);
+%     wvel(Nx,Ny,2:Nr) = - cumsum(fluxconv(:,:,1:Nr-1),3) / Axy(Nx,Ny);
+% 
+%   end
+%   
+%   %%% EASTERN BOUNDARY %%%
+%   
+%   for j=Ny-1:-1:1
+% 
+%     %%% Compute E boundary flux divergence
+%     fluxconv = sum(vvel(Nx,j,:).*Axz(Nx,j,:) - vvel(Nx,j+1,:).*Axz(Nx,j+1,:) + uvel(Nx,j,:).*Ayz(Nx,j,:) - Ubdry.*Ayz(Nx,j,:), 3);
+% 
+%     %%% Avoid NaNs
+%     wcarea = sum(Axz(Nx,j,:),3);
+%     if (wcarea > 0)
+% 
+%       %%% Add barotropic correction to eliminate boundary flux divergence
+%       vanom = fluxconv / wcarea;
+%       vvel(Nx,j,:) = vvel(Nx,j,:) - vanom;
+% 
+%       %%% Recompute flux convergence in order to recompute vertical velocity
+%       fluxconv = vvel(Nx,j,:).*Axz(Nx,j,:) - vvel(Nx,j+1,:).*Axz(Nx,j+1,:) + uvel(Nx,j,:).*Ayz(Nx,j,:) - Ubdry.*Ayz(Nx,j,:);
+%       wvel(Nx,j,2:Nr) = - cumsum(fluxconv(:,:,1:Nr-1),3) / Axy(Nx,j);
+% 
+%     end
+% 
+%   end
 
   %%% Transport through grid cell faces
   Tu = Ayz.*uvel;

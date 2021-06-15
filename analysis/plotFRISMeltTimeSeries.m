@@ -7,7 +7,7 @@
 
 %%% Options
 expdir = '../experiments';
-expname = 'hires_seq_onesixth_RTOPO2';
+expname = 'hires_seq_onetwelfth_notides_RTOPO2';
 loadexp;
 
 %%% Melt time series
@@ -16,7 +16,8 @@ loadexp;
 %%% Plot the time series
 figure(10);
 plot(tt/86400/365,SHImelt/1e12*86400*365);
-
+xlabel('Time (years)');
+ylabel('FRIS melt rate (Gt/yr)');
 
 figure(12);
 pcolor(XC,YC,-SHImelt_mean/920*86400*365);

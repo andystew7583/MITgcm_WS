@@ -19,8 +19,8 @@ dumpIters = dumpIters(dumpIters > nIter0);
 
 %%% To store the result
 tt = zeros(1,nDumps);
-theta_avg = zeros(1,nDumps);
-salt_avg = zeros(1,nDumps);
+theta_avg = NaN*ones(1,nDumps);
+salt_avg = NaN*ones(1,nDumps);
 tlen = 0;
 
 %%% Indices over which to integrate, i.e. defining the FRIS
@@ -40,7 +40,7 @@ for n=1:nDumps
   theta=rdmdsWrapper(fullfile(exppath,'/results/THETA'),dumpIters(n));  
   salt=rdmdsWrapper(fullfile(exppath,'/results/SALT'),dumpIters(n));  
   if (isempty(theta) || isempty(salt))
-    break;
+    continue;
   end
         
   %%% Compute volume-integrated properties
@@ -57,7 +57,11 @@ end
 %%% Plot the time series
 
 figure(11);
-plot(tt(1:tlen)/86400/365,theta_avg(1:tlen));
+plot(tt(1:tlen)/86400/365,theta_avg(1:tlen))
+xlabel('Time (years)')
+ylabel('Mean cavity potential temperature (^oC)');
 
 figure(12);
 plot(tt(1:tlen)/86400/365,salt_avg(1:tlen));
+xlabel('Time (years)')
+ylabel('Mean cavity salinity (g/kg)');

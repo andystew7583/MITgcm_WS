@@ -10,7 +10,7 @@
 
 %%% Load experiment
 expdir = '../experiments';
-expname = 'hires_seq_onetwelfth_RTOPO2';
+expname = 'hires_seq_onesixth_RTOPO2';
 loadexp;
 
 %%% Load streamfunction

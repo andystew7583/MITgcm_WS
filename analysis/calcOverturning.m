@@ -13,9 +13,12 @@ expdir = '../experiments';
 % expname = 'hires_seq_onesixth_RTOPO2';
 % tmin = 9.05;
 % tmax = 18.05;
-expname = 'hires_seq_onetwelfth_notides_RTOPO2';
-tmin = 1.05;
-tmax = 9.05;
+% expname = 'hires_seq_onetwelfth_notides_RTOPO2';
+% tmin = 1.05;
+% tmax = 9.05;
+expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+tmin = 2.01;
+tmax = 3.01;
 
 %%% Load experiment
 loadexp;
@@ -29,7 +32,7 @@ deform_cavity = false;
 %%% Set true to use output from the Layers package to calculate isopycnal
 %%% fluxes. N.B. if this option is selected then the density variable must
 %%% be 'PD0' (surface-referenced potential density)
-use_layers = false;
+use_layers = true;
 
 %%% Select density variable in which to compute isopycnal fluxes
 densvar = 'PD0';
@@ -92,137 +95,157 @@ end
 zz = - cumsum((delR + [0 delR(1:Nr-1)])/2);
 zz_f = - cumsum((delRf + [0 delRf(1:Nrf-1)])/2);
 
-%%% Partial cell heights on fine grid
-hFacW_f = zeros(Nx,Ny,Nrf);
-for k=1:Nr
-  hFacW_f(:,:,ffac*(k-1)+1:ffac*k) = hFacW(:,:,k*ones(1,ffac));              
-end
-hFacS_f = zeros(Nx,Ny,Nrf);
-for k=1:Nr
-  hFacS_f(:,:,ffac*(k-1)+1:ffac*k) = hFacS(:,:,k*ones(1,ffac));              
-end
-
 %%% 3D horizontal grid spacing matrices
 DXG_3D = repmat(DXG,[1 1 Nd]);
 DYG_3D = repmat(DYG,[1 1 Nd]);
-
-%%% Grid of actual vertical positions, accounting for partial cells
-ZZ_u = zeros(Nx,Ny,Nr);
-ZZ_u_f = zeros(Nx,Ny,Nrf);
-ZZ_v = zeros(Nx,Ny,Nr);
-ZZ_v_f = zeros(Nx,Ny,Nrf);
 DZ_f = zeros(Nx,Ny,Nrf);
-ZZ_u(:,:,1) = - delR(1)*hFacW(:,:,1)/2;
-for k=2:Nr
-  ZZ_u(:,:,k) = ZZ_u(:,:,k-1) - 0.5*delR(k-1)*hFacW(:,:,k-1) - 0.5*delR(k)*hFacW(:,:,k);
-end       
-ZZ_u_f(:,:,1) = - delRf(1)*hFacW_f(:,:,1)/2;
-for k=2:Nrf 
-  ZZ_u_f(:,:,k) = ZZ_u_f(:,:,k-1) - 0.5*delRf(k-1)*hFacW_f(:,:,k-1) - 0.5*delRf(k)*hFacW_f(:,:,k);      
-end
-ZZ_v(:,:,1) = - delR(1)*hFacS(:,:,1)/2;
-for k=2:Nr
-  ZZ_v(:,:,k) = ZZ_v(:,:,k-1) - 0.5*delR(k-1)*hFacS(:,:,k-1) - 0.5*delR(k)*hFacS(:,:,k);
-end       
-ZZ_v_f(:,:,1) = - delRf(1)*hFacS_f(:,:,1)/2;
-for k=2:Nrf 
-  ZZ_v_f(:,:,k) = ZZ_v_f(:,:,k-1) - 0.5*delRf(k-1)*hFacS_f(:,:,k-1) - 0.5*delRf(k)*hFacS_f(:,:,k);      
-end
 for k=1:Nrf
   DZ_f(:,:,k) = delRf(k);
-end   
+end  
 
-%%% Matrices for vertical interpolation  
-kp_u = zeros(Nx,Ny,Nrf);
-kn_u = zeros(Nx,Ny,Nrf);
-wn_u = zeros(Nx,Ny,Nrf);
-wp_u = zeros(Nx,Ny,Nrf);
-kp_v = zeros(Nx,Ny,Nrf);
-kn_v = zeros(Nx,Ny,Nrf);
-wn_v = zeros(Nx,Ny,Nrf);
-wp_v = zeros(Nx,Ny,Nrf);
-for i=1:Nx
-  for j=1:Ny
+
+%%% Grid of actual vertical positions, accounting for partial cells
+if (ffac == 1)
   
-    %%% Indices of the lowest cells
-    kmax_u = sum(squeeze(hFacW(i,j,:))~=0);
-    kmax_u_f = ffac*kmax_u;
-    kmax_v = sum(squeeze(hFacS(i,j,:))~=0);
-    kmax_v_f = ffac*kmax_v;
+  %%% Don't need these
+  kp_u = [];
+  kn_u = [];
+  wn_u = [];
+  wp_u = [];
+  kp_v = [];
+  kn_v = [];
+  wn_v = [];
+  wp_v = [];  
+  hFacW_f = [];
+  hFacS_f = [];
+  
+else
+  
+  %%% Partial cell heights on fine grid
+  hFacW_f = zeros(Nx,Ny,Nrf);
+  for k=1:Nr
+    hFacW_f(:,:,ffac*(k-1)+1:ffac*k) = hFacW(:,:,k*ones(1,ffac));              
+  end
+  hFacS_f = zeros(Nx,Ny,Nrf);
+  for k=1:Nr
+    hFacS_f(:,:,ffac*(k-1)+1:ffac*k) = hFacS(:,:,k*ones(1,ffac));              
+  end
+  
+  ZZ_u = zeros(Nx,Ny,Nr);
+  ZZ_u_f = zeros(Nx,Ny,Nrf);
+  ZZ_v = zeros(Nx,Ny,Nr);
+  ZZ_v_f = zeros(Nx,Ny,Nrf);
+  ZZ_u(:,:,1) = - delR(1)*hFacW(:,:,1)/2;
+  for k=2:Nr
+    ZZ_u(:,:,k) = ZZ_u(:,:,k-1) - 0.5*delR(k-1)*hFacW(:,:,k-1) - 0.5*delR(k)*hFacW(:,:,k);
+  end       
+  ZZ_u_f(:,:,1) = - delRf(1)*hFacW_f(:,:,1)/2;
+  for k=2:Nrf 
+    ZZ_u_f(:,:,k) = ZZ_u_f(:,:,k-1) - 0.5*delRf(k-1)*hFacW_f(:,:,k-1) - 0.5*delRf(k)*hFacW_f(:,:,k);      
+  end
+  ZZ_v(:,:,1) = - delR(1)*hFacS(:,:,1)/2;
+  for k=2:Nr
+    ZZ_v(:,:,k) = ZZ_v(:,:,k-1) - 0.5*delR(k-1)*hFacS(:,:,k-1) - 0.5*delR(k)*hFacS(:,:,k);
+  end       
+  ZZ_v_f(:,:,1) = - delRf(1)*hFacS_f(:,:,1)/2;
+  for k=2:Nrf 
+    ZZ_v_f(:,:,k) = ZZ_v_f(:,:,k-1) - 0.5*delRf(k-1)*hFacS_f(:,:,k-1) - 0.5*delRf(k)*hFacS_f(:,:,k);      
+  end
 
-    for k=1:Nrf
 
-      %%% Previous and next interpolation indices
-      kp_u(i,j,k) = ceil(k/ffac-0.5);
-      kn_u(i,j,k) = kp_u(i,j,k) + 1;
-      kp_v(i,j,k) = ceil(k/ffac-0.5);
-      kn_v(i,j,k) = kp_v(i,j,k) + 1;
-      
-      %%% Fine grid cell is above highest coarse grid cell, so fine grid
-      %%% gamma will just be set equal to uppermost coarse grid gamma
-      if (kp_u(i,j,k) <= 0)
+  %%% Matrices for vertical interpolation  
+  kp_u = zeros(Nx,Ny,Nrf);
+  kn_u = zeros(Nx,Ny,Nrf);
+  wn_u = zeros(Nx,Ny,Nrf);
+  wp_u = zeros(Nx,Ny,Nrf);
+  kp_v = zeros(Nx,Ny,Nrf);
+  kn_v = zeros(Nx,Ny,Nrf);
+  wn_v = zeros(Nx,Ny,Nrf);
+  wp_v = zeros(Nx,Ny,Nrf);
+  for i=1:Nx
+    for j=1:Ny
 
-        kp_u(i,j,k) = 1;
-        wp_u(i,j,k) = 0;
-        wn_u(i,j,k) = 1;
+      %%% Indices of the lowest cells
+      kmax_u = sum(squeeze(hFacW(i,j,:))~=0);
+      kmax_u_f = ffac*kmax_u;
+      kmax_v = sum(squeeze(hFacS(i,j,:))~=0);
+      kmax_v_f = ffac*kmax_v;
 
-      else
+      for k=1:Nrf
 
-        %%% Fine grid cell is below lowest coarse grid cell, so fine grid
-        %%% gamma will just be set equal to lowermost coarse grid gamma
-        if (kn_u(i,j,k) > kmax_u)
+        %%% Previous and next interpolation indices
+        kp_u(i,j,k) = ceil(k/ffac-0.5);
+        kn_u(i,j,k) = kp_u(i,j,k) + 1;
+        kp_v(i,j,k) = ceil(k/ffac-0.5);
+        kn_v(i,j,k) = kp_v(i,j,k) + 1;
 
-          kn_u(i,j,k) = kmax_u;
-          wn_u(i,j,k) = 0;
-          wp_u(i,j,k) = 1;
+        %%% Fine grid cell is above highest coarse grid cell, so fine grid
+        %%% gamma will just be set equal to uppermost coarse grid gamma
+        if (kp_u(i,j,k) <= 0)
 
-        %%% Otherwise set weights to interpolate linearly between neighboring
-        %%% coarse-grid gammas
+          kp_u(i,j,k) = 1;
+          wp_u(i,j,k) = 0;
+          wn_u(i,j,k) = 1;
+
         else
 
-          wp_u(i,j,k) = (ZZ_u(i,j,kn_u(i,j,k))-ZZ_u_f(i,j,k))./(ZZ_u(i,j,kn_u(i,j,k))-ZZ_u(i,j,kp_u(i,j,k)));
-          wn_u(i,j,k) = 1 - wp_u(i,j,k);
+          %%% Fine grid cell is below lowest coarse grid cell, so fine grid
+          %%% gamma will just be set equal to lowermost coarse grid gamma
+          if (kn_u(i,j,k) > kmax_u)
+
+            kn_u(i,j,k) = kmax_u;
+            wn_u(i,j,k) = 0;
+            wp_u(i,j,k) = 1;
+
+          %%% Otherwise set weights to interpolate linearly between neighboring
+          %%% coarse-grid gammas
+          else
+
+            wp_u(i,j,k) = (ZZ_u(i,j,kn_u(i,j,k))-ZZ_u_f(i,j,k))./(ZZ_u(i,j,kn_u(i,j,k))-ZZ_u(i,j,kp_u(i,j,k)));
+            wn_u(i,j,k) = 1 - wp_u(i,j,k);
+
+          end
 
         end
 
-      end
+        %%% Fine grid cell is above highest coarse grid cell, so fine grid
+        %%% gamma will just be set equal to uppermost coarse grid gamma
+        if (kp_v(i,j,k) <= 0)
 
-      %%% Fine grid cell is above highest coarse grid cell, so fine grid
-      %%% gamma will just be set equal to uppermost coarse grid gamma
-      if (kp_v(i,j,k) <= 0)
+          kp_v(i,j,k) = 1;
+          wp_v(i,j,k) = 0;
+          wn_v(i,j,k) = 1;
 
-        kp_v(i,j,k) = 1;
-        wp_v(i,j,k) = 0;
-        wn_v(i,j,k) = 1;
-
-      else
-
-        %%% Fine grid cell is below lowest coarse grid cell, so fine grid
-        %%% gamma will just be set equal to lowermost coarse grid gamma
-        if (kn_v(i,j,k) > kmax_v)
-
-          kn_v(i,j,k) = kmax_v;
-          wn_v(i,j,k) = 0;
-          wp_v(i,j,k) = 1;
-
-        %%% Otherwise set weights to interpolate linearly between neighboring
-        %%% coarse-grid gammas
         else
 
-          wp_v(i,j,k) = (ZZ_v(i,j,kn_v(i,j,k))-ZZ_v_f(i,j,k))./(ZZ_v(i,j,kn_v(i,j,k))-ZZ_v(i,j,kp_v(i,j,k)));
-          wn_v(i,j,k) = 1 - wp_v(i,j,k);
+          %%% Fine grid cell is below lowest coarse grid cell, so fine grid
+          %%% gamma will just be set equal to lowermost coarse grid gamma
+          if (kn_v(i,j,k) > kmax_v)
+
+            kn_v(i,j,k) = kmax_v;
+            wn_v(i,j,k) = 0;
+            wp_v(i,j,k) = 1;
+
+          %%% Otherwise set weights to interpolate linearly between neighboring
+          %%% coarse-grid gammas
+          else
+
+            wp_v(i,j,k) = (ZZ_v(i,j,kn_v(i,j,k))-ZZ_v_f(i,j,k))./(ZZ_v(i,j,kn_v(i,j,k))-ZZ_v(i,j,kp_v(i,j,k)));
+            wn_v(i,j,k) = 1 - wp_v(i,j,k);
+
+          end
 
         end
 
       end
 
     end
-  
   end
-end
 
-%%% Free up memory
-clear('ZZ_u','ZZ_v','ZZ_u_f','ZZ_v_f');2
+  %%% Free up memory
+  clear('ZZ_u','ZZ_v','ZZ_u_f','ZZ_v_f');
+
+end
 
 
 
@@ -319,11 +342,19 @@ for n=1:Ntime
   end
   
   %%% Compute mean streamfunction
-  [uflux,vflux] = calcIsopFluxes (...
-    uvel,vvel,dens,...
-    Nx,Ny,Nr,Nrf,Nd,ffac, ...
-    kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
-    hFacW_f,hFacS_f,DZ_f,dens_levs);
+  if (ffac == 1)
+    [uflux,vflux] = calcIsopFluxes (...
+      uvel,vvel,dens,...
+      Nx,Ny,Nr,Nrf,Nd,ffac, ...
+      kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
+      hFacW,hFacS,DZ_f,dens_levs);
+  else
+    [uflux,vflux] = calcIsopFluxes (...
+      uvel,vvel,dens,...
+      Nx,Ny,Nr,Nrf,Nd,ffac, ...
+      kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
+      hFacW_f,hFacS_f,DZ_f,dens_levs);
+  end
   psi_mean(:,:,n) = calcIsopStreamfunction(...
     uflux,vflux, ...
     Nx,Ny,Neta,Nd, ...  
@@ -375,11 +406,19 @@ for n=1:Ntime
       clear('uvel','vvel','wvel','theta','salt','uvelth','vvelth','wvelth','uvelslt','vvelslt','wvelslt','w_eddy');
 
       %%% Compute eddy-induced streamfunction
-      [uflux,vflux] = calcIsopFluxes (...
-        u_eddy,v_eddy,dens,...
-        Nx,Ny,Nr,Nrf,Nd,ffac, ...
-        kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
-        hFacW_f,hFacS_f,DZ_f,dens_levs);
+      if (ffac == 1)
+        [uflux,vflux] = calcIsopFluxes (...
+          u_eddy,v_eddy,dens,...
+          Nx,Ny,Nr,Nrf,Nd,ffac, ...
+          kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
+          hFacW,hFacS,DZ_f,dens_levs);
+      else
+        [uflux,vflux] = calcIsopFluxes (...
+          u_eddy,v_eddy,dens,...
+          Nx,Ny,Nr,Nrf,Nd,ffac, ...
+          kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
+          hFacW_f,hFacS_f,DZ_f,dens_levs);
+      end
       clear('u_eddy','v_eddy','dens');
       psi_eddy(:,:,n) = calcIsopStreamfunction(...
         uflux,vflux, ...
@@ -413,11 +452,19 @@ uvel_tavg = readIters(exppath,'UVEL',dumpIters,deltaT,tmin*t1year,tmax*t1year,Nx
 vvel_tavg = readIters(exppath,'VVEL',dumpIters,deltaT,tmin*t1year,tmax*t1year,Nx,Ny,Nr);
 
 %%% Partition mean streamfunction in to standing and fluctuating components
-[uflux,vflux] = calcIsopFluxes (...
-  uvel_tavg,vvel_tavg,dens_tavg,...
-  Nx,Ny,Nr,Nrf,Nd,ffac, ...
-  kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
-  hFacW_f,hFacS_f,DZ_f,dens_levs);
+if (ffac == 1)
+  [uflux,vflux] = calcIsopFluxes (...
+    uvel_tavg,vvel_tavg,dens_tavg,...
+    Nx,Ny,Nr,Nrf,Nd,ffac, ...
+    kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
+    hFacW,hFacS,DZ_f,dens_levs);
+else
+  [uflux,vflux] = calcIsopFluxes (...
+    uvel_tavg,vvel_tavg,dens_tavg,...
+    Nx,Ny,Nr,Nrf,Nd,ffac, ...
+    kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
+    hFacW_f,hFacS_f,DZ_f,dens_levs);
+end
 psi_mean_stand = calcIsopStreamfunction(...
   uflux,vflux, ...
   Nx,Ny,Neta,Nd, ...  
@@ -448,11 +495,19 @@ if (calc_psi_eddy && strcmp(densvar,'ND1'))
     rhoConst,gravity);
 
   %%% Compute eddy-induced streamfunction
-  [uflux,vflux] = calcIsopFluxes (...
-    u_eddy,v_eddy,dens_tavg,...
-    Nx,Ny,Nr,Nrf,Nd,ffac, ...
-    kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
-    hFacW_f,hFacS_f,DZ_f,dens_levs);
+  if (ffac == 1)
+    [uflux,vflux] = calcIsopFluxes (...
+      u_eddy,v_eddy,dens_tavg,...
+      Nx,Ny,Nr,Nrf,Nd,ffac, ...
+      kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
+      hFacW,hFacS,DZ_f,dens_levs);
+  else
+    [uflux,vflux] = calcIsopFluxes (...
+      u_eddy,v_eddy,dens_tavg,...
+      Nx,Ny,Nr,Nrf,Nd,ffac, ...
+      kp_u,kn_u,wp_u,wn_u,kp_v,kn_v,wp_v,wn_v, ...
+      hFacW_f,hFacS_f,DZ_f,dens_levs);
+  end
   
   %%% Assign to 'fluctuating' component of the streamfunction as this
   %%% includes all temporal fluctuations from the multi-annual mean

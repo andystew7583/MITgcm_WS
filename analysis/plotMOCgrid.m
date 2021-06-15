@@ -23,8 +23,8 @@ shading interp;
 colormap(flip(haxby,1))
 colorbar;
 hold on
-% [C,h]=contour(XC,YC,ETA_plot,[-9:1:20],'EdgeColor','k');
-[C,h]=contour(XC,YC,ETA_plot,[0:.5:2 3:1:20],'EdgeColor','k');
+[C,h]=contour(XC,YC,ETA_plot,[-9:1:20],'EdgeColor','k');
+% [C,h]=contour(XC,YC,ETA_plot,[0:.5:2 3:1:20],'EdgeColor','k');
 hold off;
 clabel(C,h);
 caxis([0 5000]);

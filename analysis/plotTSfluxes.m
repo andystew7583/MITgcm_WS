@@ -8,7 +8,8 @@
 expdir = '../experiments';
 % expname = 'hires_seq_onethird_notides_RTOPO2';
 % expname = 'hires_seq_onesixth_RTOPO2';
-expname = 'hires_seq_onetwelfth_notides_RTOPO2';
+% expname = 'hires_seq_onetwelfth_notides_RTOPO2';
+expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
 
 
 %%% Options (see calcTSfluxes)

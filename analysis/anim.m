@@ -11,10 +11,10 @@
 mac_plots = false;
 
 %%% Read experiment data
-loadexp;
+% loadexp;
 
 %%% Select diagnostic variable to animate
-diagnum = 17;
+diagnum = 5;
 outfname =diag_fileNames{1,diagnum};
 
 %%% Data index in the output data files
@@ -29,7 +29,7 @@ xylayer = 1;
 
 %%% Set true to plot the field in the lowest active cell at each horizontal
 %%% location
-botplot = 0;
+botplot = 1;
 
 %%% Set true to plot the field in the topmost wet cell at each horizontal
 %%% location
@@ -53,7 +53,7 @@ yzlayer = 144;
 
 
 %%% Specify color range
-set_crange = 0;
+set_crange = 1;
 
 
 % crange = [-2.2 -1.6]; %/%% Filchner temp
@@ -92,35 +92,37 @@ dumpIters = dumpIters(dumpIters > nIter0);
 
 
 %%% Mesh grids for plotting
-kmax = ones(Nx,Ny);
-kmin = ones(Nx,Ny);
-for i=1:Nx
-  for j=1:Ny
-    idx = find(squeeze(hFacC(i,j,:))>0);
-    if (~isempty(idx))
-      kmin(i,j) = min(idx);
-      kmax(i,j) = max(idx);
+if (botplot || topplot || midplot)
+  kmax = ones(Nx,Ny);
+  kmin = ones(Nx,Ny);
+  for i=1:Nx
+    for j=1:Ny
+      idx = find(squeeze(hFacC(i,j,:))>0);
+      if (~isempty(idx))
+        kmin(i,j) = min(idx);
+        kmax(i,j) = max(idx);
+      end
     end
   end
-end
-kn = ones(Nx,Ny);
-kp= ones(Nx,Ny);
-wn = 0.5*ones(Nx,Ny);
-wp = 0.5*ones(Nx,Ny);
-for i=1:Nx
-  for j=1:Ny
-    if (sum(hFacC(i,j,:),3)==0)
-      continue;
+  kn = ones(Nx,Ny);
+  kp= ones(Nx,Ny);
+  wn = 0.5*ones(Nx,Ny);
+  wp = 0.5*ones(Nx,Ny);
+  for i=1:Nx
+    for j=1:Ny
+      if (sum(hFacC(i,j,:),3)==0)
+        continue;
+      end
+      zmid = 0.5 * (SHELFICEtopo(i,j) + bathy(i,j));
+      kmid = max(find(squeeze(zz)>zmid));
+      if (isempty(kmid))
+        continue;
+      end
+      kp(i,j) = kmid;
+      kn(i,j) = kp(i,j) + 1;
+      wp(i,j) = (zmid-zz(kn(i,j))) / (zz(kp(i,j))-zz(kn(i,j)));
+      wn(i,j) = 1 - wp(i,j);
     end
-    zmid = 0.5 * (SHELFICEtopo(i,j) + bathy(i,j));
-    kmid = max(find(squeeze(zz)>zmid));
-    if (isempty(kmid))
-      continue;
-    end
-    kp(i,j) = kmid;
-    kn(i,j) = kp(i,j) + 1;
-    wp(i,j) = (zmid-zz(kn(i,j))) / (zz(kp(i,j))-zz(kn(i,j)));
-    wn(i,j) = 1 - wp(i,j);
   end
 end
 if (~xyplot)  
@@ -185,7 +187,8 @@ Amax = [];
 % for n = 15*12:length(dumpIters)
 % for n = 1:length(dumpIters)
 % for n=5*12
-for n=7*12:8*12
+% for n=7*12:8*12
+for n = 34
 % for n=48:length(dumpIters)
 % for n=2:length(dumpIters)
   dumpIters(n);

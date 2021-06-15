@@ -11,8 +11,8 @@
 %%% Load experiment data
 expdir = '../experiments';
 % expname = 'hires_seq_onethird_RTOPO2';
-% expname = 'hires_seq_onesixth_notides_RTOPO2';
-expname = 'hires_seq_onetwelfth_RTOPO2';
+expname = 'hires_seq_onesixth_RTOPO2';
+% expname = 'hires_seq_onetwelfth_RTOPO2';
 loadexp;
 
 

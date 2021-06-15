@@ -30,7 +30,7 @@ function [tt,SHImelt,SHImelt_mean,XC,YC,bathy,SHELFICEtopo] = calcFRISMeltTimeSe
   yidx = find(YC(1,:)<-74.5);
 
   %%% TODO need to fix this
-  for n=4:nDumps
+  for n=1:nDumps
 
     tt(n) =  dumpIters(n)*deltaT;
     tt(n)
@@ -38,9 +38,9 @@ function [tt,SHImelt,SHImelt_mean,XC,YC,bathy,SHELFICEtopo] = calcFRISMeltTimeSe
     %%% Attempt to load melt ave per month
     SHIfwFlx=rdmdsWrapper(fullfile(exppath,'/results/SHIfwFlx'),dumpIters(n));  
     if (isempty(SHIfwFlx))
-      break;
+      continue;
     end
-
+    
     %%% Mean local melt rate
     SHImelt_mean = SHImelt_mean + SHIfwFlx;
 n

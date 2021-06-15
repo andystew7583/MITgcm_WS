@@ -6,8 +6,8 @@
 
 %%% Options
 expdir = '../experiments';
-expname = 'hires_seq_onethird_notides_RTOPO2';
-show_cavity = true;
+expname = 'hires_seq_onetwelfth_RTOPO2';
+show_cavity = false;
 loadexp;
 
 %%% Load pre-computed streamfunction
@@ -64,9 +64,9 @@ else
   latMax = max(max(YC));
   lonMin = min(min(XC));
   lonMax = max(max(XC));
-  clim = [-50 50];
-  colorcntrs = [-47.5:5:47.5];
-  linecntrs = [-45:10:45];
+  clim = [-60 60];
+  colorcntrs = [-57.5:5:57.5];
+  linecntrs = [-55:10:55];
 %   bathycntrs = [-5000:1000:-1000 -500 -200 -100];
   bathycntrs = [0 250 500 1000 2000 3000 4000];
 end

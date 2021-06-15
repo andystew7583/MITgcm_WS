@@ -1,18 +1,21 @@
-%%%v
+%%%
 %%% Calculate and plot time-mean BSF
 %%%
 
 %%% Options
 expdir = '../experiments';
-% expname = 'hires_seq_onethird_notides_RTOPO2';
-% tmin = 18.05*86400*365;
-% tmax = 27.05*86400*365;
+expname = 'hires_seq_onethird_RTOPO2';
+tmin = 18.05*86400*365;
+tmax = 27.05*86400*365;
 % expname = 'hires_seq_onesixth_notides_RTOPO2';
 % tmin = 9.05*86400*365;
 % tmax = 18.05*86400*365;
-expname = 'hires_seq_onetwelfth_RTOPO2';
-tmin = 1.05*86400*365;
-tmax = 9.05*86400*365;
+% expname = 'hires_seq_onetwelfth_RTOPO2';
+% tmin = 1.05*86400*365;
+% tmax = 9.05*86400*365;
+% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+% tmin = 1.5*86400*365;
+% tmax = 1.75*86400*365;
 
 %%% Load velocity
 loadexp;

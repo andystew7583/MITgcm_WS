@@ -45,7 +45,10 @@ function [uflux,vflux] = calcIsopFluxes (...
       end
     end
 
-  end            
+  end      
+  
+  %%% Free up memory
+  clear('dens_u','dens_v');
 
   %%% Calculate fluxes within density surfaces
   udz = uvel_f.*hFacW_f.*DZ_f;

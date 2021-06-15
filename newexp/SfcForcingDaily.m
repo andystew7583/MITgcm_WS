@@ -53,8 +53,8 @@ wind_max = 30;
 
 
 %%%%%% Calculating dpm for each month, using leap year condiitonal
-dpm = zeros(Nyears,Nmon);
-for i=1:Nyears
+dpm = zeros(EXF_Nyears,EXF_Nmon);
+for i=1:EXF_Nyears
   dpm(i,1) = 31;
   if (is_leap_year(i))
     dpm(i,2) = 29;
@@ -112,14 +112,14 @@ ERR_SW = 0;
 
 
 
-years = start_year:1:endyr;
+years = EXF_start_year:1:EXF_endyr;
 months = start_month:1:end_month;
 
 days_cntr = 1;
 
- for i=1:Nyears
+ for i=1:EXF_Nyears
     
-    for j= 1:Nmon
+    for j= 1:EXF_Nmon
         
         for days = 1:dpm(i,j)
           

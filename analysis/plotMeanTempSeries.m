@@ -26,11 +26,13 @@ DY = repmat(delY,[Nx 1 Nr]);
 DZ = repmat(reshape(delR,[1 1 Nr]),[Nx Ny 1]);
 
 tt = zeros(1,nDumps);
-theta_avg = zeros(1,nDumps);
+theta_avg = NaN*ones(1,nDumps);
+salt_avg = NaN*ones(1,nDumps);
 ptlen = 0;
 for n=1:nDumps
 % for n=364:364
  
+n
   tt(n) =  dumpIters(n)*deltaT/86400/365;
   
   %%% Attempt to load either instantaneous velocities or their squares
@@ -38,7 +40,7 @@ for n=1:nDumps
   salt = rdmdsWrapper(fullfile(exppath,'/results/SALT'),dumpIters(n)) ; 
   
   if (isempty(theta) || isempty(salt))   
-    break;
+    continue;
   end  
   
   %%% Calculate domain-mean potential temperature and salinity
@@ -54,7 +56,7 @@ disp(expname);
 disp(tt(n));
 
 %%% Calculate trend
-trend_length = 18*12;
+trend_length = 8*12;
 if (ptlen >= trend_length)
   p = polyfit(tt(ptlen-trend_length+1:ptlen),theta_avg(ptlen-trend_length+1:ptlen),1);
   disp(['Trend in ',expname,' = ',num2str(p(1)*100),' deg C/century']);

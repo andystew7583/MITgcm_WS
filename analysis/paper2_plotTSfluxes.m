@@ -56,12 +56,12 @@ sltflux_eddy_stir_plot = mean(sltflux_eddy_stir,2);
 fontsize = 14;
 bathycntrs = [0 250 500 1000 2000 3000 4000];
 axpos = zeros(4,4);
-axpos(1,:) = [0.07 0.53 .41 .4];
-axpos(2,:) = [0.56 0.53 .41 .4];
-axpos(3,:) = [0.07 0.06 .41 .4];
-axpos(4,:) = [0.56 0.06 .41 .4];
+axpos(1,:) = [0.07 0.54 .41 .39];
+axpos(2,:) = [0.56 0.54 .41 .39];
+axpos(3,:) = [0.07 0.06 .41 .39];
+axpos(4,:) = [0.56 0.06 .41 .39];
 cbpos = [0.95 0.05 0.015 .93];
-axlabels = {'(a)','(b)'};
+axlabels = {'(a)','(b)','(c)','(d)'};
 rho0 = 1027;
 Cp = 4000;
 colororder = get(gca,'ColorOrder');
@@ -95,22 +95,13 @@ set(leghandle,'FontSize',fontsize);
 text(-4.5,-14,'FRIS','FontSize',fontsize);
 text(1.3,-14,'Shelf','FontSize',fontsize);
 text(5.5,-14,'Weddell Sea','FontSize',fontsize);
-
-ax1 = gca;
-ax2 = axes('Position',get(ax1,'Position'));
-set(ax2,'Color','None');
-set(ax2,'XAxisLocation','Top');
-set(ax2,'YLim',get(ax1,'YLim'));
-set(ax2,'YTick',[]);
 box off;
-set(ax2,'XLim',get(ax1,'XLim')-78.16);
-set(ax2,'FontSize',fontsize);
-set(get(ax2,'XLabel'),'String','Pseudo-Latitude');
 
 ax1 = gca;
 ax2 = axes('Position',get(ax1,'Position'));
 set(ax2,'Color','None');
 set(ax2,'XAxisLocation','Top');
+set(ax2,'YAxisLocation','Right');
 set(ax2,'YLim',get(ax1,'YLim'));
 set(ax2,'YTick',[]);
 box off;
@@ -137,11 +128,13 @@ set(gca,'FontSize',fontsize);
 text(-4.5,-0.3,'FRIS','FontSize',fontsize);
 text(1.3,-0.3,'Shelf','FontSize',fontsize);
 text(5.5,-0.3,'Weddell Sea','FontSize',fontsize);
+box off;
 
 ax1 = gca;
 ax2 = axes('Position',get(ax1,'Position'));
 set(ax2,'Color','None');
 set(ax2,'XAxisLocation','Top');
+set(ax2,'YAxisLocation','Right');
 set(ax2,'YLim',get(ax1,'YLim'));
 set(ax2,'YTick',[]);
 box off;
@@ -168,11 +161,13 @@ set(leghandle,'FontSize',fontsize);
 text(-4.5,-7.5,'FRIS','FontSize',fontsize);
 text(1.3,-7.5,'Shelf','FontSize',fontsize);
 text(5.5,-7.5,'Weddell Sea','FontSize',fontsize);
+box off;
 
 ax1 = gca;
 ax2 = axes('Position',get(ax1,'Position'));
 set(ax2,'Color','None');
 set(ax2,'XAxisLocation','Top');
+set(ax2,'YAxisLocation','Right');
 set(ax2,'YLim',get(ax1,'YLim'));
 set(ax2,'YTick',[]);
 box off;
@@ -197,14 +192,24 @@ set(gca,'FontSize',fontsize);
 text(-4.5,-.08,'FRIS','FontSize',fontsize);
 text(1.3,-.08,'Shelf','FontSize',fontsize);
 text(5.5,-.08,'Weddell Sea','FontSize',fontsize);
+box off;
 
 ax1 = gca;
 ax2 = axes('Position',get(ax1,'Position'));
 set(ax2,'Color','None');
 set(ax2,'XAxisLocation','Top');
+set(ax2,'YAxisLocation','Right');
 set(ax2,'YLim',get(ax1,'YLim'));
 set(ax2,'YTick',[]);
 box off;
 set(ax2,'XLim',get(ax1,'XLim')-78.16);
 set(ax2,'FontSize',fontsize);
 % set(get(ax2,'XLabel'),'String','Pseudo-Latitude');
+
+
+
+%%% Add panel labels
+annotation('textbox',[axpos(1,1)-0.04 axpos(1,2)-0.05 0.03 0.03],'String',axlabels{1},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
+annotation('textbox',[axpos(2,1)-0.04 axpos(2,2)-0.05 0.03 0.03],'String',axlabels{2},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
+annotation('textbox',[axpos(3,1)-0.04 axpos(3,2)-0.05 0.03 0.03],'String',axlabels{3},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
+annotation('textbox',[axpos(4,1)-0.04 axpos(4,2)-0.05 0.03 0.03],'String',axlabels{4},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');

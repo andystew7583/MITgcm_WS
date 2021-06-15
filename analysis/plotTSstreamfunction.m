@@ -8,7 +8,7 @@ addpath CDT/cdt;
 
 %%% Load experiment
 expdir = '../experiments';
-expname = 'hires_seq_onesixth_RTOPO2';
+expname = 'hires_seq_onethird_RTOPO2';
 loadexp;
 
 %%% Set true to compute eddy-induced transports

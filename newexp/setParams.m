@@ -21,7 +21,7 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
 %   nIter0 = 1774980;
   use_extended_diags = true;  
   use_layers = true;
-  use_tides = true;
+  use_tides = false;
   
   
   
@@ -224,7 +224,16 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %%% Eliminate any spurious openings at the northern boundary
   idx_obcs_n = find(h(:,end)>=0,1,'last');
   h(1:idx_obcs_n,end) = 0;
-  idx_obcs_e = find(h(end,:)>=0,1,'last');
+  
+  %%% Eliminate any spurious openings at the northern boundary
+  idx_obcs_e = find(SHELFICEtopo(end,:)==h(end,:),1,'last')
+  SHELFICEtopo(end,1:idx_obcs_e) = h(end,1:idx_obcs_e);
+  
+  figure(33);
+  plot(ymc,h(end,:));
+  hold on;
+  plot(ymc,SHELFICEtopo(end,:));
+  hold off;
  
   %%% Overwrite bathymetry data file
   writeDataset(h,fullfile(inputpath,bathyFile),ieee,prec);
@@ -554,6 +563,7 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
 %     OB_Iwest = 1*ones(1,Ny);
     OB_Jnorth = -1*ones(1,Nx);
   OB_Jnorth(1:idx_obcs_n) = 0;
+  OB_Ieast(1:idx_obcs_e) = 0;
 
      
   obcs_parm01.addParm('useOrlanskiNorth',useOrlanskiNorth,PARM_BOOL);

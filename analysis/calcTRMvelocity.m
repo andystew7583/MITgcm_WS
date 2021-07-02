@@ -18,6 +18,7 @@ function [u_eddy,v_eddy,w_eddy] = calcTRMvelocity (...
   %%% Reference stratification to regularize the TRM where stratification is weak
   %%% N.B. This differs from the actual stratification N^2 by a factor of g
   dbuoy_dz_ref = 1e-8;
+%   dbuoy_dz_ref = 1e-9;
 
   %%% Grid sizes
   Nx = size(hFacC,1);

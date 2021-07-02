@@ -380,8 +380,8 @@ shading interp;
 
 %%% Add colorbar and title
 h = colorbar;
-colormap(gca,cmocean('delta',50));
-caxis([-1 1]*2e-4);
+colormap(gca,cmocean('balance',50));
+caxis([-1 1]*1e-4);
 set(h,'Position',cbpos(5,:));
 % title(h,'mm/s','Fontsize',fontsize,'interpreter','latex');
 
@@ -412,11 +412,11 @@ MKEtoEKE_zint = nansum(MKEtoEKE.*hFacC.*DRF,3);
 MKEtoEKE_zint(sum(hFacW,3)==0) = NaN;
 pcolor(XC,YC,MKEtoEKE_zint);
 shading interp;
-caxis([-1 1]*1e-3);
+caxis([-1 1]*1e-4);
 
 %%% Add colorbar and title
 h = colorbar;
-colormap(gca,cmocean('delta',50));% caxis([-1 1]*1e-3);
+colormap(gca,cmocean('balance',50));% caxis([-1 1]*1e-3);
 set(h,'Position',cbpos(6,:));
 % title(h,'$\times$10$^{-7}$ m$^2$/s$^3$','Fontsize',fontsize,'interpreter','latex');
 

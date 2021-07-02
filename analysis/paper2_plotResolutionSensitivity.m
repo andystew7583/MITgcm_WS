@@ -439,7 +439,7 @@ end
 hold off;
 set(gca,'FontSize',fontsize);
 % xlabel('Horizontal grid spacing ($^\circ$)','interpreter','latex');
-ylabel('WSBW density (kg/m$^3$)','interpreter','latex');
+ylabel('WSDW density (kg/m$^3$)','interpreter','latex');
 set(gca,'XTick',res_sens);
 set(gca,'XTickLabel',res_labels);
 set(gca,'XLim',[(7/8)*res_sens(1) (8/7)*res_sens(end)]);

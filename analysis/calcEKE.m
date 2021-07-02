@@ -11,18 +11,18 @@
 %%% Load experiment data
 expdir = '../experiments';
 % expname = 'hires_seq_onethird_notides_RTOPO2';
-expname = 'hires_seq_onesixth_RTOPO2';
-% expname = 'hires_seq_onetwelfth_notides_RTOPO2';
+% expname = 'hires_seq_onesixth_RTOPO2';
+expname = 'hires_seq_onetwelfth_notides_RTOPO2';
 loadexp;
 
 %%% Time frame over which to average thermodynamic variables to create
 %%% climatology
 % tmin = 19.05*86400*365;
 % tmax = 27.05*86400*365;
-tmin = 10.05*86400*365;
-tmax = 18.05*86400*365;
-% tmin = 1.05*86400*365;
-% tmax = 9.05*86400*365;
+% tmin = 10.05*86400*365;
+% tmax = 18.05*86400*365;
+tmin = 1.05*86400*365;
+tmax = 9.05*86400*365;
 
 
 
@@ -54,9 +54,8 @@ wvelth = readIters(exppath,'WVELTH',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
 uvelsq = readIters(exppath,'UVELSQ',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
 vvelsq = readIters(exppath,'VVELSQ',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
 uvvel = readIters(exppath,'UV_VEL_Z',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
-
-
-
+uwvel = readIters(exppath,'WU_VEL',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
+vwvel = readIters(exppath,'WV_VEL',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
 
 
 
@@ -98,13 +97,22 @@ PEtoEKE_zavg(isinf(PEtoEKE_zavg)) = 0;
 %%% Calculate MKE->EKE
 uvel(hFacW==0) = NaN;
 vvel(hFacS==0) = NaN;
-uvvel_mean = 0.5*(vvel(1:Nx,1:Ny,:)+vvel([Nx 1:Nx-1],1:Ny,:)) ...
-        + 0.5*(uvel(1:Nx,1:Ny,:)+vvel(1:Nx,[Ny 1:Ny-1],:));
+uvvel_mean = 0.5.*(vvel(1:Nx,1:Ny,:)+vvel([Nx 1:Nx-1],1:Ny,:)) ...
+        .* 0.5.*(uvel(1:Nx,1:Ny,:)+uvel(1:Nx,[Ny 1:Ny-1],:));
 uvvel_eddy = uvvel - uvvel_mean;
+uwvel_mean = 0.5.*(uvel(:,:,1:Nr)+uvel(:,:,[Nr 1:Nr-1])) ...
+           .* 0.5.*(wvel(1:Nx,:,:)+wvel([Nx 1:Nx-1],:,:));
+vwvel_mean = 0.5.*(vvel(:,:,1:Nr)+vvel(:,:,[Nr 1:Nr-1])) ...
+           .* 0.5.*(wvel(:,1:Ny,:)+wvel(:,[Ny 1:Ny-1],:));
+uwvel_eddy = uwvel - uwvel_mean;         
+vwvel_eddy = vwvel - vwvel_mean;
 MKEtoEKE = - uvelsq_eddy.*(uvel([2:Nx 1],:,:)-uvel(:,:,:))./DXG ...
            - uvvel_eddy.*(uvel(:,1:Ny,:)-uvel(:,[Ny 1:Ny-1],:))./DYC ...
            - uvvel_eddy.*(vvel(1:Nx,:,:)-vvel([Nx 1:Nx-1],:,:))./DXC ...
            - vvelsq_eddy.*(vvel(:,[2:Ny 1],:)-vvel(:,:,:))./DYG;
+MKEtoEKE = MKEtoEKE ...        
+          - uwvel_eddy.*(uvel(:,:,[Nr 1:Nr-1])-uvel(:,:,1:Nr))./repmat(DRC(1:Nr),[Nx Ny 1]) ...
+          - vwvel_eddy.*(vvel(:,:,[Nr 1:Nr-1])-vvel(:,:,1:Nr))./repmat(DRC(1:Nr),[Nx Ny 1]);
 MKEtoEKE_zavg = nansum(MKEtoEKE.*DRF3D.*hFacC,3) ./ sum(DRF3D.*hFacC,3);
 MKEtoEKE_zavg(isinf(MKEtoEKE_zavg)) = 0;
 

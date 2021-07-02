@@ -141,7 +141,7 @@ hold on;
 clabel(C,h);
 plot([4 4],ylim,'--','Color',[.3 .3 .3]);
 plot([0 0],ylim,'--','Color',[.3 .3 .3]);
-plot(eta,27.83*ones(size(eta)),'k:')
+plot(eta,27.85*ones(size(eta)),'k:')
 hold off;
 caxis([-psimax psimax]);
 set(gca,'YDir','reverse');

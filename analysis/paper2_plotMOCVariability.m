@@ -661,3 +661,239 @@ annotation('textbox',[axpos(4,1)-0.05 axpos(4,2)-0.04 0.03 0.03],'String',axlabe
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%% MAKE CONDENSED PLOT %%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% %%% Remove seasonal cycles
+% psimax_full_noseason = psimax_full - repmat(mean(reshape(psimax_full,[12 length(psimax_full)/12]),2)',[1 length(psimax_full)/12]);
+% psimax_shelf_noseason = psimax_shelf - repmat(mean(reshape(psimax_shelf,[12 length(psimax_shelf)/12]),2)',[1 length(psimax_shelf)/12]);
+% psimax_cavity_noseason = psimax_cavity - repmat(mean(reshape(psimax_cavity,[12 length(psimax_cavity)/12]),2)',[1 length(psimax_cavity)/12]);
+
+%%% Streamfunction strength estimates
+psi_tot_noseason = psi_tot - repmat(squeeze(mean(reshape(psi_tot,[Neta Nd 12,size(psi_tot,3)/12]),4)),[1 1 size(psi_tot,3)/12]);
+psi_tot_noseason = psi_tot_noseason + repmat(mean(psi_tot,3),[1 1 size(psi_tot,3)]);
+psimax_cavity_noseason = zeros(1,Nt);
+psimax_shelf_noseason = zeros(1,Nt);
+psimax_full_noseason = zeros(1,Nt);
+for n=1:Nt
+  tmp = psi_tot_noseason(:,:,n);
+  psimax_full_noseason(n) = - min(min(tmp));
+  psimax_shelf_noseason(n) = -min(min(tmp(EE<4)));
+  psimax_cavity_noseason(n) = max(max(tmp(EE<0)));
+end
+
+                                
+fontsize = 14;
+framepos = [417    26   1030   640];
+axpos = zeros(6,4);
+axpos(1,:) = [0.08 0.52 0.38 0.35];
+axpos(2,:) = [0.54 0.52 0.38 0.35];
+axpos(3,:) = [0.08 0.08 0.38 0.35];
+axpos(4,:) = [0.54 0.08 0.38 0.35];
+cb1_pos = [0.94 0.52 0.015 0.35];
+axlabels = {'(a)','(b)','(c)','(d)','(e)','(f)'};
+
+figure(2018);                
+clf;
+set(gcf,'Position',framepos);            
+                
+
+
+
+
+
+
+
+
+
+
+%%% Streamfunction standard deviation
+subplot('Position',axpos(1,:));
+psi_plot = std((psi_tot)/1e6,[],3);
+pcolor(EE,DD,psi_plot);
+shading interp;
+hold on
+plot([4 4],ylim,'--','Color',[.3 .3 .3]);
+plot([0 0],ylim,'--','Color',[.3 .3 .3]);
+hold off
+caxis([0 2.5]);
+set(gca,'YDir','reverse');
+set(gca,'YLim',ylim);
+set(gca,'XLim',[-7 11]);
+colormap(gca,cmocean('amp',25));
+% colormap(gca,hot(25));
+xlabel('MOC coordinate, \eta');
+ylabel('Potential density (kg/m^3)')
+% text(-6.5,27.3,'Overturning streamfunction s.d.','FontSize',fontsize+2);
+set(gca,'FontSize',fontsize);
+set(gca,'Color',[.85 .85 .85]);
+cbhandle = colorbar;
+set(cbhandle,'Position',cb1_pos);
+title(cbhandle,'Sv');
+handle = title(gca,'Seasonal cycle included','Fontsize',fontsize+2);
+set(handle,'Position',get(handle,'Position')+[0 -.17 0]);
+text(-4.5,28.15,'FRIS','FontSize',fontsize);
+text(1.3,28.15,'Shelf','FontSize',fontsize);
+text(5.5,28.15,'Weddell Sea','FontSize',fontsize);
+
+ax1 = gca;
+ax2 = axes('Position',get(ax1,'Position'));
+set(ax2,'Color','None');
+set(ax2,'XAxisLocation','Top');
+set(ax2,'YLim',get(ax1,'YLim'));
+set(ax2,'YTick',[]);
+box off;
+set(ax2,'XLim',get(ax1,'XLim')-78.16);
+set(ax2,'FontSize',fontsize);
+set(get(ax2,'XLabel'),'String','Pseudo-Latitude');
+
+
+
+
+
+
+
+
+%%% Streamfunction standard deviation, seasonal cycle removed
+subplot('Position',axpos(2,:));
+psi_plot = std((psi_tot_noseason)/1e6,[],3);
+pcolor(EE,DD,psi_plot);
+shading interp;
+hold on
+plot([4 4],ylim,'--','Color',[.3 .3 .3]);
+plot([0 0],ylim,'--','Color',[.3 .3 .3]);
+hold off
+caxis([0 2.5]);
+set(gca,'YDir','reverse');
+set(gca,'YLim',ylim);
+set(gca,'XLim',[-7 11]);
+colormap(gca,cmocean('amp',25));
+% colormap(gca,hot(25));
+xlabel('MOC coordinate, \eta');
+% ylabel('Potential density (kg/m^3)')
+% text(-6.5,27.3,'Overturning streamfunction s.d.','FontSize',fontsize+2);
+set(gca,'FontSize',fontsize);
+set(gca,'Color',[.85 .85 .85]);
+cbhandle = colorbar;
+set(cbhandle,'Position',cb1_pos);
+title(cbhandle,'Sv');
+handle = title(gca,'Seasonal cycle removed','Fontsize',fontsize+2);
+set(handle,'Position',get(handle,'Position')+[0 -.17 0]);
+text(-4.5,28.15,'FRIS','FontSize',fontsize);
+text(1.3,28.15,'Shelf','FontSize',fontsize);
+text(5.5,28.15,'Weddell Sea','FontSize',fontsize);
+
+
+ax1 = gca;
+ax2 = axes('Position',get(ax1,'Position'));
+set(ax2,'Color','None');
+set(ax2,'XAxisLocation','Top');
+set(ax2,'YLim',get(ax1,'YLim'));
+set(ax2,'YTick',[]);
+box off;
+set(ax2,'XLim',get(ax1,'XLim')-78.16);
+set(ax2,'FontSize',fontsize);
+set(get(ax2,'XLabel'),'String','Pseudo-Latitude');
+
+
+
+
+
+
+
+%%% Time series of streamfunction strength
+subplot('Position',axpos(3,:));
+semilogy(times/t1year+2007,psimax_full/1e6);
+hold on;
+semilogy(times/t1year+2007,psimax_shelf/1e6);
+semilogy(times/t1year+2007,psimax_cavity/1e6);
+semilogy(times/t1year+2007,0*times,'k--');
+hold off;
+xlabel('Year');
+ylabel('Overturning (Sv)')
+set(gca,'FontSize',fontsize);
+% set(gca,'YColor',colororder(1,:));
+set(gca,'YTick',[.3 1 3 10]);
+set(gca,'YLim',[0.25 12]);
+grid on;
+
+
+
+
+
+
+
+
+
+%%% Time series of streamfunction strength, interannual
+subplot('Position',axpos(4,:));
+semilogy(times/t1year+2007,smooth(psimax_full,12)/1e6)
+hold on;
+semilogy(times/t1year+2007,smooth(psimax_shelf,12)/1e6)
+semilogy(times/t1year+2007,smooth(psimax_cavity,12)/1e6)
+semilogy(times/t1year+2007,0*times,'k--');
+hold off;
+% semilogy(times/t1year+2007,psimax_full_noseason/1e6);
+% hold on;
+% semilogy(times/t1year+2007,psimax_shelf_noseason/1e6);
+% semilogy(times/t1year+2007,psimax_cavity_noseason/1e6);
+% semilogy(times/t1year+2007,0*times,'k--');
+% hold off;
+xlabel('Year');
+% ylabel('Overturning (Sv)')
+set(gca,'FontSize',fontsize);
+% set(gca,'YColor',colororder(1,:));
+set(gca,'YTick',[.3 1 3 10]);
+set(gca,'YLim',[0.25 12]);
+grid on;
+leghandle = legend('\Psi_m_a_x','\Psi_s_h_e_l_f','\Psi_c_a_v_i_t_y','Location','SouthWest');
+set(leghandle,'Orientation','Horizontal');
+
+
+
+
+
+
+
+%%% Panel labels
+annotation('textbox',[axpos(1,1)-0.07 axpos(1,2)-0.04 0.03 0.03],'String',axlabels{1},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
+annotation('textbox',[axpos(2,1)-0.07 axpos(2,2)-0.04 0.03 0.03],'String',axlabels{2},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
+annotation('textbox',[axpos(3,1)-0.05 axpos(3,2)-0.04 0.03 0.03],'String',axlabels{3},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
+annotation('textbox',[axpos(4,1)-0.05 axpos(4,2)-0.04 0.03 0.03],'String',axlabels{4},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
+
+
+
+
+
+
+
+
+

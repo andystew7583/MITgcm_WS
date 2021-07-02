@@ -1,4 +1,4 @@
-%%%hplot
+%%%
 %%% anim.m
 %%%
 %%% Reads diagnostic output from MITgcm and makes a movie of it. Requires
@@ -68,16 +68,19 @@ crange = [34.2 35.0]; %%% salinity
 % crange = [0 3];
 % crange = [-0.01 0.01];
 
-% cmap = pmkmp(100,'Swtth');
+cmap = pmkmp(100,'Swtth');
 % cmap = cmocean('haline',100);
 % cmap = cmocean('thermal',100);
 % cmap = cmocean('ice',100);
 % cmap = haxby;
 % cmap = jet(200);
-cmap = redblue(100);
+% cmap = redblue(100);
 
-% titlestr = 'Bottom salinity (g/kg)';
-titlestr = '';
+titlestr = 'Bottom salinity (g/kg)';
+% titlestr = 'Sea ice concentration';
+
+months = {'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'};
+years = 2007:1:2015;
 
 
 %%% Frequency of diagnostic output - should match that specified in
@@ -169,26 +172,25 @@ if (mac_plots)
   framepos = [0 scrsz(4)/2 scrsz(3)/1.3 scrsz(4)];
   plotloc = [0.17 0.3 0.62 0.7];
 else
-  plotloc = [0.0855    0.0888    0.7916    0.8624];
-  framepos = [100   306   936   676];
+%   plotloc = [0.0855    0.0888    0.7916    0.8624];  
+  plotloc = [0.04  0.02   0.84  0.9];
+%   framepos = [100   306   936   676];
+  framepos = [100   462   810   520];
 end
 
 %%% Set up the figure
 handle = figure(20);
 set(handle,'Position',framepos);
-clf;
-axes('FontSize',fontsize);
-set(gcf,'color','w');
 M = moviein(length(dumpIters));
 
 Amean = [];
 Amax = [];
 
 % for n = 15*12:length(dumpIters)
-% for n = 1:length(dumpIters)
+for n = 2:length(dumpIters)
 % for n=5*12
 % for n=7*12:8*12
-for n = 34
+% for n = 34
 % for n=48:length(dumpIters)
 % for n=2:length(dumpIters)
   dumpIters(n);
@@ -254,27 +256,60 @@ for n = 34
     end
       
       
-    
-    FF(FF==0) = NaN;
-%     contourf(XC,YC,FF,100,'EdgeColor','None');  
-    pcolor(XC,YC,FF);
-    shading interp;        
-    hold on;
-%     p = surface(XC,YC,Mice_elev),shading interp;
-%     p.FaceColor = [.5 .5 .5];
-%     p.FaceAlpha = .5;
-%     hold on
-%     [cs,C] = contour(XC,YC,bathy,[-5000:1000:-1000 -500 -200],'EdgeColor','k');
-    
-%     hh = clabel(cs,C);
-    hold off;
-    xlabel('x (km)');
-    ylabel('y (km)');
-    
-   
+%     clf;
+%     axes('FontSize',fontsize);
+    set(gcf,'color','w');
+%     FF(FF==0) = NaN;
+% %     contourf(XC,YC,FF,100,'EdgeColor','None');  
+%     pcolor(XC,YC,FF);
+%     shading interp;        
+%     hold on;
+% %     p = surface(XC,YC,Mice_elev),shading interp;
+% %     p.FaceColor = [.5 .5 .5];
+% %     p.FaceAlpha = .5;
+% %     hold on
+% %     [cs,C] = contour(XC,YC,bathy,[-5000:1000:-1000 -500 -200],'EdgeColor','k');
+%     
+% %     hh = clabel(cs,C);
+%     hold off;
+%     xlabel('x (km)');
+%     ylabel('y (km)');
+%     xlabel('Longitude','interpreter','latex');
+%     ylabel('Latitude','interpreter','latex');    
+%   handle=colorbar;
+%   set(handle,'FontSize',fontsize);
 
-    xlabel('Longitude','interpreter','latex');
-    ylabel('Latitude','interpreter','latex');
+    latMin = min(min(YC));
+    latMax = YC(1,end-spongethickness);
+    lonMin = min(min(XC));
+    lonMax = XC(end-spongethickness,1);
+    
+    clf;    
+    set(gcf,'color','w');
+    axesm('eqaconicstd',...
+    'fontsize',13,...
+    'Grid','on', ...    
+    'Frame','off', ...
+    'MapLatLimit',[latMin latMax], ...
+    'MapLonLimit',[lonMin lonMax], ... 
+    'MapParallels',[-85 -65], ...
+    'PLineLocation', 5, ...
+    'MLineLocation', 10,...
+    'MeridianLabel', 'on', ...
+    'ParallelLabel', 'on');    %, ...
+    %           'origin',[yc(round(size(yc,1)/2),round(size(yc,2)/2)),xc(round(size(xc,1)/2),round(size(xc,2)/2))])
+    axis off;
+    setm(gca,'MLabelParallel',-20)
+    pcolorm(YC,XC,FF);
+    shading interp
+
+    %%% Add colorbar and title
+    h = colorbar;
+    set(gca,'FontSize',10);
+    set(h,'Position',[0.92 0.33 0.02 .26])
+    tightmap;
+
+
 
     
   %%% y/z zonally-averaged plot
@@ -307,7 +342,9 @@ for n = 34
     xlabel('Offshore $y$ (latitude)','interpreter','latex','fontsize',15);
     ylabel('Height $z$ (km)','interpreter','latex','fontsize',15);
     set(gca,'YLim',[-1.3 0]);
-    set(gca,'XLim',[-83 -64]);
+    set(gca,'XLim',[-83 -64]);    
+    handle=colorbar;
+    set(handle,'FontSize',fontsize);
 
  end
 
@@ -316,10 +353,11 @@ for n = 34
 
  
   %%% Finish the plot
-  handle=colorbar;
   colormap(cmap);
-  set(handle,'FontSize',fontsize);
-  title([titlestr,', $t=',num2str(tyears(n),'%.1f'),'$ years'],'interpreter','latex');
+  if (~isempty(titlestr))
+%     title([titlestr,', $t=',num2str(tyears(n),'%.1f'),'$ years'],'interpreter','latex');
+    annotation('textbox',[0.3 0.95 0.5 0.05],'String',[titlestr,', ',months{mod(n-1,12)+1},' ',num2str(years(floor((n-1)/12)+1))],'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');   
+  end
   if (set_crange)  
     caxis(crange);
   end

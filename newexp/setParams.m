@@ -903,7 +903,7 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
  	useExfCheckRange  = false;
  	useRelativeWind   = true;
 %  	useRelativeWind   = false;
-    repeatPeriod      = 283996800;
+    repeatPeriod      = EXF_Ndays*t1day;
 %     repeatPeriod = 31536000;
     exf_offset_atemp =  273.16;
     
@@ -924,45 +924,45 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
     
     
 % "*period=-12" specifies monthly-mean forcing
-   apressurestartdate1 = str2num([num2str(start_year),'0101']);
+   apressurestartdate1 = str2num([num2str(EXF_start_year),'0101']);
    apressurestartdate2 = 000000;
    apressureperiod     = 86400.0;
 %    apressureperiod     = 10800.0;
     
-    aqhstartdate1 = str2num([num2str(start_year),'0101']);
+    aqhstartdate1 = str2num([num2str(EXF_start_year),'0101']);
     aqhstartdate2 = 000000;
     aqhperiod = 86400.0;
 %     aqhperiod           = 10800.0;
 
-    atempstartdate1 = str2num([num2str(start_year),'0101']);
+    atempstartdate1 = str2num([num2str(EXF_start_year),'0101']);
     atempstartdate2 = 000000;
     atempperiod = 86400.0;
 %     atempperiod         = 10800.0;
  
 
-    uwindstartdate1 = str2num([num2str(start_year),'0101']);
+    uwindstartdate1 = str2num([num2str(EXF_start_year),'0101']);
     uwindstartdate2 = 000000;
    uwindperiod = 86400.0;
 %     uwindperiod   = 10800.0;
  
-    vwindstartdate1 = str2num([num2str(start_year),'0101']);
+    vwindstartdate1 = str2num([num2str(EXF_start_year),'0101']);
     vwindstartdate2 = 000000;
     vwindperiod = 86400.0;
 %     vwindperiod         = 10800.0; 
  
-    precipstartdate1 = str2num([num2str(start_year),'0101']);
+    precipstartdate1 = str2num([num2str(EXF_start_year),'0101']);
     precipstartdate2 = 000000;
     precipperiod = 86400.0;
 %     precipperiod        = 10800.0; 
  
 
-    swdownstartdate1 = str2num([num2str(start_year),'0101']);
+    swdownstartdate1 = str2num([num2str(EXF_start_year),'0101']);
     swdownstartdate2 = 000000;
     swdownperiod = 86400.0;
 %     swdownperiod        = 10800.0;
 % 
 
-    lwdownstartdate1 = str2num([num2str(start_year),'0101']);
+    lwdownstartdate1 = str2num([num2str(EXF_start_year),'0101']);
     lwdownstartdate2 = 000000;
     lwdownperiod = 86400.0;
 %     lwdownperiod        = 10800.0;

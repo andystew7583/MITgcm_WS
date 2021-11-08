@@ -24,6 +24,9 @@ function [tt,SHImelt,SHImelt_mean,XC,YC,bathy,SHELFICEtopo] = calcFRISMeltTimeSe
   SHImelt = NaN*ones(1,nDumps);
   SHImelt_mean = zeros(Nx,Ny);
   tlen = 0;
+  
+  endTime = dumpIters(end)*deltaT
+  avg_len = 8*t1year
 
   %%% Indices over which to integrate, i.e. defining the FRIS
   xidx = find(XC(:,1)<-29.9);
@@ -41,16 +44,24 @@ function [tt,SHImelt,SHImelt_mean,XC,YC,bathy,SHELFICEtopo] = calcFRISMeltTimeSe
       continue;
     end
     
+    
     %%% Mean local melt rate
-    SHImelt_mean = SHImelt_mean + SHIfwFlx;
+    if (tt(n) > endTime-avg_len)
+      
+      SHImelt_mean = SHImelt_mean + SHIfwFlx;
+
+      %%% Increment counter
+      tlen = tlen + 1;
+      
+    end    
+    
 n
+
     %%% Compute area-integrated freshwater flux
     SHIfwFlx = SHIfwFlx .* RAC;
     SHImelt(n) =  sum(sum(SHIfwFlx(xidx,yidx)));
 
 
-    %%% Increment counter
-    tlen = tlen + 1;
 
   end
 

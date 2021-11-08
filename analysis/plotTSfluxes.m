@@ -23,6 +23,9 @@ end
 outfname = [outfname,'.mat'];
 load(fullfile('products',outfname));
 
+thflux_tot = thflux_stand+thflux_fluc+mean(thflux_eddy,2);
+sltflux_tot = sltflux_stand+sltflux_fluc+mean(sltflux_eddy,2);
+
 %%% Make plots
 
 figure(1);
@@ -36,13 +39,13 @@ hold off;
 legend('Mean','Seasonal','Eddy','Total');
 
 
-figure(2);
-plot(eta,std(thflux_tot,[],2));
-hold on;
-plot(eta,std(thflux_mean,[],2));
-plot(eta,std(thflux_eddy,[],2));
-hold off;
-legend('Total','Mean','Eddy');
+% figure(2);
+% plot(eta,std(thflux_tot,[],2));
+% hold on;
+% plot(eta,std(thflux_mean,[],2));
+% plot(eta,std(thflux_eddy,[],2));
+% hold off;
+% legend('Total','Mean','Eddy');
 
 figure(3);
 plot(eta,sltflux_stand);
@@ -54,10 +57,10 @@ hold off;
 legend('Mean','Seasonal','Eddy','Total');
 
 
-figure(4);
-plot(eta,std(sltflux_tot,[],2));
-hold on;
-plot(eta,std(sltflux_mean,[],2));
-plot(eta,std(sltflux_eddy,[],2));
-hold off;
-legend('Total','Mean','Eddy');
+% figure(4);
+% plot(eta,std(sltflux_tot,[],2));
+% hold on;
+% plot(eta,std(sltflux_mean,[],2));
+% plot(eta,std(sltflux_eddy,[],2));
+% hold off;
+% legend('Total','Mean','Eddy');

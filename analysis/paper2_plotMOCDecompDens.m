@@ -249,3 +249,11 @@ annotation('textbox',[axpos(2,1)-0.04 axpos(2,2)-0.05 0.03 0.03],'String',axlabe
 annotation('textbox',[axpos(3,1)-0.04 axpos(3,2)-0.05 0.03 0.03],'String',axlabels{3},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
 annotation('textbox',[axpos(4,1)-0.04 axpos(4,2)-0.05 0.03 0.03],'String',axlabels{4},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
 
+
+[j1,k1]=find(psi_eddy_plot==min(psi_eddy_plot(:)))
+% j1 = 131
+[k2] = find(psi_tot_notides(j1,:)==min(psi_tot_notides(j1,:)))
+total_AABW_flux = -psi_tot_notides(j1,k2)
+total_eddy_flux_below_psi_max = -psi_eddy_plot(j1,k2)
+total_AABW_flux_below_eddy_max = -psi_tot_notides(j1,k1)
+total_eddy_flux = -psi_eddy_plot(j1,k1)

@@ -387,7 +387,7 @@ set(h,'Position',cbpos(5,:));
 
 %%% Add bathymetry contours
 hold on;
-[C,h] = contour(XC,YC,SHELFICEtopo-bathy,bathycntrs,'EdgeColor',[.3 .3 .3]); 
+[C,h] = contour(XC,YC,SHELFICEtopo-bathy,bathycntrs(1:end-1),'EdgeColor',[.3 .3 .3]); 
 clabel(C,h,'Color',[.3 .3 .3]);
 hold off
 
@@ -436,6 +436,33 @@ title(['Depth-integrated MKE{\rightarrow}EKE (m^3/s^3)']);
 % set(gca,'Color',[.8 .8 .8]);
 
 
+
+
+
+
+
+%%% Inset plot for panel (e)
+axes('Position',[0.23 0.2 0.18 0.095]);
+pcolor(XC,YC,PEtoEKE_zint);
+shading interp;
+box on;
+
+%%% Add colorbar and title
+h = colorbar;
+colormap(gca,cmocean('balance',50));
+caxis([-.6 .6]*1e-3);
+
+%%% Add bathymetry contours
+hold on;
+[C,h] = contour(XC,YC,SHELFICEtopo-bathy,bathycntrs,'EdgeColor',[.3 .3 .3]); 
+clabel(C,h,'Color',[.3 .3 .3]);
+plot([-40 -32 -32 -40 -40],[-74.8 -74.8 -73.3 -73.3 -74.8],'k-','LineWidth',1);
+hold off
+
+%%% Labels
+set(gca,'FontSize',fontsize-4);
+axis([-40 -32 -74.8 -73.3]);
+% set(gca,'Color',[.8 .8 .8]);
 
 
 

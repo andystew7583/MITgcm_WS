@@ -71,7 +71,7 @@ bflux = bfluxT + bfluxS;
 
 
 %%% Density bounds for water masses
-dens_AABW = 27.83;
+dens_AABW = 27.85;
 
 %%% Density grid indices for water masses
 k_AABW = find(dens_levs==dens_AABW);
@@ -197,7 +197,7 @@ shading interp;
 axis([lonMin lonMax latMin latMax]);
 set(gca,'FontSize',fontsize);
 ylabel('Latitude','interpreter','latex');
-title(['Transport below \sigma_\theta=',num2str(dens_AABW),' kg/m^3']);
+title(['Transport deeper than \sigma_\theta=',num2str(dens_AABW),' kg/m^3']);
 
 %%% Add colorbar and title
 h = colorbar;
@@ -219,7 +219,7 @@ text(rq_lon+2,rq_lat+1,[num2str(rq_amp),' m^2/s'],'FontSize',fontsize);
 %%% Add quivers
 ax1 = gca;
 ax2 = axes('Position',get(ax1,'Position'));
-quiver(x_plot,y_plot,u_plot*cosd(ref_lat)./cosd(lat_plot),v_plot,4,'k-');
+quiver(x_plot,y_plot,u_plot*cosd(ref_lat)./cosd(lat_plot),v_plot,3,'k-');
 hold off
 set(ax2,'Color','None');
 set(ax2,'XLim',[xMin xMax]);
@@ -264,7 +264,7 @@ set(gca,'FontSize',fontsize);
 % xlabel('Longitude','interpreter','latex');
 % ylabel('Latitude','interpreter','latex');
 axis([lonMin lonMax latMin latMax]);
-title(['Layer thickness below \sigma_\theta=',num2str(dens_AABW),' kg/m^3']);
+title(['Layer thickness deeper than \sigma_\theta=',num2str(dens_AABW),' kg/m^3']);
 % set(gca,'Color',[.8 .8 .8]);
 
 
@@ -297,7 +297,7 @@ set(gca,'FontSize',fontsize);
 xlabel('Longitude','interpreter','latex');
 ylabel('Latitude','interpreter','latex');
 axis([lonMin lonMax latMin latMax]);
-title(['Diapycnal velocity on \sigma_\theta=',num2str(dens_AABW),' kg/m^3']);
+title(['Diapycnal velocity across \sigma_\theta=',num2str(dens_AABW),' kg/m^3']);
 % set(gca,'Color',[.8 .8 .8]);
 
 

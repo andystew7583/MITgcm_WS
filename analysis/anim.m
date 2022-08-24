@@ -11,10 +11,11 @@
 mac_plots = false;
 
 %%% Read experiment data
-% loadexp;
+loadexp;
 
 %%% Select diagnostic variable to animate
-diagnum = 76;
+% diagnum = 72;
+diagnum = 29;
 outfname =diag_fileNames{1,diagnum};
 
 %%% Data index in the output data files
@@ -56,34 +57,29 @@ yzlayer = 144;
 set_crange = 1;
 
 
-% crange = [-2.5 -1]; %/%% Filchner temp
-% crange = [-2.5 0.5]; %/%%temp
+% crange = [-2.2 -1.6]; %/%% Filchner temp
+% crange = [-3 1]; %/%%temp
 % crange = [34.2 35.0]; %%% salinity
-% crange = [33 34.8]; %%% surface salinity
 % crange = [0 10]; %%%% for KPP hbl
-crange = [0 1]; %%% For sea ice area
+% crange = [0 1]; %%% For sea ice area
 % crange = [-.6 .6]; %%% For velocities or stresses
 % crange = [-1 1]*1e-4; %%% For freshwater fluxes
 % crange =[-100 100]; %%% Qnet
-% crange = [-300 300]; %%% swnet
+crange = [-300 300]; %%% swnet
 % crange = [0 3];
 % crange = [-0.01 0.01];
 
 % cmap = pmkmp(100,'Swtth');
 % cmap = cmocean('haline',100);
 % cmap = cmocean('thermal',100);
-cmap = cmocean('ice',100);
+% cmap = cmocean('ice',100);
 % cmap = haxby;
 % cmap = jet(200);
-% cmap = redblue(100);
+cmap = redblue(100);
 
 % titlestr = 'Bottom salinity (g/kg)';
-titlestr = 'Sea ice concentration';
-% titlestr = 'Mid-depth potential temperature (^oC)';
-% titlestr = 'Bottom potential temperature (^oC)';
-% titlestr = 'Surface salinity (g/kg)';
-% titlestr = 'Mid-depth salinity (g/kg)';
-% titlestr = '';
+% titlestr = 'Sea ice concentration';
+titlestr = '';
 
 months = {'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'};
 years = 2007:1:2015;
@@ -94,23 +90,18 @@ years = 2007:1:2015;
 % nIter0 = 1278720;
 % deltaT = 200
 % nIter0 = 587520;
-% dumpFreq = abs(diag_frequency(diagnum));
-% nDumps = round(endTime/dumpFreq);
-% dumpIters = round((1:nDumps)*dumpFreq/deltaT);
-% dumpIters = dumpIters(dumpIters > nIter0);
+% nIter0 = 394509; %%% For 1/24 run with tides
+dumpFreq = abs(diag_frequency(diagnum));
+nDumps = round(endTime/dumpFreq);
+dumpIters = round((1:nDumps)*dumpFreq/deltaT);
+dumpIters = dumpIters(dumpIters > nIter0);
 
 
-% %%% For daily output
+%%% For daily/12-hourly outputs
 % dumpStart = 2105280;
 % dumpStep = 86400/60;
 % nDumps = 366;
 % dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
-
-%%% For 12-hourly outputt
-dumpStart = 1578240;
-dumpStep = 43200/60;
-nDumps = 731;
-dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
 
 %%% Mesh grids for plotting
 if (botplot || topplot || midplot)
@@ -198,7 +189,7 @@ end
 
 %%% Set up the figure
 handle = figure(20);
-% set(handle,'Position',framepos);
+set(handle,'Position',framepos);
 M = moviein(length(dumpIters));
 
 Amean = [];
@@ -213,9 +204,10 @@ for n = 1:length(dumpIters)
 % for n=2:length(dumpIters)
   dumpIters(n);
     
-  t = dumpIters(n)*deltaT/t1day;
+  t = dumpIters(n)*deltaT/t1year;
   
   
+  tyears(n) = t;
   A = rdmdsWrapper(fullfile(exppath,'results',outfname),dumpIters(n));
   if (isempty(A))
     continue;
@@ -297,12 +289,10 @@ for n = 1:length(dumpIters)
 %   handle=colorbar;
 %   set(handle,'FontSize',fontsize);
 
-%   latMin = min(min(YC));
-  latMin = -78.5;
-  latMax = YC(1,end-spongethickness);
-%   lonMin = min(min(XC));
-  lonMin = -62;
-  lonMax = XC(end-spongethickness,1);
+    latMin = min(min(YC));
+    latMax = YC(1,end-spongethickness);
+    lonMin = min(min(XC));
+    lonMax = XC(end-spongethickness,1);
     
     clf;    
     set(gcf,'color','w');
@@ -322,21 +312,13 @@ for n = 1:length(dumpIters)
     setm(gca,'MLabelParallel',-20)
     pcolorm(YC,XC,FF);
     shading interp
-    
-    hold on;
-    [cs,C]=contourm(YC,XC,SHELFICEtopo-bathy,[100 500 1000 2000 3000 4000],'EdgeColor','k');
-    chandle = clabelm(cs,C);
-    set(chandle,'fontsize',12,'Color','k','BackgroundColor','none','Edgecolor','none') 
-    hold off;
 
     %%% Add colorbar and title
-    h = colorbar;   
+    h = colorbar;
+    set(gca,'FontSize',10);
     set(h,'Position',[0.92 0.33 0.02 .26])
-    
-    %%% Position plot
-    set(gca,'Position',[0 0 0.95 0.95])    
     tightmap;
-    drawnow;
+
 
 
     
@@ -373,7 +355,6 @@ for n = 1:length(dumpIters)
     set(gca,'XLim',[-83 -64]);    
     handle=colorbar;
     set(handle,'FontSize',fontsize);
-    set(gca,'Position',plotloc);
 
  end
 
@@ -384,17 +365,14 @@ for n = 1:length(dumpIters)
   %%% Finish the plot
   colormap(cmap);
   if (~isempty(titlestr))
-    thedate = datenum('2008-01-01')+floor(t);
-    h = title([titlestr,' on ',datestr(thedate)]);
-%     h = title([titlestr,', $t=',num2str(tyears(n),'%.1f'),'$ years'],'interpreter','latex');
-    set(h,'Position',get(h,'Position')+[0 +0.0075 0])
-%     annotation('textbox',[0.3 0.95 0.5 0.05],'String',[titlestr,', ',months{mod(n-1,12)+1},' ',num2str(years(floor((n-1)/12)+1))],'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');   
+%     title([titlestr,', $t=',num2str(tyears(n),'%.1f'),'$ years'],'interpreter','latex');
+    annotation('textbox',[0.3 0.95 0.5 0.05],'String',[titlestr,', ',months{mod(n-1,12)+1},' ',num2str(years(floor((n-1)/12)+1))],'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');   
   end
   if (set_crange)  
     caxis(crange);
   end
   
-  
+  set(gca,'Position',plotloc);
   set(gca,'FontSize',fontsize);
 %   annotation('textbox',[0.85 0.05 0.25 0.05],'String','$\overline{\theta}$ ($^\circ$C)','interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
   M(n) = getframe(gcf);

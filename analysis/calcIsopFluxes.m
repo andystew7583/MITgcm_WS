@@ -12,8 +12,10 @@ function [uflux,vflux] = calcIsopFluxes (...
 
   %%% Calculate density on u and v points via straightforward linear
   %%% interpolation
-  dens_u = 0.5* (dens(1:Nx,:,:) + dens([2:Nx 1],:,:));
-  dens_v = 0.5* (dens(:,1:Ny,:) + dens(:,[2:Ny 1],:)); 
+%   dens_u = 0.5* (dens(1:Nx,:,:) + dens([2:Nx 1],:,:));
+%   dens_v = 0.5* (dens(:,1:Ny,:) + dens(:,[2:Ny 1],:)); 
+  dens_u = 0.5* (dens(1:Nx,:,:) + dens([Nx 1:Nx-1],:,:));
+  dens_v = 0.5* (dens(:,1:Ny,:) + dens(:,[Ny 1:Ny-1],:)); 
   
   %%% Interpolate u, v and density onto a finer vertical grid      
   uvel_f = zeros(Nx,Ny,Nrf);

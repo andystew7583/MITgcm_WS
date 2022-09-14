@@ -29,11 +29,11 @@ sltflux_tot = sltflux_stand+sltflux_fluc+mean(sltflux_eddy,2);
 %%% Make plots
 
 figure(1);
-plot(eta,thflux_stand);
+plot(eta,thflux_stand*rho0*Cp);
 hold on;
-plot(eta,thflux_fluc);
-plot(eta,mean(thflux_eddy,2));
-plot(eta,mean(thflux_tot,2));
+plot(eta,thflux_fluc*rho0*Cp);
+plot(eta,mean(thflux_eddy*rho0*Cp,2));
+plot(eta,mean(thflux_tot*rho0*Cp,2));
 % plot(eta,tflux_eta/1027/4000);
 hold off;
 legend('Mean','Seasonal','Eddy','Total');
@@ -44,15 +44,14 @@ legend('Mean','Seasonal','Eddy','Total');
 % hold on;
 % plot(eta,std(thflux_mean,[],2));
 % plot(eta,std(thflux_eddy,[],2));
-% hold off;
-% legend('Total','Mean','Eddy');
+% hold off;pl
 
 figure(3);
-plot(eta,sltflux_stand);
+plot(eta,sltflux_stand*rho0);
 hold on;
-plot(eta,sltflux_fluc);
-plot(eta,mean(sltflux_eddy,2));
-plot(eta,mean(sltflux_tot,2));
+plot(eta,sltflux_fluc*rho0);
+plot(eta,mean(sltflux_eddy*rho0,2));
+plot(eta,mean(sltflux_tot*rho0,2));
 hold off;
 legend('Mean','Seasonal','Eddy','Total');
 

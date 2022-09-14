@@ -6,8 +6,8 @@
 
 %%% Options
 expdir = '../experiments';
-expname = 'hires_seq_onetwelfth_RTOPO2';
-show_cavity = false;
+expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+show_cavity = true;
 loadexp;
 
 %%% Load pre-computed streamfunction
@@ -51,10 +51,14 @@ scrsz = get(0,'ScreenSize');
 %%% Set plotting range based on whether we need to show cavity only or
 %%% whole domain
 if (show_cavity)
+%   latMin = min(min(YC));
+%   latMax = -72;
+%   lonMin = -80;
+%   lonMax = -30;
   latMin = min(min(YC));
-  latMax = -72;
-  lonMin = -80;
-  lonMax = -30;
+  latMax = max(max(YC));
+  lonMin = min(min(XC));
+  lonMax = max(max(XC));
   clim = [-3 3];
   colorcntrs = [-3:0.25:3];
   linecntrs = [-3:0.25:3];

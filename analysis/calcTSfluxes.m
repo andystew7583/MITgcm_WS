@@ -24,8 +24,8 @@ expdir = '../experiments';
 % tmin = 1.05;
 % tmax = 9.05;
 expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-tmin = 2.05;
-tmax = 3.05;
+tmin = 3.05;
+tmax = 4.05;
 loadexp;
 
 %%% Set true to deform coordinates in the cavity
@@ -227,6 +227,17 @@ save(fullfile('products',outfname), ...
   'uvel_tavg','vvel_tavg','theta_tavg','salt_tavg', ... 
   'uvelth_tavg','vvelth_tavg','uvelslt_tavg','vvelslt_tavg', ...
   'tflux_tavg','sflux_tavg','SHIfwFlx_tavg','SHIhtFlx_tavg','-v7.3');
+clear('uvel_tavg','vvel_tavg','theta_tavg','salt_tavg','uvelth_tavg','vvelth_tavg','uvelslt_tavg','vvelslt_tavg');
+
+%%% Add vertical fluxes
+wvel_tavg = readIters(exppath,'WVEL',dumpIters,deltaT,tmin*t1year,tmax*t1year,Nx,Ny,Nr);
+wvelth_tavg = readIters(exppath,'WVELTH',dumpIters,deltaT,tmin*t1year,tmax*t1year,Nx,Ny,Nr);
+wvelslt_tavg = readIters(exppath,'WVELSLT',dumpIters,deltaT,tmin*t1year,tmax*t1year,Nx,Ny,Nr);
+save(fullfile('products',outfname), ...
+  'wvel_tavg','wvelth_tavg','wvelslt_tavg', ...
+  '-append','-v7.3');
+
+%%% Add eddy decomposition, if applicable
 if (calc_eddy_decomp)
   save(fullfile('products',outfname), ...
     'thflux_eddy_adv','thflux_eddy_stir', ...

@@ -5,8 +5,10 @@
 %%%
 
 %%% Mooring location and output file name
-load('SealComparison/mooringA253_337.mat');
-outfname = 'modelA253.mat';
+% load('SealComparison/mooringA253_337.mat');
+% outfname = 'modelA253.mat';
+load('SealComparison/mooringA254_337.mat');
+outfname = 'modelA254.mat';
 
 %%% Read experiment data
 setExpname; %%% To set directory paths

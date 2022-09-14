@@ -8,8 +8,8 @@ addpath CDT/cdt;
 
 %%% Load experiment
 expdir = '../experiments';
-expname = 'hires_seq_onetwelfth_RTOPO2';
-% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+% expname = 'hires_seq_onetwelfth_RTOPO2';
+expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
 
 %%% Options (see calcOverturning)
 calc_psi_eddy = true;

@@ -11,11 +11,11 @@
 mac_plots = false;
 
 %%% Read experiment data
-loadexp;
+% loadexp;
 
 %%% Select diagnostic variable to animate
-% diagnum = 72;
-diagnum = 29;
+% diagnum = 6;
+diagnum = 73;
 outfname =diag_fileNames{1,diagnum};
 
 %%% Data index in the output data files
@@ -23,10 +23,10 @@ outfidx = 1;
 
 %%% If set true, plots a top-down view of the field in a given layer.
 %%% Otherwise plots a side-on view of the zonally-averaged field.
-xyplot = 1;
+xyplot = 0;
 
 %%% Vertical layer index to use for top-down plots
-xylayer = 1;
+xylayer = 10;
 
 %%% Set true to plot the field in the lowest active cell at each horizontal
 %%% location
@@ -34,7 +34,7 @@ botplot = 0;
 
 %%% Set true to plot the field in the topmost wet cell at each horizontal
 %%% location
-topplot = 0;
+topplot = 1;
 
 %%% Set true to plot the field in the middle of the water column at each
 %%% horizontal location
@@ -45,7 +45,7 @@ yzavg = 0;
 
 %%% Layer to plot in the y/z plane
 %%%for 1/3 DEGREE yzlayer = 126; 1/6 = 404;
-yzlayer = 144;
+yzlayer = 600;
 
 % load ../newexp/ELEV.mat
 % 
@@ -59,23 +59,23 @@ set_crange = 1;
 
 % crange = [-2.2 -1.6]; %/%% Filchner temp
 % crange = [-3 1]; %/%%temp
-% crange = [34.2 35.0]; %%% salinity
+crange = [34.2 35.0]; %%% salinity
 % crange = [0 10]; %%%% for KPP hbl
 % crange = [0 1]; %%% For sea ice area
 % crange = [-.6 .6]; %%% For velocities or stresses
 % crange = [-1 1]*1e-4; %%% For freshwater fluxes
 % crange =[-100 100]; %%% Qnet
-crange = [-300 300]; %%% swnet
+% crange = [-300 300]; %%% swnet
 % crange = [0 3];
 % crange = [-0.01 0.01];
 
 % cmap = pmkmp(100,'Swtth');
 % cmap = cmocean('haline',100);
-% cmap = cmocean('thermal',100);
+cmap = cmocean('thermal',100);
 % cmap = cmocean('ice',100);
 % cmap = haxby;
 % cmap = jet(200);
-cmap = redblue(100);
+% cmap = redblue(100);
 
 % titlestr = 'Bottom salinity (g/kg)';
 % titlestr = 'Sea ice concentration';
@@ -91,20 +91,21 @@ years = 2007:1:2015;
 % deltaT = 200
 % nIter0 = 587520;
 % nIter0 = 394509; %%% For 1/24 run with tides
-dumpFreq = abs(diag_frequency(diagnum));
-nDumps = round(endTime/dumpFreq);
-dumpIters = round((1:nDumps)*dumpFreq/deltaT);
-dumpIters = dumpIters(dumpIters > nIter0);
+% dumpFreq = abs(diag_frequency(diagnum));
+% nDumps = round(endTime/dumpFreq);
+% dumpIters = round((1:nDumps)*dumpFreq/deltaT);
+% dumpIters = dumpIters(dumpIters > nIter0);
 
 
 %%% For daily/12-hourly outputs
-% dumpStart = 2105280;
-% dumpStep = 86400/60;
-% nDumps = 366;
-% dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
+% dumpStart = 1578240;
+dumpStart = 1945440;
+dumpStep = 86400/2/60;
+nDumps = 731;
+dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
 
 %%% Mesh grids for plotting
-if (botplot || topplot || midplot)
+if (botplot || topplot || midplot || ~xyplot)
   kmax = ones(Nx,Ny);
   kmin = ones(Nx,Ny);
   for i=1:Nx
@@ -188,7 +189,7 @@ else
 end
 
 %%% Set up the figure
-handle = figure(20);
+handle = figure(22);
 set(handle,'Position',framepos);
 M = moviein(length(dumpIters));
 

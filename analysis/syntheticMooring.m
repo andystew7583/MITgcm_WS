@@ -14,6 +14,7 @@ outfname = 'modelA254.mat';
 setExpname; %%% To set directory paths
 expname = 'hires_seq_onetwentyfourth_notides_RTOPO2'; %%% Enforce high-resolution experiment
 loadexp;
+depth = -squeeze(zz);
 
 %%% Frequency of diagnostic output
 dumpStart = 1578240;
@@ -37,7 +38,6 @@ vvel = zeros(length(dumpIters),Nr);
 salt = zeros(length(dumpIters),Nr);
 theta = zeros(length(dumpIters),Nr);
 time = zeros(length(dumpIters),1);
-depth = -squeeze(zz);
 for n=1:length(dumpIters)
   
   %%% Load instantaneous model state

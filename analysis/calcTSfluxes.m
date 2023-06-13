@@ -14,18 +14,18 @@
 
 %%% Load experiment data
 expdir = '../experiments';
-% expname = 'hires_seq_onethird_notides_RTOPO2';
-% tmin = 19.05;
-% tmax = 27.05;
+expname = 'hires_seq_onethird_notides_RTOPO2';
+tmin = 19.05;
+tmax = 27.05;
 % expname = 'hires_seq_onesixth_notides_RTOPO2';
 % tmin = 10.05;
 % tmax = 18.05;
 % expname = 'hires_seq_onetwelfth_notides_RTOPO2';
 % tmin = 1.05;
 % tmax = 9.05;
-expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-tmin = 3.05;
-tmax = 4.05;
+% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+% tmin = 3.05;
+% tmax = 4.05;
 loadexp;
 
 %%% Set true to deform coordinates in the cavity

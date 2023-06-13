@@ -7,9 +7,12 @@
 %%% Load experiment
 expdir = '../experiments';
 % expname = 'hires_seq_onethird_notides_RTOPO2';
-% expname = 'hires_seq_onesixth_RTOPO2';
+% expname = 'hires_seq_onesixth_notides_RTOPO2';
 % expname = 'hires_seq_onetwelfth_notides_RTOPO2';
 expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+
+rho0 = 1000;
+Cp = 4000;
 
 
 %%% Options (see calcTSfluxes)
@@ -28,7 +31,7 @@ sltflux_tot = sltflux_stand+sltflux_fluc+mean(sltflux_eddy,2);
 
 %%% Make plots
 
-figure(1);
+figure(2);
 plot(eta,thflux_stand*rho0*Cp);
 hold on;
 plot(eta,thflux_fluc*rho0*Cp);

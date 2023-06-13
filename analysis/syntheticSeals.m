@@ -5,7 +5,8 @@
 %%%
 
 %%% Seal tags to process
-seal_numbers = [21126,40020];
+% seal_numbers = [21126,40020];
+seal_numbers = [21024,21042,21078,21084,21120]; %%% New seals
 Nseals = length(seal_numbers);
 sealdir = 'SealComparison';
 
@@ -19,6 +20,8 @@ for m = 1:2:2*Nseals-1
   
   %%% First we just store the seal lats, lons, datenums and yeardays
   load(fullfile(sealdir,['seal',num2str(seal_numbers((m+1)/2)),'.mat']));
+  tag_datenum = time; %%% Needed for new seals
+  tag_lat_lon = lat_lon;
   seal_times{m} = tag_datenum';
   yeardays = 0*tag_datenum;
   for j=1:length(yeardays)
@@ -59,7 +62,7 @@ end
 setExpname; %%% To set directory paths
 expname = 'hires_seq_onetwentyfourth_notides_RTOPO2'; %%% Enforce high-resolution experiment
 loadexp;
-model_depth = -squeeze(zz);
+depth = -squeeze(zz);
 model_lons_C = XC(:,1); %%% Regular lat/lon grid so we can do this
 model_lats_C = YC(1,:);
 model_lons_G = XG(:,1); 
@@ -75,10 +78,11 @@ nDumps_avg = length(dumpIters_avg);
 yeardays_avg = round(datenum('2008-01-01') + ((dumpIters_avg(2:end)+dumpIters_avg(1:end-1))/2)*deltaT/86400 ...
                   - datenum('2011-01-01')); %%% Actual times to which time-averaged output correspond, i.e. mid-month
 dumpIters_avg(1) = []; %%% No longer need the first output file, which corresponds to November 2010
-this_avg_day = 0;
-next_avg_day = yeardays_avg(1); %%% Must be smaller than the first instantaneous model yearday
+this_avg_yearday = 0;
+next_avg_yearday = yeardays_avg(1); %%% Must be smaller than the first instantaneous model yearday
 this_avg_n = 0;
 next_avg_n = 1;
+next_avg_yearday = yeardays_avg(next_avg_n);
 
 %%% Frequency of diagnostic output
 dumpStart_inst = 1578240;
@@ -94,6 +98,8 @@ seal_theta = cell(1,2*Nseals);
 seal_zeta = cell(1,2*Nseals);
 seal_wteddy = cell(1,2*Nseals);
 seal_wseddy = cell(1,2*Nseals);
+seal_SIarea = cell(1,2*Nseals);
+seal_SIheff = cell(1,2*Nseals);
 for m = 1:2*Nseals
   seal_uvel{m} = zeros(length(seal_times{m}),Nr);
   seal_vvel{m} = zeros(length(seal_times{m}),Nr);
@@ -102,6 +108,8 @@ for m = 1:2*Nseals
   seal_zeta{m} = zeros(length(seal_times{m}),Nr);
   seal_wteddy{m} = zeros(length(seal_times{m}),Nr);
   seal_wseddy{m} = zeros(length(seal_times{m}),Nr);
+  seal_SIarea{m} = zeros(length(seal_times{m}),1);
+  seal_SIheff{m} = zeros(length(seal_times{m}),1);
 end
 
 %%% Loop through time outputs from the model and interpolate to seal
@@ -128,6 +136,8 @@ for n = 1:length(dumpIters_inst)-1
       this_avg_wteddy = next_avg_wteddy;
       this_avg_wseddy = next_avg_wseddy;      
       this_avg_n = next_avg_n;
+      next_avg_n = next_avg_n + 1;
+      next_avg_yearday = yeardays_avg(next_avg_n);
       
     end
     
@@ -139,13 +149,7 @@ for n = 1:length(dumpIters_inst)-1
     next_avg_s = rdmdsWrapper(fullfile(exppath,'/results/SALT'),dumpIters_avg(next_avg_n));   
     next_avg_ws = rdmdsWrapper(fullfile(exppath,'/results/WVELSLT'),dumpIters_avg(next_avg_n));          
     next_avg_wseddy = next_avg_ws - next_avg_w.*(0.5*(next_avg_s(:,:,1:Nr)+next_avg_s(:,:,[Nr 1:Nr-1]))); 
-    clear('next_avg_s','next_avg_ws','next_avg_w');    
-    
-    %%% Increment index for average output
-    if (n > 1)
-      next_avg_n = next_avg_n + 1;
-      next_avg_yearday = yeardays_avg(next_avg_n);
-    end
+    clear('next_avg_s','next_avg_ws','next_avg_w');            
     
   end
   
@@ -155,9 +159,10 @@ for n = 1:length(dumpIters_inst)-1
   seal_idx = cell(1,2*Nseals);
   for m = 1:2*Nseals
     seal_yearday = seal_yeardays{m};
-    idx = find((seal_yearday>=this_model_yearday) & (seal_yearday<next_model_yearday));    
+    idx = find((seal_yearday>=this_model_yearday) & (seal_yearday<next_model_yearday));        
     if (~isempty(idx))
       times_found = true;      
+      idx = reshape(idx,[1 length(idx)]);
     end
     seal_idx{m} = idx;
   end
@@ -173,19 +178,25 @@ for n = 1:length(dumpIters_inst)-1
     this_v = next_v;
     this_t = next_t;
     this_s = next_s;
+    this_a = next_a;
+    this_h = next_h;
     this_z = next_z;
   else %%% Otherwise we need to read in the data for 'this' time step
     this_u = rdmdsWrapper(fullfile(exppath,'/results/UVEL_12hourly'),dumpIters_inst(n));      
     this_v = rdmdsWrapper(fullfile(exppath,'/results/VVEL_12hourly'),dumpIters_inst(n));
     this_t = rdmdsWrapper(fullfile(exppath,'/results/THETA_12hourly'),dumpIters_inst(n));      
     this_s = rdmdsWrapper(fullfile(exppath,'/results/SALT_12hourly'),dumpIters_inst(n));
+    this_a = rdmdsWrapper(fullfile(exppath,'/results/SIarea_12hourly'),dumpIters_inst(n));
+    this_h = rdmdsWrapper(fullfile(exppath,'/results/SIheff_12hourly'),dumpIters_inst(n));
     if (isempty(this_u) || isempty(this_v) || isempty(this_s) || isempty(this_t))   
       error(['No data found at iteration number ',num2str(dumpIters_inst(n))]);
     end
     this_u(hFacW==0) = NaN;
     this_v(hFacS==0) = NaN;
     this_t(hFacC==0) = NaN;
-    this_s(hFacC==0) = NaN;    
+    this_s(hFacC==0) = NaN;
+    this_a(hFacC(:,:,1)==0) = NaN;
+    this_h(hFacC(:,:,1)==0) = NaN;
     this_z = ( this_u(:,[Ny 1:Ny-1],:).*DXC3D(:,[Ny 1:Ny-1],:) ...
              + this_v([1:Nx],:,:).*DYC3D([1:Nx],:,:) ...
              - this_u(:,[1:Ny],:).*DXC3D(:,[1:Ny],:) ...
@@ -198,13 +209,17 @@ for n = 1:length(dumpIters_inst)-1
   next_v = rdmdsWrapper(fullfile(exppath,'/results/VVEL_12hourly'),dumpIters_inst(n+1));
   next_t = rdmdsWrapper(fullfile(exppath,'/results/THETA_12hourly'),dumpIters_inst(n+1));      
   next_s = rdmdsWrapper(fullfile(exppath,'/results/SALT_12hourly'),dumpIters_inst(n+1));
+  next_a = rdmdsWrapper(fullfile(exppath,'/results/SIarea_12hourly'),dumpIters_inst(n+1));
+  next_h = rdmdsWrapper(fullfile(exppath,'/results/SIheff_12hourly'),dumpIters_inst(n+1));
   if (isempty(next_u) || isempty(next_v) || isempty(next_s) || isempty(next_t))   
     error(['No data found at iteration number ',num2str(dumpIters_inst(n+1))]);
   end
   next_u(hFacW==0) = NaN;
   next_v(hFacS==0) = NaN;
   next_t(hFacC==0) = NaN;
-  next_s(hFacC==0) = NaN;    
+  next_s(hFacC==0) = NaN;   
+  next_a(hFacC(:,:,1)==0) = NaN;
+  next_h(hFacC(:,:,1)==0) = NaN;
   next_z = ( next_u(:,[Ny 1:Ny-1],:).*DXC3D(:,[Ny 1:Ny-1],:) ...
            + next_v([1:Nx],:,:).*DYC3D([1:Nx],:,:) ...
            - next_u(:,[1:Ny],:).*DXC3D(:,[1:Ny],:) ...
@@ -212,6 +227,11 @@ for n = 1:length(dumpIters_inst)-1
   
   %%% Interpolate trilinearly to obtain model state at seal location
   for m = 1:2*Nseals
+
+    %%% Ignore seals with no data in this time range
+    if (isempty(seal_idx{m}))
+      continue;
+    end
     
     %%% Look over indices (in seal time) at which the measurement time lies
     %%% between 'this' model time and the 'next' model time
@@ -266,7 +286,7 @@ for n = 1:length(dumpIters_inst)-1
       WmppW = (1-r_lonG).*(r_latC).*(r_time_inst);
       WpppW = (r_lonG).*(r_latC).*(r_time_inst);
       
-      %%% Interpolation weights (cell north faces)      
+      %%% Interpolation weights (cell south faces)      
       WmmmS = (1-r_lonC).*(1-r_latG).*(1-r_time_inst);
       WpmmS = (r_lonC).*(1-r_latG).*(1-r_time_inst);
       WmpmS = (1-r_lonC).*(r_latG).*(1-r_time_inst);
@@ -288,23 +308,23 @@ for n = 1:length(dumpIters_inst)-1
       
       %%% Perform trilinear interpolation
       seal_uvel{m}(p,:) = ...
-          WmmmC_inst.*squeeze(this_u(iG,jC,:)) ...
-        + WpmmC_inst.*squeeze(this_u(iG+1,jC,:)) ...
-        + WmpmC_inst.*squeeze(this_u(iG,jC+1,:)) ...
-        + WppmC_inst.*squeeze(this_u(iG+1,jC+1,:)) ...
-        + WmmpC_inst.*squeeze(next_u(iG,jC,:)) ...
-        + WpmpC_inst.*squeeze(next_u(iG+1,jC,:)) ...
-        + WmppC_inst.*squeeze(next_u(iG,jC+1,:)) ...
-        + WpppC_inst.*squeeze(next_u(iG+1,jC+1,:));
+          WmmmW.*squeeze(this_u(iG,jC,:)) ...
+        + WpmmW.*squeeze(this_u(iG+1,jC,:)) ...
+        + WmpmW.*squeeze(this_u(iG,jC+1,:)) ...
+        + WppmW.*squeeze(this_u(iG+1,jC+1,:)) ...
+        + WmmpW.*squeeze(next_u(iG,jC,:)) ...
+        + WpmpW.*squeeze(next_u(iG+1,jC,:)) ...
+        + WmppW.*squeeze(next_u(iG,jC+1,:)) ...
+        + WpppW.*squeeze(next_u(iG+1,jC+1,:));
       seal_vvel{m}(p,:) = ...
-          WmmmC_inst.*squeeze(this_v(iC,jG,:)) ...
-        + WpmmC_inst.*squeeze(this_v(iC+1,jG,:)) ...
-        + WmpmC_inst.*squeeze(this_v(iC,jG+1,:)) ...
-        + WppmC_inst.*squeeze(this_v(iC+1,jG+1,:)) ...
-        + WmmpC_inst.*squeeze(next_v(iC,jG,:)) ...
-        + WpmpC_inst.*squeeze(next_v(iC+1,jG,:)) ...
-        + WmppC_inst.*squeeze(next_v(iC,jG+1,:)) ...
-        + WpppC_inst.*squeeze(next_v(iC+1,jG+1,:));
+          WmmmS.*squeeze(this_v(iC,jG,:)) ...
+        + WpmmS.*squeeze(this_v(iC+1,jG,:)) ...
+        + WmpmS.*squeeze(this_v(iC,jG+1,:)) ...
+        + WppmS.*squeeze(this_v(iC+1,jG+1,:)) ...
+        + WmmpS.*squeeze(next_v(iC,jG,:)) ...
+        + WpmpS.*squeeze(next_v(iC+1,jG,:)) ...
+        + WmppS.*squeeze(next_v(iC,jG+1,:)) ...
+        + WpppS.*squeeze(next_v(iC+1,jG+1,:));
       seal_salt{m}(p,:) = ...
           WmmmC_inst.*squeeze(this_s(iC,jC,:)) ...
         + WpmmC_inst.*squeeze(this_s(iC+1,jC,:)) ...
@@ -350,6 +370,24 @@ for n = 1:length(dumpIters_inst)-1
         + WpmpC_avg.*squeeze(next_avg_wteddy(iC+1,jC,:)) ...
         + WmppC_avg.*squeeze(next_avg_wteddy(iC,jC+1,:)) ...
         + WpppC_avg.*squeeze(next_avg_wteddy(iC+1,jC+1,:));
+      seal_SIarea{m}(p,:) = ...
+          WmmmC_inst.*squeeze(this_a(iC,jC,:)) ...
+        + WpmmC_inst.*squeeze(this_a(iC+1,jC,:)) ...
+        + WmpmC_inst.*squeeze(this_a(iC,jC+1,:)) ...
+        + WppmC_inst.*squeeze(this_a(iC+1,jC+1,:)) ...
+        + WmmpC_inst.*squeeze(next_a(iC,jC,:)) ...
+        + WpmpC_inst.*squeeze(next_a(iC+1,jC,:)) ...
+        + WmppC_inst.*squeeze(next_a(iC,jC+1,:)) ...
+        + WpppC_inst.*squeeze(next_a(iC+1,jC+1,:));
+      seal_SIheff{m}(p,:) = ...
+          WmmmC_inst.*squeeze(this_h(iC,jC,:)) ...
+        + WpmmC_inst.*squeeze(this_h(iC+1,jC,:)) ...
+        + WmpmC_inst.*squeeze(this_h(iC,jC+1,:)) ...
+        + WppmC_inst.*squeeze(this_h(iC+1,jC+1,:)) ...
+        + WmmpC_inst.*squeeze(next_h(iC,jC,:)) ...
+        + WpmpC_inst.*squeeze(next_h(iC+1,jC,:)) ...
+        + WmppC_inst.*squeeze(next_h(iC,jC+1,:)) ...
+        + WpppC_inst.*squeeze(next_h(iC+1,jC+1,:));
       
     end
   end  
@@ -374,5 +412,7 @@ for m = 1:2*Nseals
   zeta = seal_zeta{m};
   wteddy = seal_wteddy{m};
   wseddy = seal_wseddy{m};
-  save(fullfile(sealdir,outfname),'lon','lat','time','yearday','uvel','vvel','salt','theta','zeta','wteddy','wseddy','depth');
+  SIarea = seal_SIarea{m};
+  SIheff = seal_SIheff{m};
+  save(fullfile(sealdir,outfname),'lon','lat','time','yearday','uvel','vvel','salt','theta','zeta','wteddy','wseddy','depth','SIarea','SIheff');
 end

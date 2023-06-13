@@ -34,9 +34,9 @@ expdir = basedir;
 
 
 % expname = 'hires_seq_onethird_RTOPO2_hifreq';
-expname = 'hires_seq_onethird_RTOPO2';
+% expname = 'hires_seq_onethird_RTOPO2';
 % expname = 'hires_seq_onethird';
-% expname = 'hires_seq_onethird_notides';
+expname = 'hires_seq_onethird_notides_RTOPO2';
 % expname = 'hires_seq_onesixth_modbdrystrat';
 % expname = 'hires_seq_onesixth_notides';
 % expname = 'hires_seq_onesixth_RTOPO2';

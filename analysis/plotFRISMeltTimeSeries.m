@@ -16,7 +16,7 @@ loadexp;
 %%% Plot the time series
 figure(10);
 plot(tt/86400/365,SHImelt/1e12*86400*365);
-xlabel('Time (years)');
+xlabel('Time (years)');cd .
 ylabel('FRIS melt rate (Gt/yr)');
 
 figure(12);

@@ -17,12 +17,17 @@ expdir = '../experiments';
 % expname = 'hires_seq_onethird_RTOPO2';
 % tmin = 18.05;
 % tmax = 27.05;
-expname = 'hires_seq_onesixth_RTOPO2';
-tmin = 9.05;
-tmax = 18.05;
+% expname = 'hires_seq_onesixth_RTOPO2';
+% tmin = 9.05;
+% tmax = 18.05;
 % expname = 'hires_seq_onetwelfth_RTOPO2';
 % tmin = 0.05;
 % tmax = 9.05;
+% years = [2:9];
+expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+tmin = 0.05;
+tmax = 7.05;
+years = [2:7];
 loadexp;
 
 %%% Frequency of diagnostic output - should match that specified in
@@ -81,7 +86,7 @@ Ntime = length(itersToRead);
 theta_djf = zeros(Nx,Ny,Nr);
 salt_djf = zeros(Nx,Ny,Nr);
 navg = 0;
-for nyear=2:9
+for nyear=years
   for nmonth = 0:1:2
     
     n = (nyear-1)*12+nmonth
@@ -113,7 +118,7 @@ salt_djf = salt_djf / navg;
 theta_jja = zeros(Nx,Ny,Nr);
 salt_jja = zeros(Nx,Ny,Nr);
 navg = 0;
-for nyear=2:9
+for nyear=years
   for nmonth = 6:1:8
     
     n = (nyear-1)*12+nmonth
@@ -147,5 +152,5 @@ salt_jja = salt_jja / navg;
 %%% Store computed data for later
 outfname = [expname,'_SeasonalStrat'];
 outfname = [outfname,'.mat'];
-save(fullfile('products',outfname), ...
+save(fullfile('products',outfname),'-v7.3', ...
   'theta_djf','theta_jja','salt_djf','salt_jja');

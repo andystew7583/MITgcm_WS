@@ -1,7 +1,7 @@
 %%%
-%%% calcTSfluxes.m
+%%% calcVerticalFluxes.m
 %%% 
-%%% Calculates total heat and salt fluxes in quasi-latitude coordinates.
+%%% Calculates vertical heat and salt fluxes in quasi-latitude coordinates.
 %%%
 
 
@@ -24,8 +24,8 @@ expdir = '../experiments';
 % tmin = 1.05;
 % tmax = 9.05;
 expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-tmin = 1.05;
-tmax = 7.05;
+tmin = 3.05;
+tmax = 4.05;
 loadexp;
 
 %%% Set true to deform coordinates in the cavity

@@ -14,7 +14,11 @@ expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
 loadexp;
 
 
-
+%%% Lats/lons of moorings
+A254_lat = -75.9630;
+A254_lon = -31.4855;
+A253_lon = -30.9953;
+A253_lat = -76.0460;
 
 
 
@@ -60,9 +64,13 @@ pt_ref = load(fullfile('products',outfname),'theta_tavg');
 pt_ref = pt_ref.theta_tavg;
 ss_ref = load(fullfile('products',outfname),'salt_tavg');
 ss_ref = ss_ref.salt_tavg;
-outfname = [expname,'_SeasonalStrat'];
-outfname = [outfname,'.mat'];
-load(fullfile('products',outfname));
+% outfname = [expname,'_SeasonalStrat'];
+% outfname = [outfname,'.mat'];
+% load(fullfile('products',outfname));
+snapshot_day = 366+2*365+31+11;
+iter = snapshot_day*86400/60;
+theta_djf = rdmdsWrapper(fullfile(exppath,'/results/THETA_12hourly'),iter);  
+salt_djf = rdmdsWrapper(fullfile(exppath,'/results/SALT_12hourly'),iter);  
 
 %%% Pressure is just Boussinesq hydrostatic reference pressure
 pp_ref = -gravity*rhoConst*repmat(RC,[Nx Ny 1])/1e4;
@@ -71,14 +79,11 @@ pp_ref = -gravity*rhoConst*repmat(RC,[Nx Ny 1])/1e4;
 pt_ref(hFacC==0) = NaN;
 ss_ref(hFacC==0) = NaN;
 theta_djf(hFacC==0) = NaN;
-theta_jja(hFacC==0) = NaN;
 salt_djf(hFacC==0) = NaN;
-salt_jja(hFacC==0) = NaN;
 
 %%% Potential density
 pd_ref = densjmd95(ss_ref,pt_ref,-gravity*rhoConst*repmat(RC(1),[Nx Ny Nr])/1e4);
 pd_djf = densjmd95(salt_djf,theta_djf,-gravity*rhoConst*repmat(RC(1),[Nx Ny Nr])/1e4);
-pd_jja = densjmd95(salt_jja,theta_jja,-gravity*rhoConst*repmat(RC(1),[Nx Ny Nr])/1e4);
 
 
 
@@ -98,13 +103,13 @@ pd_jja = densjmd95(salt_jja,theta_jja,-gravity*rhoConst*repmat(RC(1),[Nx Ny Nr])
 %%%%% COMPUTATIONS %%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%
 
-%%% Volumes in T/S bins
-TSvol_full = binByVolume(ss_ref,pt_ref,[], ...
-                  Smin,Smax,dS,Tmin,Tmax,dT, ...
-                  RAC,DRF,hFacC);               
-                                             
-%%% Load CTD data
-load_NARE85_IC92;
+% %%% Volumes in T/S bins
+% TSvol_full = binByVolume(ss_ref,pt_ref,[], ...
+%                   Smin,Smax,dS,Tmin,Tmax,dT, ...
+%                   RAC,DRF,hFacC);               
+%                                              
+% %%% Load CTD data
+% load_NARE85_IC92;
                 
 
 
@@ -220,10 +225,14 @@ pcolorm(YC,XC,bathy_plot);
 %%% Add sections
 hold on;
 plotm(NARE85_lat,NARE85_lon,'ko-','MarkerSize',2,'MarkerFaceColor','k');
+plotm(A253_lat,A253_lon,'kx');
+plotm(A254_lat,A254_lon,'kx');
 % plotm(IC92_lat,IC92_lon,'ko-','MarkerSize',2,'MarkerFaceColor','k');
 hold off
 % textm(-68.2,-55,'IC92','FontSize',fontsize);
 textm(-73.8,-35,'NARE85','FontSize',fontsize);
+textm(A253_lat-0.15,A253_lon+0.5,'A253','FontSize',fontsize);
+textm(A254_lat+0.25,A254_lon-3.5,'A254','FontSize',fontsize);
 
 %%% Add colorbar and title
 cbhandle = colorbar;
@@ -282,7 +291,7 @@ ylabel('Depth (m)');
 set(gca,'Color',[.8 .8 .8]);
 set(gca,'Position',axpos(3,:));
 set(gca,'FontSize',fontsize);
-text(-37,600,'Model','FontSize',fontsize+2);
+text(-37,600,['Model, ',datestr(datenum('2008-01-01')+snapshot_day,'mmm dd, yyyy')],'FontSize',fontsize+2);
 xlabel('Longitude');
 
 
@@ -310,7 +319,7 @@ set(gca,'Color',[.8 .8 .8]);
 axis([-37.16 -30.99 0 dmax]);
 set(gca,'Position',axpos(4,:));
 set(gca,'FontSize',fontsize);
-text(-37,600,'NARE85','FontSize',fontsize+2);
+text(-37,600,'NARE85, Jan 26-28, 1985','FontSize',fontsize+2);
 xlabel('Longitude');
 
 %%% Colorbar for this row

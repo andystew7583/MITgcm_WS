@@ -1,8 +1,8 @@
 
 %%%
-%%% plotBaroSF
+%%% plotModelSetup
 %%%
-%%% Plots time-mean barotropic streamfunction.
+%%% Plots the model domain showing grid size and an instantaneous salinity snapshot.
 %%%
 
 %%% Options

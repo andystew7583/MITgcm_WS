@@ -46,7 +46,7 @@ for n=1:nDumps
   
   %%% Depth-integrate salinity
   salt = rdmdsWrapper(fullfile(exppath,'/results/SALT'),dumpIters(n));      
-  salt_int(:,:,n) = sum(0.5.*salt.*DRF.*hFacC,3);
+  salt_int(:,:,n) = sum(salt.*DRF.*hFacC,3);
   clear('salt');
   
   tlen = tlen + 1;
@@ -57,4 +57,4 @@ end
 outfname = [expname,'_DepthIntegrals.mat'];
 save(fullfile('products',outfname), ...
     'tt','usq_eddy_int','vsq_eddy_int','salt_int',...
-    '-append','-v7.3');
+    '-v7.3');

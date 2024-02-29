@@ -14,7 +14,7 @@ loadexp;
 
 %%% Load pre-computed output
 fname = [expname,'_DepthIntegrals.mat'];
-load(fullfile('products',outfname));
+load(fullfile('products',fname));
 
 %%% Compute volume averages
 EKE_avg = zeros(1,length(tt));
@@ -72,3 +72,5 @@ ylabel(ax(1),'Shelf-averaged EKE (m^2/s^2)');
 ylabel(ax(2),'Shelf-averaged salinity (g/kg)');
 text(ax(2),datenum('2008-02-01'),34.46,'Spin-up period','FontSize',fontsize);
 text(ax(2),datenum('2011-02-01'),34.46,'12-hourly output','FontSize',fontsize);
+ax(1).YColor = defaultcolororder(1,:);
+ax(2).YColor = defaultcolororder(2,:);

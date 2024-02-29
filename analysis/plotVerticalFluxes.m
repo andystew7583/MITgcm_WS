@@ -43,13 +43,44 @@ wvelslt_mean = salt_w.*wvel_tavg;
 wvelslt_eddy = wvelslt_tavg - wvelslt_mean;
 theta_tavg(hFacC==0) = NaN;
 
+kidx = 23;
+msk = real((SHELFICEtopo>=0) & (ETA<3.5) & (bathy<0) & (bathy<zz(kidx)));
+plotmsk = real(msk);
+plotmsk(plotmsk==0) = NaN;
+bathycntrs = [0 250 500 1000 2000 3000 4000 5000];
+bathy_plot = bathy;
+bathy_plot(hFacC(:,:,kidx)==0) = NaN;
+
 figure(1);
 clf;
-pcolor(XC,YC,wvelth_eddy(:,:,23));
+pcolor(XC,YC,wvelth_eddy(:,:,23)*rho0*Cp);
 shading interp;
+hold on;
+[C,h] = contour(XC,YC,-bathy_plot,bathycntrs,'EdgeColor','k');
+clabel(C,h);
+hold off;
 colorbar;
-colormap redblue;
-caxis([-1 1]*1e-5);
+colormap(gca,cmocean('balance',40));
+caxis([-100 100]);
+set(gca,'XLim',[-63 -25]);
+set(gca,'YLim',[-78.5 -71.3]);
+ax1 = gca;
+ax2 = axes('Position',get(ax1,'Position'));
+% hold on;
+handle = pcolor(XC,YC,-real(msk));
+shading interp;
+colormap(ax2,hot);
+caxis(ax2,[-1 0]);
+set(handle,'FaceAlpha',0.1);
+set(ax2,'Color','None');
+set(ax2,'XLim',[-63 -25]);
+set(ax2,'YLim',[-78.5 -71.3]);
+% hold off;
+
+sum(sum(rho0.*Cp.*wvelth_eddy(:,:,23).*msk.*RAC)) / sum(sum(msk.*RAC))
+nansum(nansum(-tflux_tavg(:,:).*msk.*RAC)) / sum(sum(msk.*RAC))
+
+
 
 figure(2);
 clf;
@@ -199,6 +230,36 @@ set(gca,'YDir','reverse');
 legend('Total','Mean','Eddy');
 set(gca,'YLim',[0 1000]);
 title(['Ice shelf face to \eta=0.5, total surface salt flux = ',num2str(-nansum(nansum(sflux_tavg.*RAC.*msk))/1e9),' Gg/s']);
+
+msk = (ETA>0.5) & (SHELFICEtopo>=0) & (bathy >= -1000) & (YC<YC(1,end-spongethickness+1)) & (XC<XC(end-spongethickness+1,1));
+
+figure(15);
+clf;
+plot(squeeze(sum(sum((wvelth_tavg-wvelth_ref).*RAC.*msk)))*rho0*Cp/1e12,-squeeze(zz));
+hold on;
+plot(squeeze(sum(sum((wvelth_mean-wvelth_ref).*RAC.*msk)))*rho0*Cp/1e12,-squeeze(zz));
+plot(squeeze(sum(sum(wvelth_eddy.*RAC.*msk)))*rho0*Cp/1e12,-squeeze(zz));
+hold off
+xlabel('Vertical heat flux (TW)')
+ylabel('Depth (m)');
+set(gca,'YDir','reverse');
+legend('Total','Mean','Eddy');
+set(gca,'YLim',[0 1000]);
+title(['Cont. shelf outside cavity, total surface heat flux = ',num2str(-nansum(nansum(tflux_tavg.*RAC.*msk/1e12))),' TW']);
+
+figure(16);
+clf;
+plot(squeeze(sum(sum((wvelslt_tavg-wvelslt_ref).*RAC.*msk)))*rho0/1e9,-squeeze(zz));
+hold on;
+plot(squeeze(sum(sum((wvelslt_mean-wvelslt_ref).*RAC.*msk)))*rho0/1e9,-squeeze(zz));
+plot(squeeze(sum(sum(wvelslt_eddy.*RAC.*msk)))*rho0/1e9,-squeeze(zz));
+hold off
+xlabel('Vertical salt flux (Gg/s)')
+ylabel('Depth (m)');
+set(gca,'YDir','reverse');
+legend('Total','Mean','Eddy');
+set(gca,'YLim',[0 1000]);
+title(['Cont. shelf outside cavity, total surface salt flux = ',num2str(-nansum(nansum(sflux_tavg.*RAC.*msk))/1e9),' Gg/s']);
 
 
 

@@ -13,12 +13,12 @@ expdir = '../experiments';
 % expname = 'hires_seq_onesixth_RTOPO2';
 % tmin = 9.05;
 % tmax = 18.05;
-expname = 'hires_seq_onetwelfth_RTOPO2';
-tmin = 1.05;
-tmax = 9.05;
-% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-% tmin = 2.01;
-% tmax = 3.01;
+% expname = 'hires_seq_onetwelfth_RTOPO2';
+% tmin = 1.05;
+% tmax = 9.05;
+expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+tmin = 1.01;
+tmax = 7.01;
 
 %%% Load experiment
 loadexp;
@@ -549,7 +549,7 @@ end
 outfname = [outfname,'.mat'];
 
 %%% Store computed data for later
-save(fullfile('products',outfname), ...
+save(fullfile('products',outfname),'-v7.3', ...
   'eta','ETA','dens_levs','times', ...
   'psi_mean','psi_mean_stand','psi_mean_fluc', ...
   'uvel_tavg','vvel_tavg','dens_tavg');

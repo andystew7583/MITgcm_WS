@@ -90,13 +90,21 @@ ws_tavg = readIters(exppath,'WVELSLT',dumpIters,deltaT,tmin*t1year,tmax*t1year,N
 
 %%% Compute eddy-induced velocities
 [u_eddy,v_eddy,w_eddy] = calcTRMvelocity (...
-  uvel_mean,vvel_mean,w_mean,t_mean,s_mean, ...
+  u_mean,v_mean,w_mean,t_mean,s_mean, ...
   ut_tavg,vt_tavg,wt_tavg, ...
   us_tavg,vs_tavg,ws_tavg, ...
   hFacC,hFacW,hFacS, ...
   DXG,DYG,RAC,DXC,DYC, ...
   DRF,DRC,RC,RF,...
   rhoConst,gravity);
+
+%%% Free up memory
+clear('ut_tavg','vt_tavg','wt_tavg','us_tavg','vs_tavg','ws_tavg');
+
+%%% Assemble mean+eddy TRM velocities
+u_tot = u_mean + u_eddy;
+v_tot = v_mean + v_eddy;
+w_tot = w_mean + w_eddy;
 
 
 
@@ -112,5 +120,44 @@ ws_tavg = readIters(exppath,'WVELSLT',dumpIters,deltaT,tmin*t1year,tmax*t1year,N
 %%% WRITE OUTPUT %%%
 %%%%%%%%%%%%%%%%%%%%
 
+ncfname = fullfile('products',[expname,'_TRM.nc']);
+nccreate(ncfname,'XC','Dimensions',{'x',Nx,'y',Ny},'FillValue','disable');
+ncwrite(ncfname,'XC',XC);
+nccreate(ncfname,'YC','Dimensions',{'x',Nx,'y',Ny},'FillValue','disable');
+ncwrite(ncfname,'YC',YC);
+nccreate(ncfname,'XG','Dimensions',{'x',Nx,'y',Ny},'FillValue','disable');
+ncwrite(ncfname,'XG',XG);
+nccreate(ncfname,'YG','Dimensions',{'x',Nx,'y',Ny},'FillValue','disable');
+ncwrite(ncfname,'YG',YG);
+nccreate(ncfname,'DXC','Dimensions',{'x',Nx,'y',Ny},'FillValue','disable');
+ncwrite(ncfname,'DXC',DXC);
+nccreate(ncfname,'DYC','Dimensions',{'x',Nx,'y',Ny},'FillValue','disable');
+ncwrite(ncfname,'DYC',DYC);
+nccreate(ncfname,'DXG','Dimensions',{'x',Nx,'y',Ny},'FillValue','disable');
+ncwrite(ncfname,'DXG',DXG);
+nccreate(ncfname,'DYG','Dimensions',{'x',Nx,'y',Ny},'FillValue','disable');
+ncwrite(ncfname,'DYG',DYG);
+nccreate(ncfname,'DRF','Dimensions',{'z',Nr},'FillValue','disable');
+ncwrite(ncfname,'DRF',squeeze(DRF));
+nccreate(ncfname,'DRC','Dimensions',{'zf',Nr+1},'FillValue','disable');
+ncwrite(ncfname,'DRC',squeeze(DRC));
+nccreate(ncfname,'RC','Dimensions',{'z',Nr},'FillValue','disable');
+ncwrite(ncfname,'RC',squeeze(RC));
+nccreate(ncfname,'RF','Dimensions',{'zf',Nr+1},'FillValue','disable');
+ncwrite(ncfname,'RF',squeeze(RF));
+nccreate(ncfname,'bathy','Dimensions',{'x',Nx,'y',Ny},'FillValue','disable');
+ncwrite(ncfname,'bathy',bathy);
+nccreate(ncfname,'SHELFICEtopo','Dimensions',{'x',Nx,'y',Ny},'FillValue','disable');
+ncwrite(ncfname,'SHELFICEtopo',SHELFICEtopo);
+nccreate(ncfname,'TRM_U','Dimensions',{'x',Nx,'y',Ny,'z',Nr},'FillValue','disable');
+ncwrite(ncfname,'TRM_U',u_tot);
+nccreate(ncfname,'TRM_V','Dimensions',{'x',Nx,'y',Ny,'z',Nr},'FillValue','disable');
+ncwrite(ncfname,'TRM_V',v_tot);
+nccreate(ncfname,'TRM_W','Dimensions',{'x',Nx,'y',Ny,'z',Nr},'FillValue','disable');
+ncwrite(ncfname,'TRM_W',w_tot);
+nccreate(ncfname,'THETA','Dimensions',{'x',Nx,'y',Ny,'z',Nr},'FillValue','disable');
+ncwrite(ncfname,'THETA',t_mean);
+nccreate(ncfname,'SALT','Dimensions',{'x',Nx,'y',Ny,'z',Nr},'FillValue','disable');
+ncwrite(ncfname,'SALT',s_mean);
 
 

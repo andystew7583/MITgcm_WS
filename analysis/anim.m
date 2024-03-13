@@ -14,8 +14,8 @@ mac_plots = false;
 % loadexp;
 
 %%% Select diagnostic variable to animate
-% diagnum = 6;
-diagnum = 73;
+diagnum = 75;
+% diagnum = 2;
 outfname =diag_fileNames{1,diagnum};
 
 %%% Data index in the output data files
@@ -23,10 +23,10 @@ outfidx = 1;
 
 %%% If set true, plots a top-down view of the field in a given layer.
 %%% Otherwise plots a side-on view of the zonally-averaged field.
-xyplot = 0;
+xyplot = 1;
 
 %%% Vertical layer index to use for top-down plots
-xylayer = 10;
+xylayer = 1;
 
 %%% Set true to plot the field in the lowest active cell at each horizontal
 %%% location
@@ -34,7 +34,7 @@ botplot = 0;
 
 %%% Set true to plot the field in the topmost wet cell at each horizontal
 %%% location
-topplot = 1;
+topplot = 0;
 
 %%% Set true to plot the field in the middle of the water column at each
 %%% horizontal location
@@ -59,23 +59,25 @@ set_crange = 1;
 
 % crange = [-2.2 -1.6]; %/%% Filchner temp
 % crange = [-3 1]; %/%%temp
-crange = [34.2 35.0]; %%% salinity
+% crange = [34.2 35.0]; %%% salinity
 % crange = [0 10]; %%%% for KPP hbl
 % crange = [0 1]; %%% For sea ice area
 % crange = [-.6 .6]; %%% For velocities or stresses
 % crange = [-1 1]*1e-4; %%% For freshwater fluxes
 % crange =[-100 100]; %%% Qnet
 % crange = [-300 300]; %%% swnet
-% crange = [0 3];
+crange = [0 3];
 % crange = [-0.01 0.01];
+% crange = [0.2 1.2]; %% SSH
 
 % cmap = pmkmp(100,'Swtth');
 % cmap = cmocean('haline',100);
-cmap = cmocean('thermal',100);
+% cmap = cmocean('thermal',100);
 % cmap = cmocean('ice',100);
 % cmap = haxby;
 % cmap = jet(200);
 % cmap = redblue(100);
+cmap = cmocean('amp',100);
 
 % titlestr = 'Bottom salinity (g/kg)';
 % titlestr = 'Sea ice concentration';
@@ -91,15 +93,15 @@ years = 2007:1:2015;
 % deltaT = 200
 % nIter0 = 587520;
 % nIter0 = 394509; %%% For 1/24 run with tides
-% dumpFreq = abs(diag_frequency(diagnum));
-% nDumps = round(endTime/dumpFreq);
-% dumpIters = round((1:nDumps)*dumpFreq/deltaT);
-% dumpIters = dumpIters(dumpIters > nIter0);
+dumpFreq = abs(diag_frequency(diagnum));
+nDumps = round(endTime/dumpFreq);
+dumpIters = round((1:nDumps)*dumpFreq/deltaT);
+dumpIters = dumpIters(dumpIters > nIter0);
 
 
 %%% For daily/12-hourly outputs
-% dumpStart = 1578240;
-dumpStart = 1945440;
+dumpStart = 1578240;
+% dumpStart = 1945440;
 dumpStep = 86400/2/60;
 nDumps = 731;
 dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;

@@ -11,11 +11,12 @@
 mac_plots = false;
 
 %%% Read experiment data
-% loadexp;
+loadexp;
 
 %%% Select diagnostic variable to animate
-diagnum = 75;
-% diagnum = 2;
+% diagnum = 75;
+% diagnum = 36;
+diagnum = 29;
 outfname =diag_fileNames{1,diagnum};
 
 %%% Data index in the output data files
@@ -54,7 +55,7 @@ yzlayer = 600;
 
 
 %%% Specify color range
-set_crange = 1;
+set_crange = 0;
 
 
 % crange = [-2.2 -1.6]; %/%% Filchner temp
@@ -100,11 +101,11 @@ dumpIters = dumpIters(dumpIters > nIter0);
 
 
 %%% For daily/12-hourly outputs
-dumpStart = 1578240;
-% dumpStart = 1945440;
-dumpStep = 86400/2/60;
-nDumps = 731;
-dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
+% dumpStart = 1578240;
+% % dumpStart = 1945440;
+% dumpStep = 86400/2/60;
+% nDumps = 731;
+% dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
 
 %%% Mesh grids for plotting
 if (botplot || topplot || midplot || ~xyplot)
@@ -199,7 +200,8 @@ Amean = [];
 Amax = [];
 
 % for n = 15*12:length(dumpIters)
-for n = 1:length(dumpIters)
+% for n = 1:length(dumpIters)
+for n = 20
 % for n=5*12
 % for n=7*12:8*12
 % for n = 34

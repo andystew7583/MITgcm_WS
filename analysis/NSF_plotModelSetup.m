@@ -1,100 +1,100 @@
-% 
-% %%%
-% %%% NSF_plotModelSetup
-% %%%
-% %%% Plots the model domain showing an instantaneous salinity snapshot and surface vorticity/divergence plots.
-% %%%
-% 
-% %%% Options
-% expdir = '../experiments';
-% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-% % loadexp;
-% 
-% %%% Iteration number of model output to plot
-% iter = 1949760;
-% 
-% %%% Coriolis parameter
-% Omega = 2*pi*366/365/86400;
-% ff = 2*Omega*sind(YG);
-% 
-% 
-% %%% Load velocity snapshot
-% U = rdmdsWrapper(fullfile(exppath,'results','UVEL_12hourly'),iter);
-% V = rdmdsWrapper(fullfile(exppath,'results','VVEL_12hourly'),iter);
-% U = U(:,:,1);
-% V = V(:,:,1); %%% Just need surface velocity
-% zlev = 1;
-% U(hFacW(:,:,zlev)==0) = NaN;
-% V(hFacS(:,:,zlev)==0) = NaN;
-% 
-% 
-% 
-% 
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%
-% %%% LOAD SALINITY SLICE %%%
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
-% %%% Load pre-computed streamfunction
-% S = rdmdsWrapper(fullfile(exppath,'results','SALT_12hourly'),iter);
-% 
-% %%% For interpolating to mid-depth
-% kmax = ones(Nx,Ny);
-% kmin = ones(Nx,Ny);
-% for i=1:Nx
-%   for j=1:Ny
-%     idx = find(squeeze(hFacC(i,j,:))>0);
-%     if (~isempty(idx))
-%       kmin(i,j) = min(idx);
-%       kmax(i,j) = max(idx);
-%     end
-%   end
-% end
-% kn = ones(Nx,Ny);
-% kp= ones(Nx,Ny);
-% wn = 0.5*ones(Nx,Ny);
-% wp = 0.5*ones(Nx,Ny);
-% for i=1:Nx
-%   for j=1:Ny
-%     if (sum(hFacC(i,j,:),3)==0)
-%       continue;
-%     end
-%     zmid = 0.5 * (SHELFICEtopo(i,j) + bathy(i,j));
-%     kmid = max(find(squeeze(zz)>zmid));
-%     if (isempty(kmid))
-%       continue;
-%     end
-%     kp(i,j) = kmid;
-%     kn(i,j) = kp(i,j) + 1;
-%     wp(i,j) = (zmid-zz(kn(i,j))) / (zz(kp(i,j))-zz(kn(i,j)));
-%     wn(i,j) = 1 - wp(i,j);
-%   end
-% end
-% 
-% %%% Interpolate to mid-depth
-% FF = zeros(Nx,Ny);
-% for i=1:Nx
-%   for j=1:Ny
-%     FF(i,j) = wp(i,j)*S(i,j,kp(i,j)) + wn(i,j)*S(i,j,kn(i,j));
-%   end
-% end
-% FF(sum(hFacC,3)==0) = NaN;
-% 
-% %%% Free up memory
-% clear('S');
+
+%%%
+%%% NSF_plotModelSetup
+%%%
+%%% Plots the model domain showing an instantaneous salinity snapshot and surface vorticity/divergence plots.
+%%%
+
+%%% Options
+expdir = '../experiments';
+expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+loadexp;
+
+%%% Iteration number of model output to plot
+iter = 1949760;
+
+%%% Coriolis parameter
+Omega = 2*pi*366/365/86400;
+ff = 2*Omega*sind(YG);
+
+
+%%% Load velocity snapshot
+U = rdmdsWrapper(fullfile(exppath,'results','UVEL_12hourly'),iter);
+V = rdmdsWrapper(fullfile(exppath,'results','VVEL_12hourly'),iter);
+U = U(:,:,1);
+V = V(:,:,1); %%% Just need surface velocity
+zlev = 1;
+U(hFacW(:,:,zlev)==0) = NaN;
+V(hFacS(:,:,zlev)==0) = NaN;
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% LOAD SALINITY SLICE %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Load salinity snapshot
+S = rdmdsWrapper(fullfile(exppath,'results','SALT_12hourly'),iter);
+
+%%% For interpolating to mid-depth
+kmax = ones(Nx,Ny);
+kmin = ones(Nx,Ny);
+for i=1:Nx
+  for j=1:Ny
+    idx = find(squeeze(hFacC(i,j,:))>0);
+    if (~isempty(idx))
+      kmin(i,j) = min(idx);
+      kmax(i,j) = max(idx);
+    end
+  end
+end
+kn = ones(Nx,Ny);
+kp= ones(Nx,Ny);
+wn = 0.5*ones(Nx,Ny);
+wp = 0.5*ones(Nx,Ny);
+for i=1:Nx
+  for j=1:Ny
+    if (sum(hFacC(i,j,:),3)==0)
+      continue;
+    end
+    zmid = 0.5 * (SHELFICEtopo(i,j) + bathy(i,j));
+    kmid = max(find(squeeze(zz)>zmid));
+    if (isempty(kmid))
+      continue;
+    end
+    kp(i,j) = kmid;
+    kn(i,j) = kp(i,j) + 1;
+    wp(i,j) = (zmid-zz(kn(i,j))) / (zz(kp(i,j))-zz(kn(i,j)));
+    wn(i,j) = 1 - wp(i,j);
+  end
+end
+
+%%% Interpolate to mid-depth
+FF = zeros(Nx,Ny);
+for i=1:Nx
+  for j=1:Ny
+    FF(i,j) = wp(i,j)*S(i,j,kp(i,j)) + wn(i,j)*S(i,j,kn(i,j));
+  end
+end
+FF(sum(hFacC,3)==0) = NaN;
+
+%%% Free up memory
+clear('S');
 
 %%% Load RTOPO data
-% datadir = '../data/RTOPO';
-% RTOPO_latitude = ncread(fullfile(datadir,'RTOPO2.nc'),'lat');
-% RTOPO_longitude = ncread(fullfile(datadir,'RTOPO2.nc'),'lon');
-% RTOPO_bathymetry = ncread(fullfile(datadir,'RTOPO2.nc'),'bedrock_topography');
-% RTOPO_ice = ncread(fullfile(datadir,'RTOPO2.nc'),'ice_base_topography');
-% RTOPO_elev = ncread(fullfile(datadir,'RTOPO2.nc'),'surface_elevation');
-% subfac = 10;
-% RTOPO_latitude = RTOPO_latitude(1:subfac:end);
-% RTOPO_longitude = RTOPO_longitude(1:subfac:end);
-% RTOPO_bathymetry = RTOPO_bathymetry(1:subfac:end,1:subfac:end);
-% RTOPO_ice = RTOPO_ice(1:subfac:end,1:subfac:end);
-% RTOPO_elev = RTOPO_elev(1:subfac:end,1:subfac:end);
+datadir = '../data/RTOPO';
+RTOPO_latitude = ncread(fullfile(datadir,'RTOPO2.nc'),'lat');
+RTOPO_longitude = ncread(fullfile(datadir,'RTOPO2.nc'),'lon');
+RTOPO_bathymetry = ncread(fullfile(datadir,'RTOPO2.nc'),'bedrock_topography');
+RTOPO_ice = ncread(fullfile(datadir,'RTOPO2.nc'),'ice_base_topography');
+RTOPO_elev = ncread(fullfile(datadir,'RTOPO2.nc'),'surface_elevation');
+subfac = 10;
+RTOPO_latitude = RTOPO_latitude(1:subfac:end);
+RTOPO_longitude = RTOPO_longitude(1:subfac:end);
+RTOPO_bathymetry = RTOPO_bathymetry(1:subfac:end,1:subfac:end);
+RTOPO_ice = RTOPO_ice(1:subfac:end,1:subfac:end);
+RTOPO_elev = RTOPO_elev(1:subfac:end,1:subfac:end);
 
 %%% Plotting range for salinity figure
 latMin_o = -83.5;
@@ -242,7 +242,7 @@ axesm('eqaconicstd',...
 axis off;
 setm(gca,'MLabelParallel',-20)
 
-%%% Plot streamfunction in color contours
+%%% Plot salinity in color contours
 pcolorm(YC,XC,FF);
 shading interp
 colormap(gca,cmocean('haline',16));
@@ -263,7 +263,22 @@ set(hh,'fontsize',8,'Color',[.25 .25 .25],'BackgroundColor','none','Edgecolor','
 Nlon = 101;
 dLon = (lonMax_c-lonMin_c)/(Nlon-1);
 plotm([latMin_c*ones(1,Nlon) latMax_c*ones(1,Nlon) latMin_c],[lonMin_c:dLon:lonMax_c lonMax_c:-dLon:lonMin_c lonMin_c],'r--','LineWidth',2);
-        
+hold off;
+
+%%% Plot transect location for VHF figure
+startLat = -82.3;
+endLat = -72;
+startLon = -62;
+endLon = -40;
+Nsec = 2001;
+dLat = (endLat-startLat)/(Nsec-1);
+dLon = (endLon-startLon)/(Nsec-1);
+secLats = startLat:dLat:endLat;
+secLons = startLon:dLon:endLon;
+hold on;
+plotm(secLats,secLons,'k:','LineWidth',2);
+hold off;
+
 %%% Add axis labels
 xlabel('Longitude','interpreter','latex');
 ylabel('Latitude','interpreter','latex');

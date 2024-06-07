@@ -4,31 +4,31 @@
 %%% Calculates heat and salt fluxes across barotropic streamlines
 %%%
 
-%%% Load experiment data
-expdir = '../experiments';
-expname = 'hires_seq_onethird_notides_RTOPO2';
-% expname = 'hires_seq_onesixth_notides_RTOPO2';
-% expname = 'hires_seq_onetwelfth_notides_RTOPO2';
+% %%% Load experiment data
+% expdir = '../experiments';
+% % expname = 'hires_seq_onethird_notides_RTOPO2';
+% % expname = 'hires_seq_onesixth_notides_RTOPO2';
+% % expname = 'hires_seq_onetwelfth_notides_RTOPO2';
 % expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-deform_cavity = false;
-loadexp;
-rho0 = 1000;
-Cp = 4000;
-
-%%% 3D grid spacing matrices
-DXG_3D = repmat(DXG,[1 1 Nr]);
-DYG_3D = repmat(DYG,[1 1 Nr]);
-DRF_3D = repmat(DRF,[Nx Ny 1]);
-
-%%% T/S flux storage file
-infname = [expname,'_TSfluxes'];
-if (deform_cavity)
-  infname = [infname,'_deform'];
-end
-infname = [infname,'.mat'];
-
-%%% Load pre-computed horizontal flux data
-load(fullfile('products',infname),'uvel_tavg','vvel_tavg','theta_tavg','salt_tavg','uvelth_tavg','uvelslt_tavg','vvelslt_tavg','vvelth_tavg','tflux_tavg','sflux_tavg');
+% deform_cavity = false;
+% loadexp;
+% rho0 = 1000;
+% Cp = 4000;
+% 
+% %%% 3D grid spacing matrices
+% DXG_3D = repmat(DXG,[1 1 Nr]);
+% DYG_3D = repmat(DYG,[1 1 Nr]);
+% DRF_3D = repmat(DRF,[Nx Ny 1]);
+% 
+% %%% T/S flux storage file
+% infname = [expname,'_TSfluxes'];
+% if (deform_cavity)
+%   infname = [infname,'_deform'];
+% end
+% infname = [infname,'.mat'];
+% 
+% %%% Load pre-computed horizontal flux data
+% load(fullfile('products',infname),'uvel_tavg','vvel_tavg','theta_tavg','salt_tavg','uvelth_tavg','uvelslt_tavg','vvelslt_tavg','vvelth_tavg','tflux_tavg','sflux_tavg');
 
 %%% Calculate depth-averaged zonal velocity
 UU = sum(uvel_tavg.*DRF_3D.*hFacW,3);
@@ -54,16 +54,27 @@ Np = length(pp);
     uvel_tavg,vvel_tavg,salt_tavg,uvelslt_tavg,vvelslt_tavg, ...
     Nx,Ny,Np, ...  
     DXG_3D,DYG_3D,DRF_3D,hFacW,hFacS,PsiC,pp);
+
+%%% Calculate midpoint tracer
+theta_u = 0.5*(theta_tavg([1:Nx],:,:)+theta_tavg([Nx 1:Nx-1],:,:));
+theta_v = 0.5*(theta_tavg(:,[1:Ny],:)+theta_tavg(:,[Ny 1:Ny-1],:));
+  
+  %%% Compute eddy heat and salt fluxes on cell faces
+  uvelth_mean = uvel_tavg.*theta_u;
+  vvelth_mean = vvel_tavg.*theta_v;
+  uvelth_eddy = uvelth_tavg - uvelth_mean;
+  vvelth_eddy = vvelth_tavg - vvelth_mean;
   
 %%% Heat flux across barotropic streamlines
-UgradPsi = (sum(uvelth_tavg.*hFacW.*DRF_3D,3).*(PsiC(1:Nx,:)-PsiC([Nx 1:Nx-1],:))./DXC + sum(vvelth_tavg.*hFacW.*DRF_3D,3).*(PsiC(:,1:Ny)-PsiC(:,[Ny 1:Ny-1]))./DYC) ./ sqrt(((PsiC(1:Nx,:)-PsiC([Nx 1:Nx-1],:))./DXC).^2+((PsiC(:,1:Ny)-PsiC(:,[Ny 1:Ny-1]))./DYC).^2);
+% UgradPsi = (sum(uvelth_tavg.*hFacW.*DRF_3D,3).*(PsiC(1:Nx,:)-PsiC([Nx 1:Nx-1],:))./DXC + sum(vvelth_tavg.*hFacW.*DRF_3D,3).*(PsiC(:,1:Ny)-PsiC(:,[Ny 1:Ny-1]))./DYC) ./ sqrt(((PsiC(1:Nx,:)-PsiC([Nx 1:Nx-1],:))./DXC).^2+((PsiC(:,1:Ny)-PsiC(:,[Ny 1:Ny-1]))./DYC).^2);
+UgradPsi = (sum(uvelth_eddy.*hFacW.*DRF_3D,3).*(PsiC(1:Nx,:)-PsiC([Nx 1:Nx-1],:))./DXC + sum(vvelth_eddy.*hFacW.*DRF_3D,3).*(PsiC(:,1:Ny)-PsiC(:,[Ny 1:Ny-1]))./DYC) ./ sqrt(((PsiC(1:Nx,:)-PsiC([Nx 1:Nx-1],:))./DXC).^2+((PsiC(:,1:Ny)-PsiC(:,[Ny 1:Ny-1]))./DYC).^2);
   
-%%% Integrate surface fluxes
-thflux_surf = zeros(Np,1);
-for m = 1:Np
-  msk = ETA<eta(m);
-  eflux(m) = squeeze(sum(sum(fluxdiv.*msk,1),2));
-end  
+% %%% Integrate surface fluxes
+% thflux_surf = zeros(Np,1);
+% for m = 1:Np
+%   msk = PsiC<pp(m);
+%   eflux(m) = squeeze(sum(sum(fluxdiv.*msk,1),2));
+% end  
 
   
 figure(21);
@@ -106,8 +117,8 @@ figure(25);
 pcolor(XC,YC,sflux_tavg);
 shading interp;
 colorbar;
-colormap redblue;
-caxis([-1 1]*1e-3)
+colormap redblue(20);
+caxis([-1 1]*5e-2)
 
 tflux_tavg(sum(hFacC,3)==0) = NaN;
 figure(26);
@@ -122,6 +133,12 @@ contourf(XC,YC,SHELFICEtopo-bathy,[0:100:1000]);
 colorbar;
 colormap haxby;
 caxis([0 1000])
+
+
+
+
+
+
 
 %%%
 %%% Convenience function to compute mean and eddy fluxes

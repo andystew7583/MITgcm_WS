@@ -29,6 +29,9 @@ calc_psi_eddy = true;
 %%% Set true to deform coordinates in the cavity
 deform_cavity = false;
 
+%%% Set true to use barotropic streamfunction as the coordinate system
+use_PsiBT = true;
+
 %%% Set true to use output from the Layers package to calculate isopycnal
 %%% fluxes. N.B. if this option is selected then the density variable must
 %%% be 'PD0' (surface-referenced potential density)
@@ -61,9 +64,34 @@ Nd = length(dens_levs)-1;
 p_ref = -rhoConst*gravity*RC(1)/1e4; %%% Reference pressure for surface-referenced potential density
 
 %%% Define coordinate system for integrating to compute streamfunction
-ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity);
-eta = -9:.1:11;
-Neta = length(eta);
+if (use_PsiBT)
+
+  infname = [expname,'_TSfluxes'];
+  load(fullfile('products',infname),'uvel_tavg');
+
+  %%% Calculate depth-averaged zonal velocity
+  UU = sum(uvel_tavg.*repmat(DRF,[Nx Ny 1]).*hFacW,3);
+  clear('uvel_tavg');
+  
+  %%% Calculate barotropic streamfunction
+  Psi = zeros(Nx+1,Ny+1);
+  Psi(2:Nx+1,2:Ny+1) = -cumsum(UU.*DYG,2);
+  Psi = Psi(1:Nx,1:Ny);
+  
+  %%% Interpolate to cell centers
+  ETA = 0.25*(Psi(1:Nx,1:Ny)+Psi([2:Nx 1],1:Ny)+Psi(1:Nx,[2:Ny 1])+Psi([2:Nx 1],[2:Ny 1]))/1e6;
+  
+  %%% Streamunction grid for flux calculation
+  eta = -2:.1:10;
+  Neta = length(eta);
+
+else
+
+  ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity);
+  eta = -9:.1:11;
+  Neta = length(eta);
+
+end
 
 %%% Frequency of diagnostic output - should match that specified in
 %%% data.diagnostics.
@@ -543,8 +571,12 @@ else
   estr = '_noeddy';
 end
 outfname = [outfname,estr];
-if (deform_cavity)
-  outfname = [outfname,'_deform'];
+if (use_PsiBT)
+  outfname = [outfname,'_PsiBT'];
+else
+  if (deform_cavity)
+    outfname = [outfname,'_deform'];
+  end
 end
 outfname = [outfname,'.mat'];
 

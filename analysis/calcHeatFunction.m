@@ -14,28 +14,32 @@
 
 %%% Load experiment data
 expdir = '../experiments';
-expname = 'hires_seq_onethird_RTOPO2';
-tmin = 19.05;
-tmax = 27.05;
+% expname = 'hires_seq_onethird_notides_RTOPO2';
+% tmin = 19.05;
+% tmax = 27.05;
 % expname = 'hires_seq_onesixth_notides_RTOPO2';
 % tmin = 10.05;
 % tmax = 18.05;
-% expname = 'hires_seq_onetwelfth_notides_RTOPO2';
+% expname = 'hires_seq_onetwelfth_RTOPO2';
 % tmin = 1.05;
 % tmax = 9.05;
-% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-% tmin = 1.05;
-% tmax = 7.05;
+expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+tmin = 1.05;
+tmax = 7.05;
 loadexp;
+
+%%% Index of the upper grid cell face dividing the upper and lower portions
+%%% of the water column
+zidx_icefront = 25;
 
 %%% Set true to deform coordinates in the cavity
 deform_cavity = false;
 
 %%% Set true to use barotropic streamfunction as the coordinate system
-use_PsiBT = true;
+use_PsiBT = false;
 
 %%% Set true to decompose eddy fluxes
-calc_eddy_decomp = false;
+calc_eddy_decomp = true;
 
 %%% Define coordinate system for integrating to compute heatfunction
 if (use_PsiBT)
@@ -121,10 +125,18 @@ Ntime = length(itersToRead);
 
 psiT_tot = zeros(Neta,Nr+1,Ntime);
 psiT_mean = zeros(Neta,Nr+1,Ntime);
-PsiT_eddy = zeros(Neta,Nr+1,Ntime);
+psiT_pos_mean = zeros(Neta,Nr+1,Ntime);
+psiT_neg_mean = zeros(Neta,Nr+1,Ntime);
+psiT_eddy = zeros(Neta,Nr+1,Ntime);
+psiT_eddy_adv = zeros(Neta,Nr+1,Ntime);
+psiT_eddy_stir = zeros(Neta,Nr+1,Ntime);
 psiS_tot = zeros(Neta,Nr+1,Ntime);
 psiS_mean = zeros(Neta,Nr+1,Ntime);
 psiS_eddy = zeros(Neta,Nr+1,Ntime);
+psiS_eddy_adv = zeros(Neta,Nr+1,Ntime);
+psiS_eddy_stir = zeros(Neta,Nr+1,Ntime);
+psi_tot = zeros(Neta,Nr+1,Ntime);
+w_eddy_flux = zeros(Nx,Ny,Ntime);
 for n=1:Ntime
  
   %%% Print current time to keep track of calculation
@@ -149,21 +161,96 @@ for n=1:Ntime
   %%% Compute mean and eddy fluxes in quasi-latitude coordinates
   [eflux_tot,eflux_mean,eflux_eddy] = calcMeanEddyFluxes (...
     uvel,vvel,theta,uvelth,vvelth, ...
-    Nx,Ny,Neta, ...  
+    Nx,Ny,Nr,Neta, ...  
     DXG_3D,DYG_3D,DRF_3D,hFacW,hFacS,ETA,eta);
   psiT_tot(:,:,n) = eflux_tot;
   psiT_mean(:,:,n) = eflux_mean;
   psiT_eddy(:,:,n) = eflux_eddy;
+
   [eflux_tot,eflux_mean,eflux_eddy] = calcMeanEddyFluxes (...
     uvel,vvel,salt,uvelslt,vvelslt, ...
-    Nx,Ny,Neta, ...  
+    Nx,Ny,Nr,Neta, ...  
     DXG_3D,DYG_3D,DRF_3D,hFacW,hFacS,ETA,eta);
   psiS_tot(:,:,n) = eflux_tot;
   psiS_mean(:,:,n) = eflux_mean;
   psiS_eddy(:,:,n) = eflux_eddy;
 
+  if (calc_eddy_decomp)
+    
+    %%% Load heat and salt fluxes         
+    wvel  = rdmdsWrapper(fullfile(exppath,'/results/WVEL'),itersToRead(n));  
+    wvelth = rdmdsWrapper(fullfile(exppath,'/results/WVELTH'),itersToRead(n));
+    wvelslt = rdmdsWrapper(fullfile(exppath,'/results/WVELSLT'),itersToRead(n));
+
+    %%% Compute eddy-induced velocities
+    [u_eddy,v_eddy,w_eddy] = calcTRMvelocity (...
+      uvel,vvel,wvel,theta,salt, ...
+      uvelth,vvelth,wvelth, ...
+      uvelslt,vvelslt,wvelslt, ...
+      hFacC,hFacW,hFacS, ...
+      DXG,DYG,RAC,DXC,DYC, ...
+      DRF,DRC,RC,RF,...
+      rhoConst,gravity);
+    
+    %%% Clear memory
+    clear('wvel','uvelth','vvelth','wvelth','uvelslt','vvelslt','wvelslt');
+    
+    %%% Compute mean and eddy fluxes in quasi-latitude coordinates
+    [eflux_tot,eflux_mean,eflux_eddy] = calcMeanEddyFluxes (...
+      u_eddy,v_eddy,theta,0*u_eddy,0*v_eddy, ...
+      Nx,Ny,Nr,Neta, ...  
+      DXG_3D,DYG_3D,DRF_3D,hFacW,hFacS,ETA,eta);
+    psiT_eddy_adv(:,:,n) = eflux_mean;
+    psiT_eddy_stir(:,:,n) = psiT_eddy(:,:,n) - psiT_eddy_adv(:,:,n);
+    [eflux_tot,eflux_mean,eflux_eddy] = calcMeanEddyFluxes (...
+      u_eddy,v_eddy,salt,0*u_eddy,0*v_eddy, ...
+      Nx,Ny,Nr,Neta, ...  
+      DXG_3D,DYG_3D,DRF_3D,hFacW,hFacS,ETA,eta);
+    psiS_eddy_adv(:,:,n) = eflux_mean;
+    psiS_eddy_stir(:,:,n) = psiS_eddy(:,:,n) - psiS_eddy_adv(:,:,n);
+
+    %%% Store eddy velocity at the interface between upper/lower shelf
+    %%% waters
+    w_eddy_flux(:,:,n) = w_eddy(:,:,zidx_icefront);
+    
+    %%% Clear memory
+    clear('u_eddy','v_eddy','w_eddy','salt');
+    
+  else
+    
+    %%% Clear memory
+    clear('salt','uvelth','vvelth','uvelslt','vvelslt');
+    
+  end
+
+  %%% Positive and negative temperature anomalies
+  theta_pos = theta - theta0;
+  theta_neg = min(theta_pos,0);
+  theta_pos = max(theta_pos,0);  
+
+  %%% Mean flux of positive temperature anomaly
+  [eflux_tot,eflux_mean,eflux_eddy] = calcMeanEddyFluxes (...
+    uvel,vvel,theta_pos,uvel,vvel, ...
+    Nx,Ny,Nr,Neta, ...  
+    DXG_3D,DYG_3D,DRF_3D,hFacW,hFacS,ETA,eta);
+  psiT_pos_mean(:,:,n) = eflux_mean;
+  
+  %%% Mean flux of negative temperature anomaly
+  [eflux_tot,eflux_mean,eflux_eddy] = calcMeanEddyFluxes (...
+    uvel,vvel,theta_neg,uvel,vvel, ...
+    Nx,Ny,Nr,Neta, ...  
+    DXG_3D,DYG_3D,DRF_3D,hFacW,hFacS,ETA,eta);
+  psiT_neg_mean(:,:,n) = eflux_mean;
+  
+  %%% Eulerian-mean overturning
+  eflux = calcQuasiLatFluxes (...
+    uvel,vvel, ...
+    Nx,Ny,Nr,Neta, ...  
+    DXG_3D,DYG_3D,DRF_3D,hFacW,hFacS,ETA,eta);
+  psi_tot(:,:,n) = eflux;
+
   %%% Clear memory
-  clear('uvel','vvel','theta','salt','uvelth','vvelth','uvelslt','vvelslt');
+  clear('uvel','vvel','theta','theta_pos','theta_neg');
     
   
 end
@@ -182,13 +269,13 @@ vvelslt_tavg = readIters(exppath,'VVELSLT',dumpIters,deltaT,tmin*t1year,tmax*t1y
 %%% N.B. Total multi-annual mean flux = flux_stand + flux_fluc + flux_eddy
 [eflux_tot,eflux_mean,eflux_eddy] = calcMeanEddyFluxes (...
   uvel_tavg,vvel_tavg,theta_tavg,uvelth_tavg,vvelth_tavg, ...
-  Nx,Ny,Neta, ...  
+  Nx,Ny,Nr,Neta, ...  
   DXG_3D,DYG_3D,DRF_3D,hFacW,hFacS,ETA,eta);
 psiT_stand = eflux_mean;
 psiT_fluc = eflux_eddy - mean(psiT_eddy,3);
 [eflux_tot,eflux_mean,eflux_eddy] = calcMeanEddyFluxes (...
   uvel_tavg,vvel_tavg,salt_tavg,uvelslt_tavg,vvelslt_tavg, ...
-  Nx,Ny,Neta, ...  
+  Nx,Ny,Nr,Neta, ...  
   DXG_3D,DYG_3D,DRF_3D,hFacW,hFacS,ETA,eta);
 psiS_stand = eflux_mean;
 psiS_fluc = eflux_eddy - mean(psiS_eddy,2);
@@ -208,8 +295,16 @@ save(fullfile('products',outfname), ...
   'eta','ETA','times', ...
   'psiT_tot','psiT_mean','psiT_stand','psiT_fluc','psiT_eddy',...
   'psiS_tot','psiS_mean','psiS_stand','psiS_fluc','psiS_eddy',...
+  'psiT_pos_mean','psiT_neg_mean','psi_tot', ...
   'uvel_tavg','vvel_tavg','theta_tavg','salt_tavg', ... 
   'uvelth_tavg','vvelth_tavg','uvelslt_tavg','vvelslt_tavg','-v7.3');
+if (calc_eddy_decomp)
+  save(fullfile('products',outfname), ...
+  'psiT_eddy_adv','psiT_eddy_stir',...
+  'psiS_eddy_adv','psiS_eddy_stir',...
+  'w_eddy_flux', ...
+  '-append','-v7.3');
+end
 clear('uvel_tavg','vvel_tavg','theta_tavg','salt_tavg','uvelth_tavg','vvelth_tavg','uvelslt_tavg','vvelslt_tavg');
 
 
@@ -221,7 +316,7 @@ clear('uvel_tavg','vvel_tavg','theta_tavg','salt_tavg','uvelth_tavg','vvelth_tav
 %%%
 function [trflux_tot,trflux_mean,trflux_eddy] = calcMeanEddyFluxes (...
   uvel,vvel,tracer,uveltr,vveltr, ...
-  Nx,Ny,Neta, ...  
+  Nx,Ny,Nr,Neta, ...  
   DXG_3D,DYG_3D,DRF_3D,hFacW,hFacS,ETA,eta)
 
   %%% Calculate midpoint tracer
@@ -237,15 +332,15 @@ function [trflux_tot,trflux_mean,trflux_eddy] = calcMeanEddyFluxes (...
   %%% Calculate fluxes in quasi-latitude coordinates
   trflux_tot = calcQuasiLatFluxes (...
     uveltr,vveltr, ...
-    Nx,Ny,Neta, ...  
+    Nx,Ny,Nr,Neta, ...  
     DXG_3D,DYG_3D,DRF_3D,hFacW,hFacS,ETA,eta);
   trflux_mean = calcQuasiLatFluxes (...
     uveltr_mean,vveltr_mean, ...
-    Nx,Ny,Neta, ...  
+    Nx,Ny,Nr,Neta, ...  
     DXG_3D,DYG_3D,DRF_3D,hFacW,hFacS,ETA,eta);
   trflux_eddy = calcQuasiLatFluxes (...
     uveltr_eddy,vveltr_eddy, ...
-    Nx,Ny,Neta, ...  
+    Nx,Ny,Nr,Neta, ...  
     DXG_3D,DYG_3D,DRF_3D,hFacW,hFacS,ETA,eta);
 
 end
@@ -262,14 +357,14 @@ end
 %%%
 function eflux = calcQuasiLatFluxes (...
   uflux,vflux, ...
-  Nx,Ny,Neta, ...  
+  Nx,Ny,Nr,Neta, ...  
   DXG_3D,DYG_3D,DRF_3D,hFacW,hFacS,ETA,eta)
 
   %%% Integrate fluxes verticall and horizontally over each cell face
   uflux_yzint = zeros(Nx,Ny,Nr+1);
   vflux_xzint = zeros(Nx,Ny,Nr+1);
-  uflux_yzint(:,:,2:Nr+1) = sum(uflux .* DYG_3D .* DRF_3D .* hFacW,3);
-  vflux_xzint(:,:,2:Nr+1) = sum(vflux .* DXG_3D .* DRF_3D .* hFacS,3);
+  uflux_yzint(:,:,1:Nr) = cumsum(uflux .* DYG_3D .* DRF_3D .* hFacW,3,'reverse');
+  vflux_xzint(:,:,1:Nr) = cumsum(vflux .* DXG_3D .* DRF_3D .* hFacS,3,'reverse');
 
   %%% Compute horizontal divergence of isopycnal fluxes
   fluxdiv = zeros(Nx,Ny,Nr+1);

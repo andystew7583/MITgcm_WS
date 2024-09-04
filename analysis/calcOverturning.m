@@ -16,9 +16,12 @@ expdir = '../experiments';
 % expname = 'hires_seq_onetwelfth_RTOPO2';
 % tmin = 1.05;
 % tmax = 9.05;
-expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-tmin = 1.01;
-tmax = 7.01;
+% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+% tmin = 1.01;
+% tmax = 7.01;
+expname = 'hires_seq_onetwentyfourth_notides_RTOPO2_SSH';
+tmin = 0.01;
+tmax = 1.01;
 
 %%% Load experiment
 loadexp;
@@ -30,7 +33,7 @@ calc_psi_eddy = true;
 deform_cavity = false;
 
 %%% Set true to use barotropic streamfunction as the coordinate system
-use_PsiBT = true;
+use_PsiBT = false;
 
 %%% Set true to use output from the Layers package to calculate isopycnal
 %%% fluxes. N.B. if this option is selected then the density variable must

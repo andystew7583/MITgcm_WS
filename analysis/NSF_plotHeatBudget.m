@@ -26,9 +26,6 @@ Neta = length(eta);
 
 %%% T/S flux storage file
 infname = [expname,'_TSfluxes'];
-if (deform_cavity)
-  infname = [infname,'_deform'];
-end
 infname = [infname,'.mat'];
 
 %%% Load pre-computed vertical flux data

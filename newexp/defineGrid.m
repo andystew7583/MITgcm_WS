@@ -5,7 +5,7 @@
 %%%
 
 %%% Choose resolution
-res_fac = 24;
+res_fac = 48;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% MPI parameters %%%%%
@@ -44,6 +44,11 @@ switch (res_fac)
     nPy_max = 48; %%% max. no. of processors in y-direction
     nPx = 18; %%% no. of processors in x-direction
     nPy = 12; %%% no. of processors in y-direction
+  case 48
+    nPx_max = 144; %%% max. no. of processors in x-direction
+    nPy_max = 96; %%% max. no. of processors in y-direction
+    nPx = 18; %%% no. of processors in x-direction
+    nPy = 12; %%% no. of processors in y-direction
 end
 
 
@@ -74,6 +79,8 @@ switch (res_fac)
     grid_name = 'one_twelfth';
   case 24
     grid_name = 'one_twentyfourth';
+  case 48
+    grid_name = 'one_fortyeighth';
 end
 
 
@@ -96,6 +103,10 @@ ymin = -83.5;
 
 switch (res_fac)
   case 24    
+    %%% Southern WS subdomain
+    xmax = -20;
+    ymax = -70;
+  case 48
     %%% Southern WS subdomain
     xmax = -20;
     ymax = -70;
@@ -136,6 +147,9 @@ switch (res_fac)
   case 24
     start_year = 2008;
     endyr = 2014;
+  case 48
+    start_year = 2011;
+    endyr = 2012;
   otherwise
     start_year = 2007;
     endyr = 2015;

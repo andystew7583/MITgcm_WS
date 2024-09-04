@@ -10,18 +10,18 @@
 
 %%% Load experiment data
 expdir = '../experiments';
-% expname = 'hires_seq_onethird_notides_RTOPO2';
-% tmin = 19.05;
-% tmax = 27.05;
-% expname = 'hires_seq_onesixth_notides_RTOPO2';
+expname = 'hires_seq_onethird_RTOPO2';
+tmin = 19.05;
+tmax = 27.05;
+% expname = 'hires_seq_onesixth_RTOPO2';
 % tmin = 10.05;
 % tmax = 18.05;
 % expname = 'hires_seq_onetwelfth_RTOPO2';
 % tmin = 1.05;
 % tmax = 9.05;
-expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-tmin = 1.05;
-tmax = 7.05;
+% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+% tmin = 1.05;
+% tmax = 7.05;
 loadexp;
 
 %%% Index of the upper grid cell face dividing the upper and lower portions
@@ -240,8 +240,8 @@ for n=1:Ntime
   theta_int_upper(:,:,n) = sum(theta(:,:,1:zidx_icefront-1).*DRF(:,:,1:zidx_icefront-1).*hFacC(:,:,1:zidx_icefront-1),3);
   theta_pos_int_lower(:,:,n) = sum(theta_pos(:,:,zidx_icefront:end).*DRF(:,:,zidx_icefront:end).*hFacC(:,:,zidx_icefront:end),3);
   theta_pos_int_upper(:,:,n) = sum(theta_pos(:,:,1:zidx_icefront-1).*DRF(:,:,1:zidx_icefront-1).*hFacC(:,:,1:zidx_icefront-1),3);
-  theta_pos_int_lower(:,:,n) = sum(theta_neg(:,:,zidx_icefront:end).*DRF(:,:,zidx_icefront:end).*hFacC(:,:,zidx_icefront:end),3);
-  theta_pos_int_upper(:,:,n) = sum(theta_neg(:,:,1:zidx_icefront-1).*DRF(:,:,1:zidx_icefront-1).*hFacC(:,:,1:zidx_icefront-1),3);
+  theta_neg_int_lower(:,:,n) = sum(theta_neg(:,:,zidx_icefront:end).*DRF(:,:,zidx_icefront:end).*hFacC(:,:,zidx_icefront:end),3);
+  theta_neg_int_upper(:,:,n) = sum(theta_neg(:,:,1:zidx_icefront-1).*DRF(:,:,1:zidx_icefront-1).*hFacC(:,:,1:zidx_icefront-1),3);
   clear('theta_pos','theta_neg');
 
   %%% Temperature on w-points

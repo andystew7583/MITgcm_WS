@@ -32,14 +32,20 @@ loadexp;
 %%% of the water column
 zidx_icefront = 25;
 
+%%% Reference surface freezing temperature
+theta0 = -1.9;
+
 %%% Set true to deform coordinates in the cavity
 deform_cavity = false;
 
 %%% Set true to use barotropic streamfunction as the coordinate system
 use_PsiBT = false;
 
+%%% Set true to use depth-averaged temperature as the coordinate system
+use_meanT = true;
+
 %%% Set true to decompose eddy fluxes
-calc_eddy_decomp = true;
+calc_eddy_decomp = false;
 
 %%% Define coordinate system for integrating to compute heatfunction
 if (use_PsiBT)
@@ -65,9 +71,24 @@ if (use_PsiBT)
 
 else
 
-  ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity);
-  eta = -9:.1:11;
-  Neta = length(eta);
+  if (use_meanT)
+
+    %%% Load time-mean temperature
+    outfname = [expname,'_TSfluxes.mat'];
+    load(fullfile('./products',outfname),'theta_tavg');
+    
+    %%% Coordinate
+    ETA = sum(theta_tavg.*DRF.*hFacC,3)./sum(DRF.*hFacC,3);
+    eta = -2.6:0.025:0;
+    Neta = length(eta);
+
+  else
+
+    ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity);
+    eta = -9:.1:11;
+    Neta = length(eta);
+
+  end
 
 end
 
@@ -136,6 +157,7 @@ psiS_eddy = zeros(Neta,Nr+1,Ntime);
 psiS_eddy_adv = zeros(Neta,Nr+1,Ntime);
 psiS_eddy_stir = zeros(Neta,Nr+1,Ntime);
 psi_tot = zeros(Neta,Nr+1,Ntime);
+psi_eddy = zeros(Neta,Nr+1,Ntime);
 w_eddy_flux = zeros(Nx,Ny,Ntime);
 for n=1:Ntime
  
@@ -212,6 +234,14 @@ for n=1:Ntime
     %%% Store eddy velocity at the interface between upper/lower shelf
     %%% waters
     w_eddy_flux(:,:,n) = w_eddy(:,:,zidx_icefront);
+
+    %%% Eulerian-mean overturning
+    eflux = calcQuasiLatFluxes (...
+      u_eddy,v_eddy, ...
+      Nx,Ny,Nr,Neta, ...  
+      DXG_3D,DYG_3D,DRF_3D,hFacW,hFacS,ETA,eta);
+    psi_eddy(:,:,n) = eflux;
+
     
     %%% Clear memory
     clear('u_eddy','v_eddy','w_eddy','salt');
@@ -285,9 +315,13 @@ psiS_fluc = eflux_eddy - mean(psiS_eddy,2);
 outfname = [expname,'_HeatFunction'];
 if (use_PsiBT)
   outfname = [outfname,'_PsiBT'];
-else
-  if (deform_cavity)
-    outfname = [outfname,'_deform'];
+else 
+  if (use_meanT)
+    outfname = [outfname,'_meanT'];
+  else 
+    if (deform_cavity)
+      outfname = [outfname,'_deform'];
+    end
   end
 end
 outfname = [outfname,'.mat'];
@@ -295,7 +329,7 @@ save(fullfile('products',outfname), ...
   'eta','ETA','times', ...
   'psiT_tot','psiT_mean','psiT_stand','psiT_fluc','psiT_eddy',...
   'psiS_tot','psiS_mean','psiS_stand','psiS_fluc','psiS_eddy',...
-  'psiT_pos_mean','psiT_neg_mean','psi_tot', ...
+  'psiT_pos_mean','psiT_neg_mean','psi_tot','psi_eddy', ...
   'uvel_tavg','vvel_tavg','theta_tavg','salt_tavg', ... 
   'uvelth_tavg','vvelth_tavg','uvelslt_tavg','vvelslt_tavg','-v7.3');
 if (calc_eddy_decomp)

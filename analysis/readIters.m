@@ -19,7 +19,7 @@ function avg = readIters (exppath,field,dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr)
       A = rdmdsWrapper(fname,dumpIters(n));   
       if (isempty(A))
         error(['Could not find ',fname,' iteration ',num2str(dumpIters(n))]);
-      end
+      end      
       avg = avg + A;
       navg = navg + 1;
 

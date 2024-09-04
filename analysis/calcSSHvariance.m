@@ -10,7 +10,13 @@
 loadexp;
 diagfreq = diag_frequency(end);
 
-%%% For daily/12-hourly outputs
+% %%% For daily/12-hourly outputs
+% dumpStart = 1578240;
+% dumpStep = 86400/2/60;
+% nDumps = 731;
+% dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
+
+%%% For daily/12-hourly outputs, SSH-specific re-run
 dumpStart = 1578240;
 dumpStep = 86400/2/60;
 nDumps = 731;

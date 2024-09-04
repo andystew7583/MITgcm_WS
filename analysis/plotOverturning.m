@@ -14,7 +14,7 @@ expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
 %%% Options (see calcOverturning)
 calc_psi_eddy = true;
 deform_cavity = false;
-use_PsiBT = true;
+use_PsiBT = false;
 use_layers = true;
 densvar = 'PD0';
 psimax = 4;

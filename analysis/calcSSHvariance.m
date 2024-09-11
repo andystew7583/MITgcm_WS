@@ -17,7 +17,7 @@ diagfreq = diag_frequency(end);
 % dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
 
 %%% For daily/12-hourly outputs, SSH-specific re-run
-dumpStart = 1578240;
+dumpStart = 720;
 dumpStep = 86400/2/60;
 nDumps = 731;
 dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;

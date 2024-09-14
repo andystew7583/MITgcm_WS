@@ -1,7 +1,10 @@
 %%%
-%%% calcHeatFunction.m
+%%% calcHeatFunctionEddyDecomp.m
 %%% 
-%%% Calculates total heat (and salt) functions in quasi-latitude or streamline coordinates.
+%%% Calculates total heat (and salt) functions in quasi-latitude or
+%%% streamline coordinates. This function decomposes the "eddy" component
+%%% of the streamfunction into advective and stirring components by
+%%% computing the temporal residual mean velocity.
 %%%
 
 
@@ -345,7 +348,7 @@ for n=1:Ntime
     DXG_3D,DYG_3D,DRF_3D,hFacW,hFacS,ETA,eta);
   psiS_eddy_adv(:,:,n) = eflux_mean;  
 
-  %%% Eulerian-mean overturning
+  %%% Eddy-induced overturning in depth space
   eflux = calcQuasiLatFluxes (...
     u_eddy,v_eddy, ...
     Nx,Ny,Nr,Neta, ...  
@@ -378,6 +381,7 @@ save(fullfile('products',outfname), ...
   'psiT_eddy_adv',...
   'psiS_eddy_adv',...
   'w_eddy_flux', ...
+  'psi_eddy', ...
   '-v7.3');
 
 

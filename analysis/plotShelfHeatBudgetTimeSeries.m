@@ -59,7 +59,7 @@ else
   zidx_icefront = 25;     
   msk = (ETA > eta_icefront) & (ETA < eta_shelfbreak);
   msk_slope = (ETA > eta_shelfbreak & ETA < 5); 
-  msk_outershelf = (ETA > 2 & ETA < eta_shelfbreak); 
+  msk_outershelf = (ETA > 1.5 & ETA < eta_shelfbreak); 
 
 end
 

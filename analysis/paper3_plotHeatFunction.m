@@ -1,98 +1,98 @@
-% %%%
-% %%% paper3_plotTSfluxes.m
-% %%%
-% %%% Plots heat/salt fluxes in quasi-latitude coordinates
-% %%%
-% 
-% %%% Load experiment
-% expdir = '../experiments';
-% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-% loadexp;
-% 
-% %%% Reference surface freezing temperature
-% theta0 = -1.9;
-% 
-% %%% Reference salinity
-% salt0 = 34.6;
-% % salt0 = 34.72;
-% 
-% %%% Cross-shelf locations of ice front and shelf break for heat budget calculation
-% eta_icefront = -1.1;
-% eta_shelfbreak = 3.5;  
-% 
-% %%% Depth of ice front for heat budget calculation
-% zidx_icefront = 25;    
-% 
-% %%% Set true to deform coordinates in the cavity
-% deform_cavity = false;
-% 
-% %%% Set true to use barotropic streamfunction as the coordinate system
-% use_PsiBT = false;
-% 
-% %%% Set true to use depth-averaged temperature as the coordinate system
-% use_meanT = false;
-% 
-% %%% Set true to decompose eddy fluxes
-% calc_eddy_decomp = false;
-% 
-% %%% Parameters
-% rho0 = 1000;
-% Cp = 4000;
-% 
-% %%% Load HeatFunction data file
-% outfname = [expname,'_HeatFunction'];
-% if (use_PsiBT)
-%   outfname = [outfname,'_PsiBT'];
-% else 
-%   if (use_meanT)
-%     outfname = [outfname,'_meanT'];
-%   else 
-%     if (deform_cavity)
-%       outfname = [outfname,'_deform'];
-%     end
-%   end
-% end
-% load(fullfile('products',outfname));
-% Neta = length(eta);
-% 
-% %%% Load positive and negative heatfunction components
-% outfname = [expname,'_PosNegHeatFunction'];
-% if (use_PsiBT)
-%   outfname = [outfname,'_PsiBT'];
-% else
-%   if (use_meanT)
-%     outfname = [outfname,'_meanT'];
-%   else 
-%     if (deform_cavity)
-%       outfname = [outfname,'_deform'];
-%     end
-%   end
-% end
-% outfname = [outfname,'.mat'];
-% load(fullfile('products',outfname));
-% 
-% %%% Mask for ice/land
-% psiT_tot_mean = mean(psiT_tot-psi_tot*theta0,3)* rho0*Cp/1e12;
-% msk = ones(size(psiT_tot_mean));
-% msk_ice = NaN*msk;
-% for j=1:Neta  
-%   idx = find(psiT_tot_mean(j,:)==psiT_tot_mean(j,1));
-%   idx(end) = [];
-%   msk(j,idx) = NaN;
-%   if (~isempty(idx))
-%     msk_ice(j,1:idx(end)) = 1;
-%   end
-%   idx = find(abs(psiT_tot_mean(j,:))<1e-12,1,'first');
-%   msk(j,idx+1:end) = NaN;
-% end
-% 
-% 
-% psiT_tot_plot = -mean(psiT_tot-psi_tot*theta0,3) * rho0*Cp/1e12 .* msk;
-% psiT_mean_plot = -mean(psiT_mean-psi_tot*theta0,3) * rho0*Cp/1e12 .* msk;
-% psiT_pos_plot = -mean(psiT_pos_mean,3) * rho0*Cp/1e12 .* msk;
-% psiT_neg_plot = -mean(psiT_neg_mean,3) * rho0*Cp/1e12 .* msk;
-% 
-% 
+%%%
+%%% paper3_plotTSfluxes.m
+%%%
+%%% Plots heat/salt fluxes in quasi-latitude coordinates
+%%%
+
+%%% Load experiment
+expdir = '../experiments';
+expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+loadexp;
+
+%%% Reference surface freezing temperature
+theta0 = -1.9;
+
+%%% Reference salinity
+salt0 = 34.6;
+% salt0 = 34.72;
+
+%%% Cross-shelf locations of ice front and shelf break for heat budget calculation
+eta_icefront = -1.1;
+eta_shelfbreak = 3.5;  
+
+%%% Depth of ice front for heat budget calculation
+zidx_icefront = 25;    
+
+%%% Set true to deform coordinates in the cavity
+deform_cavity = false;
+
+%%% Set true to use barotropic streamfunction as the coordinate system
+use_PsiBT = false;
+
+%%% Set true to use depth-averaged temperature as the coordinate system
+use_meanT = false;
+
+%%% Set true to decompose eddy fluxes
+calc_eddy_decomp = false;
+
+%%% Parameters
+rho0 = 1000;
+Cp = 4000;
+
+%%% Load HeatFunction data file
+outfname = [expname,'_HeatFunction'];
+if (use_PsiBT)
+  outfname = [outfname,'_PsiBT'];
+else 
+  if (use_meanT)
+    outfname = [outfname,'_meanT'];
+  else 
+    if (deform_cavity)
+      outfname = [outfname,'_deform'];
+    end
+  end
+end
+load(fullfile('products',outfname));
+Neta = length(eta);
+
+%%% Load positive and negative heatfunction components
+outfname = [expname,'_PosNegHeatFunction'];
+if (use_PsiBT)
+  outfname = [outfname,'_PsiBT'];
+else
+  if (use_meanT)
+    outfname = [outfname,'_meanT'];
+  else 
+    if (deform_cavity)
+      outfname = [outfname,'_deform'];
+    end
+  end
+end
+outfname = [outfname,'.mat'];
+load(fullfile('products',outfname));
+
+%%% Mask for ice/land
+psiT_tot_mean = mean(psiT_tot-psi_tot*theta0,3)* rho0*Cp/1e12;
+msk = ones(size(psiT_tot_mean));
+msk_ice = NaN*msk;
+for j=1:Neta  
+  idx = find(psiT_tot_mean(j,:)==psiT_tot_mean(j,1));
+  idx(end) = [];
+  msk(j,idx) = NaN;
+  if (~isempty(idx))
+    msk_ice(j,1:idx(end)) = 1;
+  end
+  idx = find(abs(psiT_tot_mean(j,:))<1e-12,1,'first');
+  msk(j,idx+1:end) = NaN;
+end
+
+
+psiT_tot_plot = -mean(psiT_tot-psi_tot*theta0,3) * rho0*Cp/1e12 .* msk;
+psiT_mean_plot = -mean(psiT_mean-psi_tot*theta0,3) * rho0*Cp/1e12 .* msk;
+psiT_pos_plot = -mean(psiT_pos_mean,3) * rho0*Cp/1e12 .* msk;
+psiT_neg_plot = -mean(psiT_neg_mean,3) * rho0*Cp/1e12 .* msk;
+
+
 
 %%%%%%%%%%%%%%%%%%
 %%% MAKE PLOTS %%%

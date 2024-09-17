@@ -146,7 +146,6 @@ shading flat;
 hold on;
 [C,h] = contour(EE,ZZ,psiT_tot_plot,[-psimax:psistep:-psistep psistep:psistep:psimax],'EdgeColor','k');
 clabel(C,h);
-plot([eta_icefront,eta_shelfbreak],[-RC(zidx_icefront),-RC(zidx_icefront)],'k--','LineWidth',2);
 hold off;
 set(gca,'YDir','reverse');
 set(gca,'XLim',xlim);

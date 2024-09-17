@@ -129,8 +129,8 @@ scrsz = get(0,'ScreenSize');
 set(gcf,'Position',[417    34  1000  926]);
 % fontsize = 18;
 fontsize = 12;
-
-
+axlabels = {'(a)','(b)','(c)'};
+axpos = zeros(3,4);
 
 
 
@@ -141,7 +141,7 @@ fontsize = 12;
 
 %%% Plotting options
 clim = [-5000 0];
-axpos = [0 0.5 .3 .3];
+axpos(1,:) = [0 0.5 .3 .3];
 
 latMin = -90;
 latMax = -60;
@@ -149,7 +149,7 @@ lonMin = -180;
 lonMax = 180;
 
 %%% Set up map plot
-subplot('Position',axpos);
+subplot('Position',axpos(1,:));
 axesm('stereo',...
   'fontsize',13,...
   'Grid','on', ...    
@@ -176,7 +176,7 @@ pcolorm(double(LA),double(LO),double(RTOPO_bathy_plot));
 shading interp
 colormap(gca,haxby(50));
 caxis(clim);
-set(gca,'Position',axpos);
+set(gca,'Position',axpos(1,:));
 % hold on;
 ax1 = gca;
 axpos = get(ax1,'Position');
@@ -233,11 +233,11 @@ cmap = cmap(8:23,:);
 % cmap = cmocean('amp',16);
 % cmap = pmkmp(16,'swtth');
 bathycntrs = [0 250 500 1000 2000 3000 4000 5000];
-axpos = [0.2 0.4 .85 .55];
+axpos(2,:) = [0.2 0.4 .85 .55];
 
 
 %%% Set up map plot
-subplot('Position',axpos+[.1 0 0 0]);
+subplot('Position',axpos(2,:)+[.1 0 0 0]);
 axesm('eqaconicstd',...
   'fontsize',13,...
   'Grid','on', ...    
@@ -284,7 +284,7 @@ hold off;
 %%% Add axis labels
 xlabel('Longitude','interpreter','latex');
 ylabel('Latitude','interpreter','latex');
-set(gca,'Position',axpos);
+set(gca,'Position',axpos(2,:));
 hold off
 
 
@@ -369,7 +369,7 @@ iter = 1949760 - 50*86400/60;
 %%% Plotting options                
 fontsize = 14;
 labelspacing = 200;
-axpos = [0.06 0.07 0.87 0.3];
+axpos(3,:) = [0.06 0.07 0.87 0.3];
 cb_pos = [0.95 0.07 0.015 0.3];
 axlabel = '(c)';
 icecolor = [186 242 239]/255;
@@ -398,7 +398,7 @@ for n=1:Nsec
 end
 
 
-axes('Position',axpos);
+axes('Position',axpos(3,:));
 pcolor(LA,-ZZ,secT);
 set(gca,'YDir','reverse');
 shading interp;
@@ -435,5 +435,15 @@ set(ax2,'YLim',[0 1400]);
 set(ax2,'YDir','reverse');
 set(ax2,'XLim',[startLat (-73)]);
 set(ax2,'Color','None')
+
+
+
+
+
+%%% Add panel labels
+annotation('textbox',[axpos(1,1)+0.01 axpos(1,2)-0.02 0.03 0.03],'String',axlabels{1},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
+annotation('textbox',[axpos(2,1)+0.15 axpos(2,2)+0.04 0.03 0.03],'String',axlabels{2},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
+annotation('textbox',[axpos(3,1)-0.06 axpos(3,2)-0.06 0.03 0.03],'String',axlabels{3},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
+
 
 

@@ -37,8 +37,9 @@ use_meanT = false;
 calc_eddy_decomp = false;
 
 %%% Physical parameters
-rho0 = 1000;
+rho0 = rhoConst;
 Cp = 4000;
+rhoFresh = 1000;
 
 %%% Define coordinate system for integrating to compute heatfunction
 ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity);
@@ -148,46 +149,40 @@ for n=1:length(tt)
 end
 
 %%% Area-integrated vertical heat flux
-wt_tot_mod = wt_tot_flux - w_flux.*theta0;
-wt_mean_mod = wt_mean_flux - w_flux.*theta0;
+ws_tot_mod = ws_tot_flux - w_flux.*salt0;
+ws_mean_mod = ws_mean_flux - w_flux.*salt0;
 
 %%% Heat function
-psiT_mod = psiT_tot-psi_tot*theta0;
-psiT_mean_mod = psiT_mean-psi_tot*theta0;
-psiT_eddy_adv_mod = psiT_eddy_adv - psi_eddy*theta0;
-psiT_eddy_stir = psiT_eddy - psiT_eddy_adv_mod;
+psiS_mod = psiS_tot-psi_tot*salt0;
+psiS_mean_mod = psiS_mean-psi_tot*salt0;
+psiS_eddy_adv_mod = psiS_eddy_adv - psi_eddy*salt0;
+psiS_eddy_stir = psiS_eddy - psiS_eddy_adv_mod;
 
-%%% Decomposition of vertical heat flux
-hflux_vert = squeeze(sum(sum(wt_tot_mod.*RAC.*msk_wholeshelf,1),2)*rho0*Cp/1e12);
-hflux_mean_vert = squeeze(sum(sum(wt_mean_mod.*RAC.*msk_wholeshelf,1),2)*rho0*Cp/1e12);
-hflux_eddy_vert = squeeze(sum(sum(wt_eddy_flux.*RAC.*msk_wholeshelf,1),2)*rho0*Cp/1e12);
-hflux_eddy_adv_vert = squeeze(sum(sum(w_eddy_flux.*(theta_bnd-theta0).*RAC.*msk_wholeshelf,1),2)*rho0*Cp/1e12);
-hflux_eddy_stir_vert = hflux_eddy_vert - hflux_eddy_adv_vert;
+%%% Decomposition of vertical salt flux
+sflux_vert = squeeze(sum(sum(ws_tot_mod.*RAC.*msk_wholeshelf,1),2) / -salt0 * rhoFresh*t1year / 1e12); %%% Convert to Gt/yr);
+sflux_mean_vert = squeeze(sum(sum(ws_mean_mod.*RAC.*msk_wholeshelf,1),2)/ -salt0 * rhoFresh*t1year / 1e12);
+sflux_eddy_vert = squeeze(sum(sum(ws_eddy_flux.*RAC.*msk_wholeshelf,1),2)/ -salt0 * rhoFresh*t1year / 1e12);
+sflux_eddy_adv_vert = squeeze(sum(sum(w_eddy_flux.*(salt_bnd-salt0).*RAC.*msk_wholeshelf,1),2)/ -salt0 * rhoFresh*t1year / 1e12);
+sflux_eddy_stir_vert = sflux_eddy_vert - sflux_eddy_adv_vert;
 
-%%% Decomposition of cross-shelf break heat flux
-hflux_shelfbreak = squeeze(-psiT_mod(eidx_shelfbreak,zidx_icefront,:))*rho0*Cp/1e12;
-hflux_mean_shelfbreak = squeeze(-psiT_mean_mod(eidx_shelfbreak,zidx_icefront,:))*rho0*Cp/1e12;
-hflux_eddy_shelfbreak = squeeze(-psiT_eddy(eidx_shelfbreak,zidx_icefront,:))*rho0*Cp/1e12;
-hflux_eddy_adv_shelfbreak = squeeze(-psiT_eddy_adv_mod(eidx_shelfbreak,zidx_icefront,:))*rho0*Cp/1e12;
-hflux_eddy_stir_shelfbreak = squeeze(-psiT_eddy_stir(eidx_shelfbreak,zidx_icefront,:))*rho0*Cp/1e12;
+%%% Decomposition of cross-shelf break salt flux
+sflux_shelfbreak = squeeze(-psiS_mod(eidx_shelfbreak,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
+sflux_mean_shelfbreak = squeeze(-psiS_mean_mod(eidx_shelfbreak,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
+sflux_eddy_shelfbreak = squeeze(-psiS_eddy(eidx_shelfbreak,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
+sflux_eddy_adv_shelfbreak = squeeze(-psiS_eddy_adv_mod(eidx_shelfbreak,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
+sflux_eddy_stir_shelfbreak = squeeze(-psiS_eddy_stir(eidx_shelfbreak,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
 
-%%% Decomposition of cross-ice front heat flux
-hflux_icefront = squeeze(-psiT_mod(eidx_icefront,zidx_icefront,:))*rho0*Cp/1e12;
-hflux_mean_icefront = squeeze(-psiT_mean_mod(eidx_icefront,zidx_icefront,:))*rho0*Cp/1e12;
-hflux_eddy_icefront = squeeze(-psiT_eddy(eidx_icefront,zidx_icefront,:))*rho0*Cp/1e12;
-hflux_eddy_adv_icefront = squeeze(-psiT_eddy_adv_mod(eidx_icefront,zidx_icefront,:))*rho0*Cp/1e12;
-hflux_eddy_stir_icefront = squeeze(-psiT_eddy_stir(eidx_icefront,zidx_icefront,:))*rho0*Cp/1e12;
-
-%%% "Positive" and "negative" components of heat flux
-hflux_pos_icefront = squeeze(-psiT_pos_mean(eidx_icefront,zidx_icefront,:))*rho0*Cp/1e12;
-hflux_pos_shelfbreak = squeeze(-psiT_pos_mean(eidx_shelfbreak,zidx_icefront,:))*rho0*Cp/1e12;
-hflux_neg_icefront = squeeze(-psiT_neg_mean(eidx_icefront,zidx_icefront,:))*rho0*Cp/1e12;
-hflux_neg_shelfbreak = squeeze(-psiT_neg_mean(eidx_shelfbreak,zidx_icefront,:))*rho0*Cp/1e12;
+%%% Decomposition of cross-ice front salt flux
+sflux_icefront = squeeze(psiS_mod(eidx_icefront,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
+sflux_mean_icefront = squeeze(psiS_mean_mod(eidx_icefront,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
+sflux_eddy_icefront = squeeze(psiS_eddy(eidx_icefront,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
+sflux_eddy_adv_icefront = squeeze(psiS_eddy_adv_mod(eidx_icefront,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
+sflux_eddy_stir_icefront = squeeze(psiS_eddy_stir(eidx_icefront,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
 
 %%% Estimate heat tendency
-theta_fit = polyfit(tt,theta_lower_avg,1);
-theta_lin = theta_fit(1)*tt + theta_fit(2); %%% Linear best fit to monthly mean time series
-theta_res = theta_lower_avg - theta_lin; %%% Residual from linear fit
+salt_fit = polyfit(tt,salt_lower_avg,1);
+salt_lin = salt_fit(1)*tt + salt_fit(2); %%% Linear best fit to monthly mean time series
+salt_res = salt_lower_avg - salt_lin; %%% Residual from linear fit
 Nt = length(tt);
 M = zeros(Nt,Nt);
 M(1,1) = 3/4;
@@ -207,28 +202,27 @@ M(Nt,1) = 1/8;
 % end
 % M(Nt,Nt) = 1;
 % % M(Nt,1) = 0.5;
-theta_lower_inst = M \ theta_res';
-htend = (theta_lower_inst([2:end 1]) - theta_lower_inst([end 1:end-1]))/(2*(times(2)-times(1)))*volC_lower/1e12*rho0*Cp;
-% htend = (theta_lower_avg([2:end 1]) - theta_lower_avg([end 1:end-1]))/(2*(times(2)-times(1)))*volC_lower/1e12*rho0*Cp;
-htend = htend + theta_fit(1)*volC_lower/1e12*rho0*Cp; %%% Add back in linear trend
+salt_lower_inst = M \ salt_res';
+stend = (salt_lower_inst([2:end 1]) - salt_lower_inst([end 1:end-1]))/(2*(times(2)-times(1)))*volC_lower/ -salt0 * rhoFresh*t1year / 1e12;
+stend = stend + salt_fit(1)*volC_lower/ -salt0 * rhoFresh*t1year / 1e12; %%% Add back in linear trend
 
 
 %%% Mask for ice/land
-psiT_tot_mean = mean(psiT_tot-psi_tot*theta0,3)* rho0*Cp/1e12;
-msk = ones(size(psiT_tot_mean));
+psiS_tot_mean = mean(psiS_tot-psi_tot*salt0,3)* rho0/1e9;
+msk = ones(size(psiS_tot_mean));
 msk_ice = NaN*msk;
 for j=1:Neta  
-  idx = find(psiT_tot_mean(j,:)==psiT_tot_mean(j,1));
+  idx = find(psiS_tot_mean(j,:)==psiS_tot_mean(j,1));
   idx(end) = [];
   msk(j,idx) = NaN;
   if (~isempty(idx))
     msk_ice(j,1:idx(end)) = 1;
   end
-  idx = find(abs(psiT_tot_mean(j,:))<1e-12,1,'first');
+  idx = find(abs(psiS_tot_mean(j,:))<1e-12,1,'first');
   msk(j,idx+1:end) = NaN;
 end
 
-htot = - hflux_vert - hflux_icefront + hflux_shelfbreak - htend;
+stot = - sflux_vert + sflux_icefront + sflux_shelfbreak - stend;
 
 
 
@@ -262,11 +256,11 @@ psimax = 4;
 psistep = 0.2;
 psisteps = [0:psistep:-psistep psistep:psistep:psimax];
 
-qshelfcolor = colororder(4,:);
-qvertcolor = colororder(2,:);
-qcavitycolor = colororder(1,:);
-qtendcolor = colororder(3,:);
-qrescolor = colororder(7,:);
+fshelfcolor = colororder(4,:);
+fvertcolor = colororder(2,:);
+fcavitycolor = colororder(1,:);
+ftendcolor = colororder(3,:);
+frescolor = colororder(7,:);
 saltcolor = colororder(5,:);
 bcprodcolor = colororder(6,:);
 btprodcolor = [.7 .7 .7];
@@ -285,7 +279,7 @@ lonMax_b = XC(end-spongethickness,1);
 %%%%%%%%%%%%%
 
 %%% Set up the figure
-figure(204)
+figure(205)
 clf
 scrsz = get(0,'ScreenSize');
 set(gcf,'Position',[417    34  1000  1200]);
@@ -309,9 +303,9 @@ zminidx_shelfbreak = find(isnan(msk(eidx_shelfbreak,:)),1);
 %%% TODO shade region used to compute averages of vertical buoyancy fluxes
 %%% Schematic 
 
-psiT_tot_plot = -mean(psiT_mod,3) * rho0*Cp/1e12 .* msk;
+psiS_tot_plot = -mean(psiS_mod,3) * rho0/1e9 .* msk;
 axes('Position',axpos(1,:));
-pcolor(EE,ZZ,psiT_tot_plot*0);
+pcolor(EE,ZZ,psiS_tot_plot*0);
 shading flat;
 hold on;
 plot([eta_icefront,eta_shelfbreak],[-RC(zidx_icefront),-RC(zidx_icefront)],'k--','LineWidth',2);
@@ -358,7 +352,7 @@ set(ax2,'Color','None')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% Plotting options
-clim = [-100 100];
+clim = [-1 1]*2e1;
 cmap = cmocean('balance',50);
 % cmap = cmap(8:23,:);
 % cmap = cmocean('thermal',16);
@@ -384,7 +378,7 @@ axis off;
 setm(gca,'MLabelParallel',-20)
 
 %%% Plot surface heat flux
-vhf_plot = mean(wt_eddy_flux,3)*rho0*Cp;
+vhf_plot = -mean(ws_eddy_flux,3)/salt0*t1year;
 vhf_plot(sum(hFacC,3)==0) = NaN;
 pcolorm(YC,XC,vhf_plot);
 shading interp
@@ -397,7 +391,7 @@ h = colorbar;
 set(gca,'FontSize',fontsize);
 set(h,'Position',cbpos2)
 tightmap;
-title(h,'W/m$^2$','Fontsize',fontsize,'interpreter','latex');
+title(h,'m/yr','Fontsize',fontsize,'interpreter','latex');
 
 %%% Add bathymetry contours
 hold on;
@@ -430,48 +424,42 @@ hold off
 
 
 axes('Position',axpos(3,:));
-
-
-fluxlist = {'Q_s_h_e_l_f','Q_v_e_r_t','Q_c_a_v_i_t_y','Q_t_e_n_d','Residual'};
+fluxlist = {'F_s_h_e_l_f','F_v_e_r_t','F_c_a_v_i_t_y','F_t_e_n_d','Residual'};
 thelabels = categorical(fluxlist);
 thelabels = reordercats(thelabels,fluxlist);
-thebars = [mean(hflux_shelfbreak),mean(hflux_vert),mean(hflux_icefront),mean(htend),mean(htot)];
-thestd = [std(hflux_shelfbreak),std(hflux_vert),std(hflux_icefront),std(htend),std(htot)];
+thebars = [mean(sflux_shelfbreak),mean(sflux_vert),mean(sflux_icefront),mean(stend),mean(stot)];
+thestd = [std(sflux_shelfbreak),std(sflux_vert),std(sflux_icefront),std(stend),std(stot)];
 b = bar(thelabels(1),thebars(1));        
-set(b,'FaceColor',qshelfcolor);
+set(b,'FaceColor',fshelfcolor);
 hold on;
 b = bar(thelabels(2),thebars(2));        
-set(b,'FaceColor',qvertcolor);
+set(b,'FaceColor',fvertcolor);
 b = bar(thelabels(3),thebars(3));        
-set(b,'FaceColor',qcavitycolor);
+set(b,'FaceColor',fcavitycolor);
 b = bar(thelabels(4),thebars(4));        
-set(b,'FaceColor',qtendcolor);
+set(b,'FaceColor',ftendcolor);
 b = bar(thelabels(5),thebars(5));        
-set(b,'FaceColor',qrescolor);
+set(b,'FaceColor',frescolor);
 set(gca,'FontSize',fontsize);
 hold on
 er = errorbar(thelabels,thebars,thestd,thestd);    
 hold off;
 er.Color = [0 0 0];
 er.LineStyle = 'None';
-ylabel('Heat flux (TW)');
-
+ylabel('Freshwater flux (Gt/yr)');
+set(gca,'YLim',[-300 1000]);
 
 
 axes('Position',axpos(4,:));
-
-
-
-
-fluxlist = {'Q_s_h_e_l_f','Q_v_e_r_t','Q_c_a_v_i_t_y'};
+fluxlist = {'F_s_h_e_l_f','F_v_e_r_t','F_c_a_v_i_t_y'};
 thelabels = categorical(fluxlist);
 thelabels = reordercats(thelabels,fluxlist);
-thebars = [mean(hflux_mean_shelfbreak),mean(hflux_eddy_adv_shelfbreak),mean(hflux_eddy_stir_shelfbreak);
-           mean(hflux_mean_vert),mean(hflux_eddy_adv_vert),mean(hflux_eddy_stir_vert);           
-           mean(hflux_mean_icefront),mean(hflux_eddy_adv_icefront),mean(hflux_eddy_stir_icefront)];
-thestd = [ std(hflux_mean_shelfbreak),std(hflux_eddy_adv_shelfbreak),std(hflux_eddy_stir_shelfbreak);
-           std(hflux_mean_vert),std(hflux_eddy_adv_vert),std(hflux_eddy_stir_vert);
-           std(hflux_mean_icefront),std(hflux_eddy_adv_icefront),std(hflux_eddy_stir_icefront)];
+thebars = [mean(sflux_mean_shelfbreak),mean(sflux_eddy_adv_shelfbreak),mean(sflux_eddy_stir_shelfbreak);
+           mean(sflux_mean_vert),mean(sflux_eddy_adv_vert),mean(sflux_eddy_stir_vert);           
+           mean(sflux_mean_icefront),mean(sflux_eddy_adv_icefront),mean(sflux_eddy_stir_icefront)];
+thestd = [ std(sflux_mean_shelfbreak),std(sflux_eddy_adv_shelfbreak),std(sflux_eddy_stir_shelfbreak);
+           std(sflux_mean_vert),std(sflux_eddy_adv_vert),std(sflux_eddy_stir_vert);
+           std(sflux_mean_icefront),std(sflux_eddy_adv_icefront),std(sflux_eddy_stir_icefront)];
 tmp = [1 2 3];
 b2 = bar(tmp,thebars);      
 b2(1).LineStyle = '--';
@@ -481,9 +469,9 @@ b2(1).LineWidth = 1.5;
 b2(2).LineWidth = 1.5;
 b2(3).LineWidth = 1.5;
 theedgecolor = [.3 .3 .3];
-barcolors1 = 1-(1-[qshelfcolor;qvertcolor;qcavitycolor])*.75;
-barcolors2 = 1-(1-[qshelfcolor;qvertcolor;qcavitycolor])*.5;
-barcolors3 = 1-(1-[qshelfcolor;qvertcolor;qcavitycolor])*.25;
+barcolors1 = 1-(1-[fshelfcolor;fvertcolor;fcavitycolor])*.75;
+barcolors2 = 1-(1-[fshelfcolor;fvertcolor;fcavitycolor])*.5;
+barcolors3 = 1-(1-[fshelfcolor;fvertcolor;fcavitycolor])*.25;
 % b2(1).EdgeColor = theedgecolor;
 % b2(2).EdgeColor = theedgecolor;
 % b2(3).EdgeColor = theedgecolor;
@@ -507,7 +495,7 @@ end
 hold off
 set(gca,'XTickLabel',fluxlist);
 leghandle = legend('Mean flow','Eddy advection','Eddy Stirring');
-set(gca,'YLim',[-1 4]);
+set(gca,'YLim',[-300 1000]);
 
 
 
@@ -536,9 +524,9 @@ annotation('textbox',[axpos(6,1)-0.05 axpos(6,2)-0.04 0.03 0.03],'String',axlabe
 %%% loss, accompanied by time series of terms in heat budget
 axes('Position',axpos(5,:));
 tyears = startyear+times/t1year;
-plot(tyears,hflux_icefront,'LineWidth',1.5,'Color',qcavitycolor);
+plot(tyears,sflux_icefront,'LineWidth',1.5,'Color',fcavitycolor);
 hold on;
-plot(tyears,hflux_shelfbreak,'LineWidth',1.5,'Color',qshelfcolor);
+plot(tyears,sflux_shelfbreak,'LineWidth',1.5,'Color',fshelfcolor);
 clear ax;
 ax(1) = gca;
 ax(2) = axes('Position',get(ax(1),'Position'));
@@ -560,11 +548,11 @@ set(ax(2),'YLim',[34.64 34.80]);
 set(ax(2),'XTick',[]);
 set(ax,'Box','off');
 set(ax,'FontSize',fontsize);
-ylabel(ax(1),'Heat flux (TW)');
+ylabel(ax(1),'Freshwater flux (Gt/yr)');
 ylabel(ax(2),'Shelf-averaged salinity (g/kg)');
 % text(ax(2),2008,34.46,'Spin-up period','FontSize',fontsize);
 % text(ax(2),2011,34.46,'12-hourly output','FontSize',fontsize);
-ax(1).YColor = qshelfcolor;
+ax(1).YColor = fshelfcolor;
 ax(2).YColor = saltcolor;
 
 
@@ -572,9 +560,9 @@ ax(2).YColor = saltcolor;
 %%% Shade period of high coastal polynya productivity
 axes('Position',axpos(6,:));
 tyears = startyear+times/t1year;
-plot(tyears,hflux_vert,'LineWidth',1.5,'Color',qvertcolor);
+plot(tyears,sflux_vert,'LineWidth',1.5,'Color',fvertcolor);
 hold on;
-area([2011 2012],[0,4;0,4],'FaceColor','y','FaceAlpha',0.25);
+area([2011 2012],[0,2000;0,2000],'FaceColor','y','FaceAlpha',0.25);
 hold off;
 clear ax;
 ax(1) = gca;
@@ -595,12 +583,12 @@ xlabel(ax(1),'Year');
 set(ax(2),'XTick',[]);
 set(ax,'Box','off');
 set(ax,'FontSize',fontsize);
-ylabel(ax(1),'Vertical heat flux (TW)');
+ylabel(ax(1),'Vertical freshwater flux (Gt/yr)');
 ylabel(ax(2),'Eddy energy production (10^-^6 W/m^3)');
 % text(ax(2),2008,34.46,'Spin-up period','FontSize',fontsize);
 % text(ax(2),2011,34.46,'12-hourly output','FontSize',fontsize);
 ax(2).YColor = bcprodcolor;
-ax(1).YColor = qvertcolor;
+ax(1).YColor = fvertcolor;
 legend(ax(2),'Baroclinic production','Barotropic production','Location','NorthEast');
 
 
@@ -614,8 +602,8 @@ figure1 = gcf;
 
 
 % Create arrow
-annotation(figure1,'arrow',[0.343 0.269],...
-  [0.879186465082794 0.879186465082795],'Color',1-(1-qcavitycolor)*1,...
+annotation(figure1,'arrow',[0.274 0.348],...
+  [0.879186465082794 0.879186465082795],'Color',1-(1-fcavitycolor)*1,...
   'LineWidth',30,...
   'HeadWidth',60,...
   'HeadStyle','plain',...
@@ -623,8 +611,8 @@ annotation(figure1,'arrow',[0.343 0.269],...
 
 % Create textbox
 annotation(figure1,'textbox',...
-  [0.629 0.973197264218865 0.3085 0.0242980561555076],...
-  'String',{'Vertical eddy heat flux at 255m depth'},...
+  [0.59 0.973197264218865 0.3385 0.0242980561555076],...
+  'String',{'Vertical eddy freshwater flux at 255m depth'},...
   'Interpreter','latex',...
   'FontSize',16,...
   'FitBoxToText','off',...
@@ -632,14 +620,14 @@ annotation(figure1,'textbox',...
 
 % Create arrow
 annotation(figure1,'arrow',[0.471 0.408000000000002],...
-  [0.92 0.920188984881213],'Color',1-(1-qshelfcolor)*1,'LineWidth',30,...
+  [0.92 0.920188984881213],'Color',1-(1-fshelfcolor)*1,'LineWidth',30,...
   'HeadWidth',60,...
   'HeadStyle','plain',...
   'HeadLength',35);
 
 % Create arrow
 annotation(figure1,'arrow',[0.373 0.373],...
-  [0.932500000000001 0.983342332613395],'Color',1-(1-qvertcolor)*1,...
+  [0.932500000000001 0.983342332613395],'Color',1-(1-fvertcolor)*1,...
   'LineWidth',30,...
   'HeadWidth',60,...
   'HeadStyle','plain',...
@@ -648,31 +636,31 @@ annotation(figure1,'arrow',[0.373 0.373],...
 % Create textbox
 annotation(figure1,'textbox',...
   [0.377 0.975697264218866 0.0499999999999997 0.0242980561555076],...
-  'String','$Q_\mathrm{vert}$',...
+  'String','$F_\mathrm{vert}$',...
   'Interpreter','latex',...
   'FontSize',16,...
   'FitBoxToText','off',...
   'EdgeColor','none',...
-   'Color',qvertcolor);
+   'Color',fvertcolor);
 
 % Create textbox
 annotation(figure1,'textbox',...
   [0.38 0.884863930885532 0.0499999999999997 0.0242980561555076],...
-  'String','$Q_\mathrm{shelf}$',...
+  'String','$F_\mathrm{shelf}$',...
   'Interpreter','latex',...
   'FontSize',16,...
   'FitBoxToText','off',...
   'EdgeColor','none',...
-   'Color',qshelfcolor);
+   'Color',fshelfcolor);
 
 % Create textbox
 annotation(figure1,'textbox',...
   [0.24 0.848197264218867 0.0499999999999998 0.0242980561555076],...
-  'String','$Q_\mathrm{cavity}$',...
+  'String','$F_\mathrm{cavity}$',...
   'Interpreter','latex',...
   'FontSize',16,...
   'FitBoxToText','off',...
   'EdgeColor','none',...
-   'Color',qcavitycolor);
+   'Color',fcavitycolor);
 
 

@@ -7,7 +7,7 @@
 %%% Load experiment
 expdir = '../experiments';
 expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-loadexp;
+% loadexp;
 
 %%% Options (see calcTSfluxes)
 deform_cavity = false;
@@ -319,7 +319,7 @@ set(get(ax2,'XLabel'),'String','Approx. latitude');
 
 
 %%% Add panel labels
-% annotation('textbox',[axpos(1,1)-0.04 axpos(1,2)-0.05 0.03 0.03],'String',axlabels{1},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
-% annotation('textbox',[axpos(2,1)-0.04 axpos(2,2)-0.05 0.03 0.03],'String',axlabels{2},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
-% annotation('textbox',[axpos(3,1)-0.04 axpos(3,2)-0.05 0.03 0.03],'String',axlabels{3},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
-% annotation('textbox',[axpos(4,1)-0.04 axpos(4,2)-0.05 0.03 0.03],'String',axlabels{4},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
+annotation('textbox',[axpos(1,1)+0.01 axpos(1,2)+0.04 0.03 0.03],'String',axlabels{1},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
+annotation('textbox',[axpos(2,1)+0.01 axpos(2,2)+0.04 0.03 0.03],'String',axlabels{2},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
+annotation('textbox',[axpos(3,1)-0.06 axpos(3,2)-0.05 0.03 0.03],'String',axlabels{3},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
+annotation('textbox',[axpos(4,1)-0.06 axpos(4,2)-0.05 0.03 0.03],'String',axlabels{4},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');

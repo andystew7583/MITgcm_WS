@@ -45,7 +45,7 @@ deform_cavity = false;
 use_PsiBT = false;
 
 %%% Set true to use depth-averaged temperature as the coordinate system
-use_meanT = true;
+use_meanT = false;
 
 %%% Define coordinate system for integrating to compute heatfunction
 if (use_PsiBT)

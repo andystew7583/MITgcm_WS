@@ -29,7 +29,7 @@ use_PsiBT = false;
 
 
 %%% Set true to use depth-averaged temperature as the coordinate system
-use_meanT = false;
+use_meanT = true;
 
 %%% Set true to decompose eddy fluxes
 calc_eddy_decomp = false;

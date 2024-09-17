@@ -8,7 +8,7 @@
 %%% Options
 expdir = '../experiments';
 expname = 'hires_seq_onetwelfth_RTOPO2';
-loadexp;
+% loadexp;
 
 
 

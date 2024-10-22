@@ -5,7 +5,7 @@
 %%%
 
 %%% Choose resolution
-res_fac = 48;
+res_fac = 30;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% MPI parameters %%%%%
@@ -44,6 +44,11 @@ switch (res_fac)
     nPy_max = 48; %%% max. no. of processors in y-direction
     nPx = 18; %%% no. of processors in x-direction
     nPy = 12; %%% no. of processors in y-direction
+  case 30
+    nPx_max = 36; %%% max. no. of processors in x-direction
+    nPy_max = 48; %%% max. no. of processors in y-direction
+    nPx = 12; %%% no. of processors in x-direction
+    nPy = 6; %%% no. of processors in y-direction
   case 48
     nPx_max = 144; %%% max. no. of processors in x-direction
     nPy_max = 96; %%% max. no. of processors in y-direction
@@ -79,6 +84,8 @@ switch (res_fac)
     grid_name = 'one_twelfth';
   case 24
     grid_name = 'one_twentyfourth';
+  case 30
+    grid_name = 'one_thirtieth';
   case 48
     grid_name = 'one_fortyeighth';
 end
@@ -106,6 +113,12 @@ switch (res_fac)
     %%% Southern WS subdomain
     xmax = -20;
     ymax = -70;
+  case 30    
+    %%% Filchner overflow domain
+    xmax = -25;
+    ymax = -70;
+    xmin = -45;
+    ymin = -75;
   case 48
     %%% Southern WS subdomain
     xmax = -20;
@@ -116,8 +129,8 @@ switch (res_fac)
     ymax = -64;
 end
 
-EXF_xmin = xmin;
-EXF_ymin = ymin;
+EXF_xmin = -83;
+EXF_ymin = -83.5;
 EXF_xmax = 21;
 EXF_ymax = -64;
 
@@ -145,6 +158,9 @@ m1km = 1000;
 %%% lower-res data required for 2007
 switch (res_fac)
   case 24
+    start_year = 2008;
+    endyr = 2014;
+  case 30
     start_year = 2008;
     endyr = 2014;
   case 48

@@ -6,18 +6,18 @@
 
 %%% Options
 expdir = '../experiments';
-expname = 'hires_seq_onethird_notides_RTOPO2';
-tmin = 18.05;
-tmax = 27.05;
+% expname = 'hires_seq_onethird_notides_RTOPO2';
+% tmin = 18.05;
+% tmax = 27.05;
 % expname = 'hires_seq_onesixth_notides_RTOPO2';
 % tmin = 9.05;
 % tmax = 18.05;
 % expname = 'hires_seq_onetwelfth_notides_RTOPO2';
 % tmin = 1.05;
 % tmax = 9.05;
-% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-% tmin = 1.01;
-% tmax = 7.01;
+expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+tmin = 1.01;
+tmax = 7.01;
 
 %%% Load experiment
 loadexp;

@@ -15,7 +15,7 @@ mac_plots = false;
 
 %%% Select diagnostic variable to animate
 % diagnum = 75;
-diagnum = 20;
+diagnum = 2;
 % diagnum = 7;
 outfname =diag_fileNames{1,diagnum};
 
@@ -55,7 +55,7 @@ yzlayer = 600;
 
 
 %%% Specify color range
-set_crange = 01
+set_crange = 1;
 
 
 % crange = [-2.2 -1.6]; %/%% Filchner temp
@@ -67,8 +67,8 @@ set_crange = 01
 % crange = [-1 1]*1e-4; %%% For freshwater fluxes
 % crange =[-100 100]; %%% Qnet
 % crange = [-300 300]; %%% swnet
-% crange = [0 3];
-crange = [-0.2 0.2];
+crange = [0 3];
+% crange = [-0.2 0.2];
 % crange = [0.2 1.2]; %% SSH
 
 % cmap = pmkmp(100,'Swtth');
@@ -77,8 +77,8 @@ crange = [-0.2 0.2];
 % cmap = cmocean('ice',100);
 % cmap = haxby;
 % cmap = jet(200);
-cmap = redblue(100);
-% cmap = cmocean('amp',100);
+% cmap = redblue(100);
+cmap = cmocean('amp',100);
 
 % titlestr = 'Bottom salinity (g/kg)';
 % titlestr = 'Sea ice concentration';
@@ -207,7 +207,7 @@ Amax = [];
 % for n = 34
 % for n=48:length(dumpIters)
 % for n=2:length(dumpIters)
-for n = 19
+for n =700:length(dumpIters)
   dumpIters(n);
     
   t = dumpIters(n)*deltaT/t1year;

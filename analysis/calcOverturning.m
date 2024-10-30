@@ -16,12 +16,12 @@ expdir = '../experiments';
 % expname = 'hires_seq_onetwelfth_RTOPO2';
 % tmin = 1.05;
 % tmax = 9.05;
-expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-tmin = 1.01;
-tmax = 7.01;
-% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2_SSH';
-% tmin = 0.01;
-% tmax = 1.01;
+% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+% tmin = 1.01;
+% tmax = 7.01;
+expname = 'hires_seq_onetwentyfourth_notides_RTOPO2_SSH';
+tmin = 0.01;
+tmax = 1.01;
 
 %%% Load experiment
 loadexp;
@@ -98,7 +98,7 @@ end
 
 %%% Frequency of diagnostic output - should match that specified in
 %%% data.diagnostics.
-dumpFreq = abs(diag_frequency(1));
+dumpFreq = abs(diag_frequency(end));
 nDumps = round(endTime/dumpFreq);
 dumpIters = round((1:nDumps)*dumpFreq/deltaT);
 dumpIters = dumpIters(dumpIters > nIter0);

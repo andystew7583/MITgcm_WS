@@ -32,9 +32,10 @@ hFacC_lo = rdmds(fullfile(inputdir,'hFacC'));
 % outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onetwelfth/results';
 % outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onethird_RTOPO2/results';
 % outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onetwelfth_RTOPO2/results';
-outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onetwentyfourth_notides_RTOPO2/results';
+% outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onetwentyfourth_notides_RTOPO2/results';
 % outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onetwentyfourth_RTOPO2/results';
-% outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onetwelfth_notides_RTOPO2/results';
+% outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onetwelfth_notides_RTOPO2/results'
+outputdir = '/data3/MITgcm_WS/experiments/hires_nest_onethirtieth_notides_RTOPO2/results';
 
 % expiter_in = 1183320;
 % expiter_in = 2366640;

@@ -221,13 +221,18 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   SHELFICEtopo(:,1) = 0;
   SHELFICEtopo(1,:) = 0;
   
-  %%% Eliminate any spurious openings at the northern boundary
-  idx_obcs_n = find(h(:,end)>=0,1,'last');
-  h(1:idx_obcs_n,end) = 0;
   
-  %%% Eliminate any spurious openings at the northern boundary
-  idx_obcs_e = find(SHELFICEtopo(end,:)==h(end,:),1,'last')
-  SHELFICEtopo(end,1:idx_obcs_e) = h(end,1:idx_obcs_e);
+  if (~use_OB_SW)
+    
+    %%% Eliminate any spurious openings at the northern boundary
+    idx_obcs_n = find(h(:,end)>=0,1,'last');
+    h(1:idx_obcs_n,end) = 0;  
+  
+    %%% Eliminate any spurious openings at the northern boundary
+    idx_obcs_e = find(SHELFICEtopo(end,:)==h(end,:),1,'last');
+    SHELFICEtopo(end,1:idx_obcs_e) = h(end,1:idx_obcs_e);
+    
+  end 
   
   figure(33);
   plot(ymc,h(end,:));
@@ -236,13 +241,11 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   hold off;
  
   %%% Overwrite bathymetry data file
-  writeDataset(h,fullfile(inputpath,bathyFile),ieee,prec);
-  clear h
+  writeDataset(h,fullfile(inputpath,bathyFile),ieee,prec)
 
   
   %%% Overwrite ice draft data file  
   writeDataset(SHELFICEtopo,fullfile(inputpath,SHELFICEtopoFile),ieee,prec);
-  clear SHELFICEtopo
   
   
   %%%%%%%%%%%%%%%%%%%%%%%%
@@ -559,17 +562,30 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   
     useOrlanskiNorth = false;
 
-    OB_Ieast = -1*ones(1,Ny);
-%     OB_Iwest = 1*ones(1,Ny);
-    OB_Jnorth = -1*ones(1,Nx);
-  OB_Jnorth(1:idx_obcs_n) = 0;
-  OB_Ieast(1:idx_obcs_e) = 0;
+  OB_Ieast = -1*ones(1,Ny);
+  OB_Jnorth = -1*ones(1,Nx);
+  if (use_OB_SW)
+    OB_Iwest = 1*ones(1,Ny);
+    OB_Isouth = 1*ones(1,Ny);
+    OB_Ieast(SHELFICEtopo(end,:)==h(end,:)) = 0;
+    OB_Iwest(SHELFICEtopo(1,:)==h(1,:)) = 0;
+    OB_Jnorth(SHELFICEtopo(:,end)==h(:,end)) = 0;
+    OB_Jsouth(SHELFICEtopo(:,1)==h(:,1)) = 0;
+  else
+    OB_Jnorth(1:idx_obcs_n) = 0;
+    OB_Ieast(1:idx_obcs_e) = 0;
+  end
+  
+    
 
      
   obcs_parm01.addParm('useOrlanskiNorth',useOrlanskiNorth,PARM_BOOL);
   obcs_parm01.addParm('OB_Jnorth',OB_Jnorth,PARM_INTS);    
   obcs_parm01.addParm('OB_Ieast',OB_Ieast,PARM_INTS);    
-%   obcs_parm01.addParm('OB_Iwest',OB_Iwest,PARM_INTS);    
+  if (use_OB_SW)
+    obcs_parm01.addParm('OB_Iwest',OB_Iwest,PARM_INTS);    
+    obcs_parm01.addParm('OB_Jsouth',OB_Jsouth,PARM_INTS);    
+  end
 
 
 
@@ -584,50 +600,62 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
     useOBCSprescribe = true;
     
     
-    OBNtFile = 'OBNtFile.bin';
-    OBEtFile = 'OBEtFile.bin';
-%     OBWtFile = 'OBWtFile.bin';
-
-    OBNsFile = 'OBNsFile.bin';
-    OBEsFile = 'OBEsFile.bin';
-%     OBWsFile = 'OBWsFile.bin';
-    
-    OBNuFile = 'OBNuFile.bin';
-    OBEuFile = 'OBEuFile.bin';
-%     OBWuFile = 'OBWuFile.bin';
-
-    OBNvFile = 'OBNvFile.bin';
-    OBEvFile = 'OBEvFile.bin';
-%     OBWvFile = 'OBWvFile.bin';
-
-    OBNetaFile = 'OBNetaFile.bin';
-    OBEetaFile = 'OBEetaFile.bin';
-%     OBWetaFile = 'OBWetaFile.bin';
-
-    OBNaFile = 'OBNaFile.bin';
-    OBEaFile = 'OBEaFile.bin';
-%     OBWaFile = 'OBWaFile.bin';
-
-  fid = fopen(fullfile(inputpath,OBNaFile),'r','b');
-  OBNa = fread(fid,[Nx 12],'real*8'); 
-  fclose(fid);
-
-
-    OBNhFile = 'OBNhFile.bin';
-    OBEhFile = 'OBEhFile.bin';
-%     OBWhFile = 'OBWhFile.bin';
-
-    OBNsnFile = 'OBNsnFile.bin';
-    OBEsnFile = 'OBEsnFile.bin';
-%     OBWsnFile = 'OBWsnFile.bin';
-
-    OBNuiceFile = 'OBNuiceFile.bin';
-    OBEuiceFile = 'OBEuiceFile.bin';
-% %     OBWuiceFile = 'OBWuiceFile.bin';
+%     OBNtFile = 'OBNtFile.bin';
+%     OBEtFile = 'OBEtFile.bin';
+%     if (use_OB_SW)
+%       OBWtFile = 'OBWtFile.bin';
+%       OBStFile = 'OBStFile.bin';
+%     end
 % 
-    OBNviceFile = 'OBNviceFile.bin';
-    OBEviceFile = 'OBEviceFile.bin';
-%     OBWviceFile = 'OBWviceFile.bin';
+%     OBNsFile = 'OBNsFile.bin';
+%     OBEsFile = 'OBEsFile.bin';
+%     if (use_OB_SW)
+%       OBWsFile = 'OBWsFile.bin';
+%       OBSsFile = 'OBSsFile.bin';
+%     end
+%     
+%     OBNuFile = 'OBNuFile.bin';
+%     OBEuFile = 'OBEuFile.bin';
+%     if (use_OB_SW)
+%       OBWuFile = 'OBWuFile.bin';
+%       OBSuFile = 'OBSuFile.bin';
+%     end
+% 
+%     OBNvFile = 'OBNvFile.bin';
+%     OBEvFile = 'OBEvFile.bin';
+%     if (use_OB_SW)
+%       OBWvFile = 'OBWvFile.bin';
+%       OBSvFile = 'OBSvFile.bin';
+%     end
+% 
+%     OBNetaFile = 'OBNetaFile.bin';
+%     OBEetaFile = 'OBEetaFile.bin';
+% %     OBWetaFile = 'OBWetaFile.bin';
+% 
+%     OBNaFile = 'OBNaFile.bin';
+%     OBEaFile = 'OBEaFile.bin';
+% %     OBWaFile = 'OBWaFile.bin';
+
+%   fid = fopen(fullfile(inputpath,OBNaFile),'r','b');
+%   OBNa = fread(fid,[Nx 12],'real*8'); 
+%   fclose(fid);
+
+
+%     OBNhFile = 'OBNhFile.bin';
+%     OBEhFile = 'OBEhFile.bin';
+% %     OBWhFile = 'OBWhFile.bin';
+% 
+%     OBNsnFile = 'OBNsnFile.bin';
+%     OBEsnFile = 'OBEsnFile.bin';
+% %     OBWsnFile = 'OBWsnFile.bin';
+% 
+%     OBNuiceFile = 'OBNuiceFile.bin';
+%     OBEuiceFile = 'OBEuiceFile.bin';
+% % %     OBWuiceFile = 'OBWuiceFile.bin';
+% % 
+%     OBNviceFile = 'OBNviceFile.bin';
+%     OBEviceFile = 'OBEviceFile.bin';
+% %     OBWviceFile = 'OBWviceFile.bin';
 
 
   obcs_parm01.addParm('useOBCSsponge',useOBCSsponge,PARM_BOOL);
@@ -636,43 +664,75 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
 
   obcs_parm01.addParm('OBNtFile',OBNtFile,PARM_STR);  
   obcs_parm01.addParm('OBEtFile',OBEtFile,PARM_STR);  
-%   obcs_parm01.addParm('OBWtFile',OBWtFile,PARM_STR);  
+  if (use_OB_SW)
+    obcs_parm01.addParm('OBWtFile',OBWtFile,PARM_STR);  
+    obcs_parm01.addParm('OBStFile',OBStFile,PARM_STR);  
+  end
 
   obcs_parm01.addParm('OBNsFile',OBNsFile,PARM_STR);  
   obcs_parm01.addParm('OBEsFile',OBEsFile,PARM_STR);  
-%   obcs_parm01.addParm('OBWsFile',OBWsFile,PARM_STR);
+	if (use_OB_SW)
+    obcs_parm01.addParm('OBWsFile',OBWsFile,PARM_STR);  
+    obcs_parm01.addParm('OBSsFile',OBSsFile,PARM_STR);  
+  end
 
   obcs_parm01.addParm('OBNuFile',OBNuFile,PARM_STR);  
   obcs_parm01.addParm('OBEuFile',OBEuFile,PARM_STR);  
-%   obcs_parm01.addParm('OBWuFile',OBWuFile,PARM_STR);
+  if (use_OB_SW)
+    obcs_parm01.addParm('OBWuFile',OBWuFile,PARM_STR);  
+    obcs_parm01.addParm('OBSuFile',OBSuFile,PARM_STR);  
+  end
 
   obcs_parm01.addParm('OBNvFile',OBNvFile,PARM_STR);  
   obcs_parm01.addParm('OBEvFile',OBEvFile,PARM_STR);  
-%   obcs_parm01.addParm('OBWvFile',OBWvFile,PARM_STR);
+  if (use_OB_SW)
+    obcs_parm01.addParm('OBWvFile',OBWvFile,PARM_STR);  
+    obcs_parm01.addParm('OBSvFile',OBSvFile,PARM_STR);  
+  end
 
-%   obcs_parm01.addParm('OBNetaFile',OBNetaFile,PARM_STR);  
-%   obcs_parm01.addParm('OBEetaFile',OBEetaFile,PARM_STR);  
-%   obcs_parm01.addParm('OBWetaFile',OBWetaFile,PARM_STR);
+  if (use_OB_eta)
+    obcs_parm01.addParm('OBNetaFile',OBNetaFile,PARM_STR);  
+    obcs_parm01.addParm('OBEetaFile',OBEetaFile,PARM_STR);  
+    if (use_OB_SW)
+      obcs_parm01.addParm('OBSetaFile',OBSetaFile,PARM_STR);
+      obcs_parm01.addParm('OBWetaFile',OBWetaFile,PARM_STR);
+    end
+  end
 
   obcs_parm01.addParm('OBNaFile',OBNaFile,PARM_STR);  
   obcs_parm01.addParm('OBEaFile',OBEaFile,PARM_STR);  
-%   obcs_parm01.addParm('OBWaFile',OBWaFile,PARM_STR);
+  if (use_OB_SW)
+    obcs_parm01.addParm('OBWaFile',OBWaFile,PARM_STR);  
+    obcs_parm01.addParm('OBSaFile',OBSaFile,PARM_STR);  
+  end
 
   obcs_parm01.addParm('OBNhFile',OBNhFile,PARM_STR);  
   obcs_parm01.addParm('OBEhFile',OBEhFile,PARM_STR);  
-%   obcs_parm01.addParm('OBWhFile',OBWhFile,PARM_STR);
+  if (use_OB_SW)
+    obcs_parm01.addParm('OBWhFile',OBWhFile,PARM_STR);  
+    obcs_parm01.addParm('OBShFile',OBShFile,PARM_STR);  
+  end
 
   obcs_parm01.addParm('OBNsnFile',OBNsnFile,PARM_STR);  
   obcs_parm01.addParm('OBEsnFile',OBEsnFile,PARM_STR);  
-%   obcs_parm01.addParm('OBWsnFile',OBWsnFile,PARM_STR);
+  if (use_OB_SW)
+    obcs_parm01.addParm('OBWsnFile',OBWsnFile,PARM_STR);  
+    obcs_parm01.addParm('OBSsnFile',OBSsnFile,PARM_STR);  
+  end
 % 
   obcs_parm01.addParm('OBNuiceFile',OBNuiceFile,PARM_STR);  
   obcs_parm01.addParm('OBEuiceFile',OBEuiceFile,PARM_STR);  
-%   obcs_parm01.addParm('OBWuiceFile',OBWuiceFile,PARM_STR);
+  if (use_OB_SW)
+    obcs_parm01.addParm('OBWuiceFile',OBWuiceFile,PARM_STR);  
+    obcs_parm01.addParm('OBSuiceFile',OBSuiceFile,PARM_STR);  
+  end
 
   obcs_parm01.addParm('OBNviceFile',OBNviceFile,PARM_STR);  
   obcs_parm01.addParm('OBEviceFile',OBEviceFile,PARM_STR);  
-%   obcs_parm01.addParm('OBWviceFile',OBWviceFile,PARM_STR);
+  if (use_OB_SW)
+    obcs_parm01.addParm('OBWviceFile',OBWviceFile,PARM_STR);  
+    obcs_parm01.addParm('OBSviceFile',OBSviceFile,PARM_STR);  
+  end
 
 
    
@@ -681,14 +741,19 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   useOBCSbalance = true;
   OBCS_balanceFacN = 1; 
   OBCS_balanceFacE = 0;
-%   OBCS_balanceFacS = 0;
-%   OBCS_balanceFacW = -1;
+  if (use_OB_SW)
+    OBCS_balanceFacN = 0; 
+    OBCS_balanceFacE = 0;
+    OBCS_balanceFacS = 0;
+    OBCS_balanceFacW = 1;
+  end
   obcs_parm01.addParm('useOBCSbalance',useOBCSbalance,PARM_BOOL);  
   obcs_parm01.addParm('OBCS_balanceFacN',OBCS_balanceFacN,PARM_REAL);  
   obcs_parm01.addParm('OBCS_balanceFacE',OBCS_balanceFacE,PARM_REAL);  
-%   obcs_parm01.addParm('OBCS_balanceFacS',OBCS_balanceFacS,PARM_REAL);  
-%   obcs_parm01.addParm('OBCS_balanceFacW',OBCS_balanceFacW,PARM_REAL);  
-  
+  if (use_OB_SW)
+    obcs_parm01.addParm('OBCS_balanceFacS',OBCS_balanceFacS,PARM_REAL);  
+    obcs_parm01.addParm('OBCS_balanceFacW',OBCS_balanceFacW,PARM_REAL);  
+  end  
 
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %%%%% ORLANSKI OPTIONS (OBCS_PARM02) %%%%%
@@ -742,8 +807,12 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   if (res_fac == 24)
     spongethickness = 48;
   else
-    spongethickness = round(10*res_fac/3);
-%     spongethickness = 5;
+    if (res_fac == 30)
+      spongethickness = 30;
+    else
+      spongethickness = round(10*res_fac/3);
+  %     spongethickness = 5;
+    end
   end
 
  
@@ -1605,11 +1674,11 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   
   diag_fields_inst = ...
   {...      
-  %'ETAN'...
+    'ETAN', ...
+    'SIheff','SIarea','SIhsnow', ... %%ice diagnostics
 %     'UVEL','VVEL','WVEL'...      
 %     'THETA' ... 
 %     'SALT','ETAN' ... 
-%     'SIheff','SIarea' ... %%ice diagnostics
 %     'SIuice','SIvice' ...
 %     'PHIBOT','oceFWflx','oceSflux','oceQnet'...
 %     'SHIfwFlx','SHIhtFlx','SHIUDrag','SHIVDrag' ...
@@ -1620,7 +1689,8 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
 %    diag_freq_inst = .0417*t1day;
 %   diag_freq_inst = 30*t1day;
 %   diag_freq_inst = 10*deltaT;
-  diag_freq_inst = t1day/24;
+  diag_freq_inst = t1day/2;
+%   diag_freq_inst = t1day/24;
   diag_phase_inst = 0;
   
   for n=1:numdiags_inst    

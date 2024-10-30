@@ -44,8 +44,16 @@ Nt_obcs = length(idx_obcs);
 %%% Find slices from which to extract data from low-res run
 yidx_N = find(YC_lo(1,:)>ymax,1,'first');
 xidx_E = find(XC_lo(:,1)>xmax,1,'first');
+if (use_OB_SW)
+  yidx_S = find(YC_lo(1,:)<ymin,1,'last');
+  xidx_W = find(XC_lo(:,1)<xmin,1,'last');
+end
 landidx_N = find(hFacC_lo(:,yidx_N,1)==0);
 landidx_E = find(hFacC_lo(xidx_E,:,1)==0);
+if (use_OB_SW)
+  landidx_S = find(hFacC_lo(:,yidx_S,1)==0);
+  landidx_W = find(hFacC_lo(xidx_W,:,1)==0);
+end
 
 %%% Interpolation grids
 [XX_xz,ZZ_xz] = meshgrid(xmc,mrc);
@@ -58,8 +66,16 @@ vars_2D = {'THETA','SALT','UVEL','VVEL'};
 vars_1D = {'ETAN','SIuice','SIvice','SIarea','SIheff','SIhsnow','SIhsalt'};
 obcsFilesN_2D = {OBNtFile,OBNsFile,OBNuFile,OBNvFile};
 obcsFilesE_2D = {OBEtFile,OBEsFile,OBEuFile,OBEvFile};
+if (use_OB_SW)
+  obcsFilesS_2D = {OBStFile,OBSsFile,OBSuFile,OBSvFile};
+  obcsFilesW_2D = {OBWtFile,OBWsFile,OBWuFile,OBWvFile};
+end
 obcsFilesN_1D = {OBNetaFile,OBNuiceFile,OBNviceFile,OBNaFile,OBNhFile,OBNsnFile,OBNslFile};
 obcsFilesE_1D = {OBEetaFile,OBEuiceFile,OBEviceFile,OBEaFile,OBEhFile,OBEsnFile,OBEslFile};
+if (use_OB_SW)
+  obcsFilesS_1D = {OBSetaFile,OBSuiceFile,OBSviceFile,OBSaFile,OBShFile,OBSsnFile,OBSslFile};
+  obcsFilesW_1D = {OBWetaFile,OBWuiceFile,OBWviceFile,OBWaFile,OBWhFile,OBWsnFile,OBWslFile};
+end
 
 %%% Loop over 2D OB variables
 for m = 1:length(vars_2D)
@@ -69,6 +85,10 @@ for m = 1:length(vars_2D)
   %%% Initialize 3D OB arrays
   OBNarray = zeros(Nx,Nr,Nt_obcs);
   OBEarray = zeros(Ny,Nr,Nt_obcs);
+  if (use_OB_SW)
+    OBSarray = zeros(Nx,Nr,Nt_obcs);
+    OBWarray = zeros(Ny,Nr,Nt_obcs);
+  end
   
   %%% Loop through snapshots and interpolate to hi-res model grid
   for n = 1:Nt_obcs
@@ -80,12 +100,22 @@ for m = 1:length(vars_2D)
     tmpE = squeeze(tmp(xidx_E,:,:));
     OBNarray(:,:,n) = interpBdyData2(tmpN,XX_xz_lo,ZZ_xz_lo,XX_xz,ZZ_xz);    
     OBEarray(:,:,n) = interpBdyData2(tmpE,YY_yz_lo,ZZ_yz_lo,YY_yz,ZZ_yz);    
+    if (use_OB_SW)
+      tmpS = squeeze(tmp(:,yidx_S,:));
+      tmpW = squeeze(tmp(xidx_W,:,:));
+      OBSarray(:,:,n) = interpBdyData2(tmpS,XX_xz_lo,ZZ_xz_lo,XX_xz,ZZ_xz);    
+      OBWarray(:,:,n) = interpBdyData2(tmpW,YY_yz_lo,ZZ_yz_lo,YY_yz,ZZ_yz);    
+    end
     
   end
   
   %%% Write to OB files
   writeDataset(OBNarray,fullfile(inputconfigdir,obcsFilesN_2D{m}),ieee,prec);
   writeDataset(OBEarray,fullfile(inputconfigdir,obcsFilesE_2D{m}),ieee,prec);
+  if (use_OB_SW)
+    writeDataset(OBSarray,fullfile(inputconfigdir,obcsFilesS_2D{m}),ieee,prec);
+    writeDataset(OBWarray,fullfile(inputconfigdir,obcsFilesW_2D{m}),ieee,prec);
+  end
   
 end
 
@@ -97,6 +127,10 @@ for m = 1:length(vars_1D)
   %%% Initialize 2D OB arrays
   OBNarray = zeros(Nx,Nt_obcs);
   OBEarray = zeros(Ny,Nt_obcs);
+  if (use_OB_SW)
+    OBSarray = zeros(Nx,Nt_obcs);
+    OBWarray = zeros(Ny,Nt_obcs);
+  end
   
   %%% Loop through snapshots and interpolate to hi-res model grid
   for n = 1:Nt_obcs
@@ -108,12 +142,22 @@ for m = 1:length(vars_1D)
     tmpE = squeeze(tmp(xidx_E,:));
     OBNarray(:,n) = interpBdyData1(tmpN,XC_lo(:,1),xmc,landidx_N);    
     OBEarray(:,n) = interpBdyData1(tmpE,YC_lo(1,:),ymc,landidx_E);    
+    if (use_OB_SW)
+      tmpS = squeeze(tmp(:,yidx_S));
+      tmpW = squeeze(tmp(xidx_W,:));
+      OBSarray(:,n) = interpBdyData1(tmpS,XC_lo(:,1),xmc,landidx_S);    
+      OBWarray(:,n) = interpBdyData1(tmpW,YC_lo(1,:),ymc,landidx_W);    
+    end
     
   end
   
   %%% Write to OB files
   writeDataset(OBNarray,fullfile(inputconfigdir,obcsFilesN_1D{m}),ieee,prec);
   writeDataset(OBEarray,fullfile(inputconfigdir,obcsFilesE_1D{m}),ieee,prec);
+  if (use_OB_SW)
+    writeDataset(OBSarray,fullfile(inputconfigdir,obcsFilesS_1D{m}),ieee,prec);
+    writeDataset(OBWarray,fullfile(inputconfigdir,obcsFilesW_1D{m}),ieee,prec);
+  end
   
 end
 

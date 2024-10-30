@@ -49,6 +49,11 @@ switch (res_fac)
     nPy_max = 48; %%% max. no. of processors in y-direction
     nPx = 12; %%% no. of processors in x-direction
     nPy = 6; %%% no. of processors in y-direction
+  case 32
+    nPx_max = 36; %%% max. no. of processors in x-direction
+    nPy_max = 48; %%% max. no. of processors in y-direction
+    nPx = 12; %%% no. of processors in x-direction
+    nPy = 6; %%% no. of processors in y-direction
   case 48
     nPx_max = 144; %%% max. no. of processors in x-direction
     nPy_max = 96; %%% max. no. of processors in y-direction
@@ -74,6 +79,13 @@ FinerVerticalGrid = 0;
 %%%% which directory to use
 gendir = '/data3';
 
+%%% Set true for open southern/western boundaries
+use_OB_SW = false;
+
+%%% Set true to set SSH on boundaries (ONLY IF USING NONLINEAR FREE
+%%% SURFACE)
+use_OB_eta = false;
+
 %%% Name under which to store this grid
 switch (res_fac)
   case 3
@@ -86,6 +98,7 @@ switch (res_fac)
     grid_name = 'one_twentyfourth';
   case 30
     grid_name = 'one_thirtieth';
+    use_OB_SW = true;
   case 48
     grid_name = 'one_fortyeighth';
 end
@@ -116,8 +129,14 @@ switch (res_fac)
   case 30    
     %%% Filchner overflow domain
     xmax = -25;
-    ymax = -70;
-    xmin = -45;
+    ymax = -71;
+    xmin = -48;
+    ymin = -77;
+  case 32    
+    %%% Riiser-Larsen domain
+    xmax = -12;
+    ymax = -69;
+    xmin = -32;
     ymin = -75;
   case 48
     %%% Southern WS subdomain
@@ -136,6 +155,8 @@ EXF_ymax = -64;
 
 zmin = 0;
 zmax = -H;
+
+
 
 
 
@@ -557,46 +578,57 @@ pressure = 'apressurefile.bin';
 OBNtFile = 'OBNtFile.bin';
 OBEtFile = 'OBEtFile.bin';
 OBWtFile = 'OBWtFile.bin';
+OBStFile = 'OBStFile.bin';
 
 OBNsFile = 'OBNsFile.bin';
 OBEsFile = 'OBEsFile.bin';
 OBWsFile = 'OBWsFile.bin';
+OBSsFile = 'OBSsFile.bin';
 
 OBNuFile = 'OBNuFile.bin';
 OBEuFile = 'OBEuFile.bin';
 OBWuFile = 'OBWuFile.bin';
+OBSuFile = 'OBSuFile.bin';
 
 OBNvFile = 'OBNvFile.bin';
 OBEvFile = 'OBEvFile.bin';
 OBWvFile = 'OBWvFile.bin';
+OBSvFile = 'OBSvFile.bin';
 
 OBNetaFile = 'OBNetaFile.bin';
 OBEetaFile = 'OBEetaFile.bin';
 OBWetaFile = 'OBWetaFile.bin';
+OBSetaFile = 'OBSetaFile.bin';
 
 OBNaFile = 'OBNaFile.bin';
 OBEaFile = 'OBEaFile.bin';
 OBWaFile = 'OBWaFile.bin';
+OBSaFile = 'OBSaFile.bin';
 
 OBNhFile = 'OBNhFile.bin';
 OBEhFile = 'OBEhFile.bin';
 OBWhFile = 'OBWhFile.bin';
+OBShFile = 'OBShFile.bin';
 
 OBNsnFile = 'OBNsnFile.bin';
 OBEsnFile = 'OBEsnFile.bin';
 OBWsnFile = 'OBWsnFile.bin';
+OBSsnFile = 'OBSsnFile.bin';
 
 OBNuiceFile = 'OBNuiceFile.bin';
 OBEuiceFile = 'OBEuiceFile.bin';
 OBWuiceFile = 'OBWuiceFile.bin';
+OBSuiceFile = 'OBSuiceFile.bin';
 
 OBNviceFile = 'OBNviceFile.bin';
 OBEviceFile = 'OBEviceFile.bin';
 OBWviceFile = 'OBWviceFile.bin';
+OBSviceFile = 'OBSviceFile.bin';
 
 OBEslFile = 'OBEslFile.bin';
 OBWslFile = 'OBWslFile.bin';
 OBNslFile = 'OBNslFile.bin';
+OBSslFile = 'OBSslFile.bin';
 
 
  

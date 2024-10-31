@@ -5,7 +5,7 @@
 %%%
 
 %%% Choose resolution
-res_fac = 30;
+res_fac = 32;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% MPI parameters %%%%%
@@ -86,6 +86,12 @@ use_OB_SW = false;
 %%% SURFACE)
 use_OB_eta = false;
 
+%%% By default we have active ice shelves
+use_shelfice = true;
+
+%%% Set true if we are nested within a lower-resolution simulation
+obcs_nest = false;
+
 %%% Name under which to store this grid
 switch (res_fac)
   case 3
@@ -96,9 +102,17 @@ switch (res_fac)
     grid_name = 'one_twelfth';
   case 24
     grid_name = 'one_twentyfourth';
+    obcs_nest = true;
   case 30
     grid_name = 'one_thirtieth';
     use_OB_SW = true;
+%     use_shelfice = false;
+    obcs_nest = true;
+  case 32
+    grid_name = 'one_thirtysecond';
+    use_OB_SW = true;
+%     use_shelfice = false;
+    obcs_nest = true;
   case 48
     grid_name = 'one_fortyeighth';
 end
@@ -128,7 +142,7 @@ switch (res_fac)
     ymax = -70;
   case 30    
     %%% Filchner overflow domain
-    xmax = -25;
+    xmax = -26;
     ymax = -71;
     xmin = -48;
     ymin = -77;
@@ -184,6 +198,9 @@ switch (res_fac)
   case 30
     start_year = 2008;
     endyr = 2014;
+  case 32
+    start_year = 2008;
+    endyr = 2009;
   case 48
     start_year = 2011;
     endyr = 2012;

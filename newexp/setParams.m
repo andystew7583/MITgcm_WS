@@ -213,16 +213,25 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   
   fid = fopen(fullfile(inputpath,SHELFICEtopoFile),'r','b');
   SHELFICEtopo = fread(fid,[Nx Ny],'real*8'); 
-  fclose(fid);
-                
-  %%% Ensure ocean depth is zero at western and southern boundaries
-  h(:,1) = 0;
-  h(1,:) = 0;
-  SHELFICEtopo(:,1) = 0;
-  SHELFICEtopo(1,:) = 0;
+  fclose(fid);               
   
+%   h(:,1) = 0;
+%   h(1,:) = 0;
+%   SHELFICEtopo(:,1) = 0;
+%   SHELFICEtopo(1,:) = 0;
+% 
+%   h(:,end) = 0;
+%   h(end,:) = 0;
+%   SHELFICEtopo(:,end) = 0;
+%   SHELFICEtopo(end,:) = 0;
   
   if (~use_OB_SW)
+        
+    %%% Ensure ocean depth is zero at western and southern boundaries
+    h(:,1) = 0;
+    h(1,:) = 0;
+    SHELFICEtopo(:,1) = 0;
+    SHELFICEtopo(1,:) = 0;
     
     %%% Eliminate any spurious openings at the northern boundary
     idx_obcs_n = find(h(:,end)>=0,1,'last');
@@ -232,7 +241,13 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
     idx_obcs_e = find(SHELFICEtopo(end,:)==h(end,:),1,'last');
     SHELFICEtopo(end,1:idx_obcs_e) = h(end,1:idx_obcs_e);
     
-  end 
+  end
+  
+  %%% Remove ice shelves for F-R overflow nest
+  if (~use_shelfice)
+    h(SHELFICEtopo<0) = 0;    
+    SHELFICEtopo(SHELFICEtopo<0) = 0;
+  end
   
   figure(33);
   plot(ymc,h(end,:));
@@ -240,6 +255,13 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   plot(ymc,SHELFICEtopo(end,:));
   hold off;
  
+   
+  figure(91);
+  plot(ymc,h(1,:));
+  hold on;
+  plot(ymc,SHELFICEtopo(1,:));
+  hold off;
+  
   %%% Overwrite bathymetry data file
   writeDataset(h,fullfile(inputpath,bathyFile),ieee,prec)
 
@@ -566,7 +588,7 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   OB_Jnorth = -1*ones(1,Nx);
   if (use_OB_SW)
     OB_Iwest = 1*ones(1,Ny);
-    OB_Isouth = 1*ones(1,Ny);
+    OB_Jsouth = 1*ones(1,Ny);
     OB_Ieast(SHELFICEtopo(end,:)==h(end,:)) = 0;
     OB_Iwest(SHELFICEtopo(1,:)==h(1,:)) = 0;
     OB_Jnorth(SHELFICEtopo(:,end)==h(:,end)) = 0;
@@ -809,9 +831,13 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   else
     if (res_fac == 30)
       spongethickness = 30;
-    else
-      spongethickness = round(10*res_fac/3);
-  %     spongethickness = 5;
+    else      
+      if (res_fac == 32)
+        spongethickness = 32;
+      else
+        spongethickness = round(10*res_fac/3);
+    %     spongethickness = 5;
+      end
     end
   end
 
@@ -1113,8 +1139,8 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
  
   %%%%%%%%%%%%%%%%%%% EXF_NML_OBCS %%%%%%%%%%%%%%%%%%%%
   
-  %%% High-res configuration uses monthly means from lower-res simulations
-  if (res_fac == 24)
+  %%% Nested configuration uses monthly means from lower-res simulations
+  if (obcs_nest)
         
     obcsPeriod = round(t1month);
     obcsstartdate =  datenum([num2str(start_year),'-01-01'])-t1month/2/t1day;
@@ -1122,22 +1148,40 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
     obcsstartdate2 = datestr(obcsstartdate,'HHMMSS');
 
     EXF_NML_OBCS.addParm('obcsNstartdate1',obcsstartdate1,PARM_MISC);
-    EXF_NML_OBCS.addParm('obcsNstartdate2',obcsstartdate2,PARM_MISC);
-    
+    EXF_NML_OBCS.addParm('obcsNstartdate2',obcsstartdate2,PARM_MISC);    
     EXF_NML_OBCS.addParm('obcsEstartdate1',obcsstartdate1,PARM_MISC);
     EXF_NML_OBCS.addParm('obcsEstartdate2',obcsstartdate2,PARM_MISC);
-   
+    if (use_OB_SW)
+      EXF_NML_OBCS.addParm('obcsSstartdate1',obcsstartdate1,PARM_MISC);
+      EXF_NML_OBCS.addParm('obcsSstartdate2',obcsstartdate2,PARM_MISC);
+      EXF_NML_OBCS.addParm('obcsWstartdate1',obcsstartdate1,PARM_MISC);
+      EXF_NML_OBCS.addParm('obcsWstartdate2',obcsstartdate2,PARM_MISC);
+    end
+       
+    EXF_NML_OBCS.addParm('siobNstartdate1',obcsstartdate1,PARM_MISC);
+    EXF_NML_OBCS.addParm('siobNstartdate2',obcsstartdate2,PARM_MISC);    
     EXF_NML_OBCS.addParm('siobEstartdate1',obcsstartdate1,PARM_MISC);
     EXF_NML_OBCS.addParm('siobEstartdate2',obcsstartdate2,PARM_MISC);
+    if (use_OB_SW)
+      EXF_NML_OBCS.addParm('siobSstartdate1',obcsstartdate1,PARM_MISC);
+      EXF_NML_OBCS.addParm('siobSstartdate2',obcsstartdate2,PARM_MISC);   
+      EXF_NML_OBCS.addParm('siobWstartdate1',obcsstartdate1,PARM_MISC);
+      EXF_NML_OBCS.addParm('siobWstartdate2',obcsstartdate2,PARM_MISC);
+    end
     
-    EXF_NML_OBCS.addParm('siobNstartdate1',obcsstartdate1,PARM_MISC);
-    EXF_NML_OBCS.addParm('siobNstartdate2',obcsstartdate2,PARM_MISC);
-
     EXF_NML_OBCS.addParm('obcsNperiod',obcsPeriod,PARM_REAL);
     EXF_NML_OBCS.addParm('obcsEperiod',obcsPeriod,PARM_REAL);
-
+    if (use_OB_SW)
+      EXF_NML_OBCS.addParm('obcsSperiod',obcsPeriod,PARM_REAL);
+      EXF_NML_OBCS.addParm('obcsWperiod',obcsPeriod,PARM_REAL);
+    end
+    
     EXF_NML_OBCS.addParm('siobNperiod',obcsPeriod,PARM_REAL);
     EXF_NML_OBCS.addParm('siobEperiod',obcsPeriod,PARM_REAL);
+    if (use_OB_SW)
+      EXF_NML_OBCS.addParm('siobSperiod',obcsPeriod,PARM_REAL);
+      EXF_NML_OBCS.addParm('siobWperiod',obcsPeriod,PARM_REAL);
+    end
 
     
   else
@@ -1149,6 +1193,9 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %  obcsEstartdate1   = str2num([num2str(start_year),'0101']);
   %  obcsEstartdate2   = 000000;
    obcsEperiod       = -12;
+   
+   obcsWperiod = -12;
+   obcsSperiod = -12;
 
 
   %  siobNstartdate1   = str2num([num2str(start_year),'0101']);
@@ -1158,6 +1205,9 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %  siobEstartdate1   = str2num([num2str(start_year),'0101']);
   %  siobEstartdate2   = 000000;
    siobEperiod       = -12;
+   
+   siobWperiod = -12;
+   siobSperiod = -12;
 
 
 
@@ -1175,11 +1225,17 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
 
     EXF_NML_OBCS.addParm('obcsNperiod',obcsNperiod,PARM_REAL);
     EXF_NML_OBCS.addParm('obcsEperiod',obcsEperiod,PARM_REAL);
-  %   EXF_NML_OBCS.addParm('obcsWperiod',obcsWperiod,PARM_REAL);
+    if (use_OB_SW)
+      EXF_NML_OBCS.addParm('obcsWperiod',obcsWperiod,PARM_REAL);
+      EXF_NML_OBCS.addParm('obcsSperiod',obcsSperiod,PARM_REAL);
+    end
 
     EXF_NML_OBCS.addParm('siobNperiod',siobNperiod,PARM_REAL);
     EXF_NML_OBCS.addParm('siobEperiod',siobEperiod,PARM_REAL);
-  %   EXF_NML_OBCS.addParm('siobWperiod',siobWperiod,PARM_REAL);
+    if (use_OB_SW)
+      EXF_NML_OBCS.addParm('siobSperiod',siobSperiod,PARM_REAL);
+      EXF_NML_OBCS.addParm('siobWperiod',siobWperiod,PARM_REAL);
+    end
 
   end
 
@@ -1620,31 +1676,37 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   
   diag_fields_avg = ...
   { ...
-    'UVEL','VVEL','WVEL'...      
-    'THETA' ... 
-    'SALT','ETAN' ... 
-    'SIheff','SIarea','SIhsnow','SItices','SIhsalt' ... %%ice diagnostics
-    'SIuice','SIvice' ...
-    'oceFWflx','oceSflux','oceQnet','oceTAUX','oceTAUY','TFLUX','SFLUX'...
-    'SHIfwFlx','SHIhtFlx','SHIUDrag','SHIVDrag' ...
-    'EXFtaux','EXFtauy','EXFlwnet','EXFswnet','EXFlwdn','EXFswdn','EXFqnet','EXFhs','EXFhl','EXFevap','EXFpreci','EXFatemp' ...
-    'SIqnet','SIqsw','SIatmQnt','SItflux','SIaaflux','SIhl','SIqneto','SIqneti','SIempmr','SIatmFW','SIsnPrcp','SIactLHF','SIacSubl'
+%     'UVEL','VVEL','WVEL'...      
+%     'THETA' ... 
+%     'SALT','ETAN' ... 
+%     'SIheff','SIarea','SIhsnow','SItices','SIhsalt' ... %%ice diagnostics
+%     'SIuice','SIvice' ...
+%     'oceFWflx','oceSflux','oceQnet','oceTAUX','oceTAUY','TFLUX','SFLUX',...
+%     'EXFtaux','EXFtauy','EXFlwnet','EXFswnet','EXFlwdn','EXFswdn','EXFqnet','EXFhs','EXFhl','EXFevap','EXFpreci','EXFatemp' ...
+%     'SIqnet','SIqsw','SIatmQnt','SItflux','SIaaflux','SIhl','SIqneto','SIqneti','SIempmr','SIatmFW','SIsnPrcp','SIactLHF','SIacSubl'
   };
 
+  if (use_shelfice)
+    diag_fields_avg = {diag_fields_avg{:}, ...
+    ...
+%       'SHIfwFlx','SHIhtFlx','SHIUDrag','SHIVDrag' ...
+    };
+  end
+    
   if (use_extended_diags)
     diag_fields_avg = {diag_fields_avg{:}, ...
-      'UVELSLT','VVELSLT','WVELSLT', ... %%% Salt fluxes
-      'UVELTH','VVELTH','WVELTH', ... %%% Temperature fluxes  
-      'UVELSQ','VVELSQ','WVELSQ', ... %%% For Kinetic Energy
-      'UV_VEL_Z','WU_VEL','WV_VEL', ... %%% Momentum fluxes
-      'SALTSQ','THETASQ','THSLT' %%% Thermodynamic variances
+%       'UVELSLT','VVELSLT','WVELSLT', ... %%% Salt fluxes
+%       'UVELTH','VVELTH','WVELTH', ... %%% Temperature fluxes  
+%       'UVELSQ','VVELSQ','WVELSQ', ... %%% For Kinetic Energy
+%       'UV_VEL_Z','WU_VEL','WV_VEL', ... %%% Momentum fluxes
+%       'SALTSQ','THETASQ','THSLT' %%% Thermodynamic variances
     };
   end     
   
   if (use_layers)
     diag_fields_avg = {diag_fields_avg{:}, ...
-      'LaUH1RHO', 'LaVH1RHO', ... %%% LAYERS fluxes
-      'LaHw1RHO', 'LaHs1RHO' ... %%% LAYERS thicknesses
+%       'LaUH1RHO', 'LaVH1RHO', ... %%% LAYERS fluxes
+%       'LaHw1RHO', 'LaHs1RHO' ... %%% LAYERS thicknesses
     };
   end  
   
@@ -1672,24 +1734,37 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
     
   end
   
+%   diag_fields_inst = ...
+%   {...      
+%     'ETAN', ...
+%     'SIheff','SIarea','SIhsnow', ... %%ice diagnostics
+% %     'UVEL','VVEL','WVEL'...      
+% %     'THETA' ... 
+% %     'SALT', ... 
+% %     'SIuice','SIvice' ...
+% %     'PHIBOT','oceFWflx','oceSflux','oceQnet'...
+% %     'SHIfwFlx','SHIhtFlx','SHIUDrag','SHIVDrag' ...
+%   }; 
+
   diag_fields_inst = ...
-  {...      
-    'ETAN', ...
-    'SIheff','SIarea','SIhsnow', ... %%ice diagnostics
-%     'UVEL','VVEL','WVEL'...      
-%     'THETA' ... 
-%     'SALT','ETAN' ... 
-%     'SIuice','SIvice' ...
-%     'PHIBOT','oceFWflx','oceSflux','oceQnet'...
-%     'SHIfwFlx','SHIhtFlx','SHIUDrag','SHIVDrag' ...
-  }; 
+  { ...
+    'UVEL','VVEL','WVEL'...      
+    'THETA' ... 
+    'SALT','ETAN' ... 
+    'SIheff','SIarea','SIhsnow','SItices','SIhsalt' ... %%ice diagnostics
+    'SIuice','SIvice' ...
+    'oceFWflx','oceSflux','oceQnet','oceTAUX','oceTAUY','TFLUX','SFLUX',...
+    'EXFtaux','EXFtauy','EXFlwnet','EXFswnet','EXFlwdn','EXFswdn','EXFqnet','EXFhs','EXFhl','EXFevap','EXFpreci','EXFatemp' ...
+    'SIqnet','SIqsw','SIatmQnt','SItflux','SIaaflux','SIhl','SIqneto','SIqneti','SIempmr','SIatmFW','SIsnPrcp','SIactLHF','SIacSubl'
+  };
   
   numdiags_inst = length(diag_fields_inst);    
 %   diag_freq_inst = 0.1*t1year;
 %    diag_freq_inst = .0417*t1day;
 %   diag_freq_inst = 30*t1day;
 %   diag_freq_inst = 10*deltaT;
-  diag_freq_inst = t1day/2;
+  diag_freq_inst = t1day;
+%   diag_freq_inst = t1day/2;
 %   diag_freq_inst = t1day/24;
   diag_phase_inst = 0;
   
@@ -1747,7 +1822,7 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   packages.addParm('useEXF',true,PARM_BOOL);        
   packages.addParm('useCAL',true,PARM_BOOL);         
   packages.addParm('useSEAICE',true,PARM_BOOL);      
-  packages.addParm('useSHELFICE',true,PARM_BOOL);      
+  packages.addParm('useSHELFICE',use_shelfice,PARM_BOOL);      
   packages.addParm('useFRAZIL',false,PARM_BOOL);        
   packages.addParm('useLayers',use_layers,PARM_BOOL); 
   packages.addParm('useBBL',false,PARM_BOOL); 

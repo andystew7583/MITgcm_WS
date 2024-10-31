@@ -17,7 +17,8 @@ mac_plots = false;
 % diagnum = 75;
 diagnum = 2;
 % diagnum = 7;
-outfname =diag_fileNames{1,diagnum};
+% outfname =diag_fileNames{1,diagnum};
+outfname = 'Eta';
 
 %%% Data index in the output data files
 outfidx = 1;
@@ -55,7 +56,7 @@ yzlayer = 600;
 
 
 %%% Specify color range
-set_crange = 1;
+set_crange = 0;
 
 
 % crange = [-2.2 -1.6]; %/%% Filchner temp
@@ -67,8 +68,8 @@ set_crange = 1;
 % crange = [-1 1]*1e-4; %%% For freshwater fluxes
 % crange =[-100 100]; %%% Qnet
 % crange = [-300 300]; %%% swnet
-crange = [0 3];
-% crange = [-0.2 0.2];
+% crange = [0 3];
+crange = [-0.2 0.2];
 % crange = [0.2 1.2]; %% SSH
 
 % cmap = pmkmp(100,'Swtth');
@@ -77,8 +78,8 @@ crange = [0 3];
 % cmap = cmocean('ice',100);
 % cmap = haxby;
 % cmap = jet(200);
-% cmap = redblue(100);
-cmap = cmocean('amp',100);
+cmap = redblue(100);
+% cmap = cmocean('amp',100);
 
 % titlestr = 'Bottom salinity (g/kg)';
 % titlestr = 'Sea ice concentration';
@@ -93,12 +94,16 @@ years = 2007:1:2015;
 % nIter0 = 1278720;
 % deltaT = 200
 % nIter0 = 587520;
-% nIter0 = 394509; %%% For 1/24 run with tides
-dumpFreq = abs(diag_frequency(diagnum));
-nDumps = round(endTime/dumpFreq);
-dumpIters = round((1:nDumps)*dumpFreq/deltaT);
-dumpIters = dumpIters(dumpIters > nIter0);
+% nIter0 = 394509; 
 
+%%% For 1/24 run with tides
+% dumpFreq = abs(diag_frequency(diagnum));
+% nDumps = round(endTime/dumpFreq);
+% dumpIters = round((1:nDumps)*dumpFreq/deltaT);
+% dumpIters = dumpIters(dumpIters > nIter0);
+
+nDumps = 10;
+dumpIters = 1:10;
 
 %%% For daily/12-hourly outputs
 % dumpStart = 1578240;
@@ -207,7 +212,7 @@ Amax = [];
 % for n = 34
 % for n=48:length(dumpIters)
 % for n=2:length(dumpIters)
-for n =700:length(dumpIters)
+for n =1:length(dumpIters)
   dumpIters(n);
     
   t = dumpIters(n)*deltaT/t1year;
@@ -267,6 +272,7 @@ for n =700:length(dumpIters)
           end
         
     else
+      'here'
           FF = squeeze(A(:,:,xylayer,outfidx));        
           FF(hFacC(:,:,xylayer)==0) = NaN;
     end
@@ -298,7 +304,8 @@ for n =700:length(dumpIters)
     latMin = min(min(YC));
     latMax = YC(1,end-spongethickness);
     lonMin = min(min(XC));
-    lonMax = XC(end-spongethickness,1);
+%     lonMax = XC(end-spongethickness,1);   
+    lonMax = XC(end,1);
     
     clf;    
     set(gcf,'color','w');

@@ -464,33 +464,33 @@ Twisted_MSIsalt = zeros(size(Twisted_MSIsalt,1),size(Twisted_MSIsalt,2));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-
-salt_ref = 34;
-temp_ref = -1.9;
-MIce_Anom = zeros(Nx,Ny);
-for i=1:Nx
-  disp(i);
-  for j=1:Ny
-
-      MIce_Anom(i,j) = rho0*Modelsurfaceheight(i,j);
-
-    for k=1:Nr
-      if (zz(k) < icedraft(i,j))
-          break
-      end
-
-      Pressure = -rho0*g*zz(k);
-%       rhoShelfIce = densmdjwf(hydrogSalt(i,j),hydrogTheta(i,j),Pressure/Pa1dbar);
-      rhoShelfIce = densmdjwf(salt_ref,temp_ref,Pressure/Pa1dbar);
-      MIce_Anom(i,j) = MIce_Anom(i,j) + (g*(rhoShelfIce-rho0)*dz(k));                
-
-     end
-   end
-end
-
-data = MIce_Anom;
-writeDataset(data,fullfile(inputconfigdir,SHELFICEloadAnomalyFile),ieee,prec);
-clear data
+% 
+% salt_ref = 34;
+% temp_ref = -1.9;
+% MIce_Anom = zeros(Nx,Ny);
+% for i=1:Nx
+%   disp(i);
+%   for j=1:Ny
+% 
+%       MIce_Anom(i,j) = rho0*Modelsurfaceheight(i,j);
+% 
+%     for k=1:Nr
+%       if (zz(k) < icedraft(i,j))
+%           break
+%       end
+% 
+%       Pressure = -rho0*g*zz(k);
+% %       rhoShelfIce = densmdjwf(hydrogSalt(i,j),hydrogTheta(i,j),Pressure/Pa1dbar);
+%       rhoShelfIce = densmdjwf(salt_ref,temp_ref,Pressure/Pa1dbar);
+%       MIce_Anom(i,j) = MIce_Anom(i,j) + (g*(rhoShelfIce-rho0)*dz(k));                
+% 
+%      end
+%    end
+% end
+% 
+% data = MIce_Anom;
+% writeDataset(data,fullfile(inputconfigdir,SHELFICEloadAnomalyFile),ieee,prec);
+% clear data
 
 
 

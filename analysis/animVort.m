@@ -8,7 +8,7 @@
 %%%
 
 %%% Read experiment data
-% loadexp;
+loadexp;
 
 %%% Vertical grid spacing matrix
 DZ = repmat(reshape(delR,[1 1 Nr]),[Nx Ny 1]);
@@ -40,10 +40,10 @@ M = moviein(nDumps);
 % dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
 
 %%% TODO
-dumpStart = 1578240;
-dumpStep = 43200/60;
-nDumps = 731;
-dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
+% dumpStart = 1578240;
+% dumpStep = 43200/60;
+% nDumps = 731;
+% dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
 
 % DXC3D = repmat(DXC(2:Nx,:),[1 1 Nr]);
 % DYC3D = repmat(DYC(:,2:Ny),[1 1 Nr]);
@@ -52,7 +52,9 @@ Omega = 2*pi*366/365/86400;
 ff = 2*Omega*sind(YG);
   
 %%% Loop through iterations
-for n=1:length(dumpIters)
+% for n=1:length(dumpIters)
+% for n = 1:88
+for n = 88
 % for n=250:300
  
   tt(n) =  dumpIters(n)*deltaT/86400;
@@ -61,12 +63,12 @@ for n=1:length(dumpIters)
   %%% Attempt to load either instantaneous velocities or their squares
 %   uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_12hourly'),dumpIters(n)) ;      
 %   vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_12hourly'),dumpIters(n));
-  uvel = rdmdsWrapper(fullfile(exppath,'/results/SIuice_12hourly'),dumpIters(n)) ;      
-  vvel = rdmdsWrapper(fullfile(exppath,'/results/SIvice_12hourly'),dumpIters(n));
+%   uvel = rdmdsWrapper(fullfile(exppath,'/results/SIuice_12hourly'),dumpIters(n)) ;      
+%   vvel = rdmdsWrapper(fullfile(exppath,'/results/SIvice_12hourly'),dumpIters(n));
 %   uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_daily'),dumpIters(n)) ;      
 %   vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_daily'),dumpIters(n)); 
-%   uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL'),dumpIters(n));      
-%   vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL'),dumpIters(n));    
+  uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_inst'),dumpIters(n));      
+  vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_inst'),dumpIters(n));    
 %   uvel = rdmdsWrapper(fullfile(exppath,'/results/U'),dumpIters(n)) ;      
 %   vvel = rdmdsWrapper(fullfile(exppath,'/results/V'),dumpIters(n)); 
   if (isempty(uvel) || isempty(vvel))   
@@ -77,11 +79,13 @@ for n=1:length(dumpIters)
 
   %%% Vorticity on a z-level
   vort = zeros(Nx,Ny);
-  zlev = 1;
+  zlev = 25;
+  uvel = uvel(:,:,zlev);
+  vvel = vvel(:,:,zlev);
   uvel(hFacW(:,:,zlev)==0) = NaN;
   vvel(hFacS(:,:,zlev)==0) = NaN;
-  vort(:,2:Ny) = - (uvel(:,2:Ny,zlev)-uvel(:,1:Ny-1,zlev))./DYC(:,2:Ny);
-  vort(2:Nx,:) = vort(2:Nx,:) + (vvel(2:Nx,:,zlev)-vvel(1:Nx-1,:,zlev))./DXC(2:Nx,:);
+  vort(:,2:Ny) = - (uvel(:,2:Ny)-uvel(:,1:Ny-1))./DYC(:,2:Ny);
+  vort(2:Nx,:) = vort(2:Nx,:) + (vvel(2:Nx,:)-vvel(1:Nx-1,:))./DXC(2:Nx,:);
   
   %%% Divergence on a z-level
 %   vort = zeros(Nx,Ny);
@@ -91,12 +95,12 @@ for n=1:length(dumpIters)
 %   vort(:,1:Ny-1) = (vvel(:,2:Ny,zlev)-vvel(:,1:Ny-1,zlev))./DYG(:,1:Ny-1);
 %   vort(1:Nx-1,:) = vort(2:Nx,:) + (uvel(2:Nx,:,zlev)-uvel(1:Nx-1,:,zlev))./DXG(1:Nx-1,:);
 
-%   %%% Barotropic vorticity
-%   vort = zeros(Nx,Ny);
-%   ubt = sum(uvel.*DZ.*hFacW,3) ./ sum(DZ.*hFacW,3);
-%   vbt = sum(vvel.*DZ.*hFacS,3) ./ sum(DZ.*hFacS,3);
-%   vort(:,2:Ny) = - (ubt(:,2:Ny)-ubt(:,1:Ny-1))./DYC(:,2:Ny);
-%   vort = vort + (vbt([2:Nx 1],:)-vbt(:,:))./DXC; 
+  %%% Barotropic vorticity
+  vort = zeros(Nx,Ny);
+  ubt = sum(uvel.*DZ.*hFacW,3) ./ sum(DZ.*hFacW,3);
+  vbt = sum(vvel.*DZ.*hFacS,3) ./ sum(DZ.*hFacS,3);
+  vort(:,2:Ny) = - (ubt(:,2:Ny)-ubt(:,1:Ny-1))./DYC(:,2:Ny);
+  vort = vort + (vbt([2:Nx 1],:)-vbt(:,:))./DXC; 
 
 %   vort = 0*vort;
 %   uvel(hFacW==0) = NaN;
@@ -105,11 +109,11 @@ for n=1:length(dumpIters)
 %   vort(2:Nx,:,:) = vort(2:Nx,:,:) + (vvel(2:Nx,:,:)-vvel(1:Nx-1,:,:))./DXC3D;
 %   vort = nanmean(vort,3); %%% Approximate depth-average
 
-%   latMin = min(min(YC));
-  latMin = -78.5;
+  latMin = min(min(YC));
+%   latMin = -78.5;
   latMax = YC(1,end-spongethickness);
-%   lonMin = min(min(XC));
-  lonMin = -62;
+  lonMin = min(min(XC));
+%   lonMin = -62;
   lonMax = XC(end-spongethickness,1);
   
   clf;    
@@ -121,8 +125,8 @@ for n=1:length(dumpIters)
   'MapLatLimit',[latMin latMax], ...
   'MapLonLimit',[lonMin lonMax], ... 
   'MapParallels',[-85 -65], ...
-  'PLineLocation', 5, ...
-  'MLineLocation', 10,...
+  'PLineLocation', 1, ...
+  'MLineLocation', 2,...
   'MeridianLabel', 'on', ...
   'ParallelLabel', 'on');    %, ...
   %           'origin',[yc(round(size(yc,1)/2),round(size(yc,2)/2)),xc(round(size(xc,1)/2),round(size(xc,2)/2))])
@@ -141,15 +145,15 @@ for n=1:length(dumpIters)
   %%% Add colorbar and title
   h = colorbar;  
   set(h,'Position',[0.92 0.33 0.01 .26])  
-  caxis([-.3 .3]);
+  caxis([-.8 .8]);
   
   set(gca,'FontSize',16);  
-  thedate = datenum('2008-01-01')+floor(tt(n));
+  thedate = datenum('2008-01-00')+floor(tt(n));
   h = title(['\zeta/|f| on ',datestr(thedate)]);
 %   h = title(['\zeta/|f| at t= ',num2str(round(tt(n)),'%3d'),' days']);
 %   h = title(['\delta/|f| at t= ',num2str(round(tt(n)),'%3d'),' days']);
   %  h = title(['\zeta/f at t= ',num2str(tt(n)/365,'%.1f'),' years']);  
-  set(gca,'Position',[0 0 0.95 0.95])
+  set(gca,'Position',[0.02 0 0.93 0.9])
   tightmap;
   drawnow;
   set(h,'Position',get(h,'Position')+[0 +0.0075 0])

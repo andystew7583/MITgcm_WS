@@ -13,12 +13,8 @@ mac_plots = false;
 %%% Read experiment data
 % loadexp;
 
-%%% Select diagnostic variable to animate
-% diagnum = 75;
-diagnum = 5;
-% diagnum = 7;
-outfname =diag_fileNames{1,diagnum};
-% outfname = 'Eta';
+%%% Vertical level to which potential density should be referenced
+k_pot_dens = 94;
 
 %%% Data index in the output data files
 outfidx = 1;
@@ -56,37 +52,18 @@ yzlayer = 322;
 
 
 %%% Specify color range
-set_crange = 1;
+set_crange = 0;
 
 
-% crange = [-2.2 -1.6]; %/%% Filchner temp
-% crange = [-2 2]; %/%%temp
 crange = [34.2 34.8]; %%% salinity
-% crange = [31 34.5]; %%% salinity
-% crange = [0 10]; %%%% for KPP hbl
-% crange = [0 1]; %%% For sea ice area
-% crange = [-.6 .6]; %%% For velocities or stresses
-% crange = [-1 1]*1e-4; %%% For freshwater fluxes
-% crange =[-100 100]; %%% Qnet
-% crange = [-300 300]; %%% swnet
-% % crange = [0 3];
-% crange = [-0.5 0.5];
-% crange = [0.2 1.2]; %% SSH
 
-% cmap = pmkmp(100,'Swtth');
-% cmap = cmocean('haline',100);
-cmap = cmocean('thermal',20);
-% cmap = cmocean('ice',100);
-% cmap = haxby;
-% cmap = jet(200);
-% cmap = redblue(100);
-% cmap = cmocean('amp',100);
+cmap = cmocean('dense',20);
 
 % titlestr = 'Salinity (g/kg)';
 % titlestr = 'Surface salinity (g/kg)';
 % titlestr = 'Temperature ($^\circ$C)';
 % titlestr = 'Surface temperature ($^\circ$C)';
-titlestr = 'Sea ice concentration';
+titlestr = 'Sea floor density';
 % titlestr = '';
 
 months = {'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'};
@@ -222,11 +199,13 @@ for n = 1:366
   tyears(n) = t;
   tdays(n) = dumpIters(n)*deltaT/t1day;
   
-  A = rdmdsWrapper(fullfile(exppath,'results',outfname),dumpIters(n));
-  if (isempty(A))
-%     continue;
+  T = rdmdsWrapper(fullfile(exppath,'results','THETA'),dumpIters(n));          
+  S = rdmdsWrapper(fullfile(exppath,'results','SALT'),dumpIters(n));          
+  if (isempty(S) || isempty(T))
     error(['Ran out of data at t=,',num2str(tyears(n)),' years']);
-  end     
+  end    
+  A = densjmd95(S,T,-RC(k_pot_dens)*gravity*rhonil/1e4*ones(Nx,Ny,Nr))-1000;
+
   
   if (~isempty(find(isnan(A))))
     error(['Found NaNs at iter=',num2str(dumpIters(n))]);

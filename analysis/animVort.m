@@ -52,9 +52,9 @@ Omega = 2*pi*366/365/86400;
 ff = 2*Omega*sind(YG);
   
 %%% Loop through iterations
-% for n=1:length(dumpIters)
+% for n=88:length(dumpIters)
 % for n = 1:88
-for n = 88
+for n = 101:127
 % for n=250:300
  
   tt(n) =  dumpIters(n)*deltaT/86400;
@@ -79,7 +79,9 @@ for n = 88
 
   %%% Vorticity on a z-level
   vort = zeros(Nx,Ny);
+%   zlev = 1;
   zlev = 25;
+%   zlev = 44;
   uvel = uvel(:,:,zlev);
   vvel = vvel(:,:,zlev);
   uvel(hFacW(:,:,zlev)==0) = NaN;
@@ -89,7 +91,7 @@ for n = 88
   
   %%% Divergence on a z-level
 %   vort = zeros(Nx,Ny);
-%   zlev = 1;
+%   zlev = 44;
 %   uvel(hFacW==0) = NaN;
 %   vvel(hFacS==0) = NaN;
 %   vort(:,1:Ny-1) = (vvel(:,2:Ny,zlev)-vvel(:,1:Ny-1,zlev))./DYG(:,1:Ny-1);

@@ -4,9 +4,12 @@
 %%% Creates synthetic seal measurements data.
 %%%
 
+clear all;
+
 %%% Seal tags to process
+seal_numbers = [21126];
 % seal_numbers = [21126,40020];
-seal_numbers = [21024,21042,21078,21084,21120]; %%% New seals
+% seal_numbers = [21024,21042,21078,21084,21120]; %%% New seals
 Nseals = length(seal_numbers);
 sealdir = 'SealComparison';
 
@@ -20,8 +23,12 @@ for m = 1:2:2*Nseals-1
   
   %%% First we just store the seal lats, lons, datenums and yeardays
   load(fullfile(sealdir,['seal',num2str(seal_numbers((m+1)/2)),'.mat']));
-  tag_datenum = time; %%% Needed for new seals
-  tag_lat_lon = lat_lon;
+  if (~exist('tag_datenum'))
+    tag_datenum = time;
+  end
+  if (~exist('tag_lat_lon'))
+    tag_lat_lon = lat_lon; 
+  end
   seal_times{m} = tag_datenum';
   yeardays = 0*tag_datenum;
   for j=1:length(yeardays)
@@ -94,7 +101,11 @@ dumpIters_inst = dumpStart_inst:dumpStep_inst:dumpStart_inst+(nDumps_inst-1)*dum
 seal_uvel = cell(1,2*Nseals);
 seal_vvel = cell(1,2*Nseals);
 seal_salt = cell(1,2*Nseals);
+seal_dsdx = cell(1,2*Nseals);
+seal_dsdy = cell(1,2*Nseals);
 seal_theta = cell(1,2*Nseals);
+seal_dtdx = cell(1,2*Nseals);
+seal_dtdy = cell(1,2*Nseals);
 seal_zeta = cell(1,2*Nseals);
 seal_wteddy = cell(1,2*Nseals);
 seal_wseddy = cell(1,2*Nseals);
@@ -104,7 +115,11 @@ for m = 1:2*Nseals
   seal_uvel{m} = zeros(length(seal_times{m}),Nr);
   seal_vvel{m} = zeros(length(seal_times{m}),Nr);
   seal_salt{m} = zeros(length(seal_times{m}),Nr);
+  seal_dsdx{m} = zeros(length(seal_times{m}),Nr);
+  seal_dsdy{m} = zeros(length(seal_times{m}),Nr);
   seal_theta{m} = zeros(length(seal_times{m}),Nr);
+  seal_dtdx{m} = zeros(length(seal_times{m}),Nr);
+  seal_dtdy{m} = zeros(length(seal_times{m}),Nr);
   seal_zeta{m} = zeros(length(seal_times{m}),Nr);
   seal_wteddy{m} = zeros(length(seal_times{m}),Nr);
   seal_wseddy{m} = zeros(length(seal_times{m}),Nr);
@@ -177,7 +192,11 @@ for n = 1:length(dumpIters_inst)-1
     this_u = next_u;
     this_v = next_v;
     this_t = next_t;
+    this_dtdx = next_dtdx;
+    this_dtdy = next_dtdy;
     this_s = next_s;
+    this_dsdx = next_dsdx;
+    this_dsdy = next_dsdy;
     this_a = next_a;
     this_h = next_h;
     this_z = next_z;
@@ -194,7 +213,11 @@ for n = 1:length(dumpIters_inst)-1
     this_u(hFacW==0) = NaN;
     this_v(hFacS==0) = NaN;
     this_t(hFacC==0) = NaN;
+    this_dtdx = (this_t(:,:,:) - this_t([Nx 1:Nx-1],:,:)) ./ DXC;
+    this_dtdy = (this_t(:,:,:) - this_t(:,[Ny 1:Ny-1],:)) ./ DYC;
     this_s(hFacC==0) = NaN;
+    this_dsdx = (this_s(:,:,:) - this_s([Nx 1:Nx-1],:,:)) ./ DXC;
+    this_dsdy = (this_s(:,:,:) - this_s(:,[Ny 1:Ny-1],:)) ./ DYC;
     this_a(hFacC(:,:,1)==0) = NaN;
     this_h(hFacC(:,:,1)==0) = NaN;
     this_z = ( this_u(:,[Ny 1:Ny-1],:).*DXC3D(:,[Ny 1:Ny-1],:) ...
@@ -217,7 +240,11 @@ for n = 1:length(dumpIters_inst)-1
   next_u(hFacW==0) = NaN;
   next_v(hFacS==0) = NaN;
   next_t(hFacC==0) = NaN;
+  next_dtdx = (next_t(:,:,:) - next_t([Nx 1:Nx-1],:,:)) ./ DXC;
+  next_dtdy = (next_t(:,:,:) - next_t(:,[Ny 1:Ny-1],:)) ./ DYC;
   next_s(hFacC==0) = NaN;   
+  next_dsdx = (next_s(:,:,:) - next_s([Nx 1:Nx-1],:,:)) ./ DXC;
+  next_dsdy = (next_s(:,:,:) - next_s(:,[Ny 1:Ny-1],:)) ./ DYC;  
   next_a(hFacC(:,:,1)==0) = NaN;
   next_h(hFacC(:,:,1)==0) = NaN;
   next_z = ( next_u(:,[Ny 1:Ny-1],:).*DXC3D(:,[Ny 1:Ny-1],:) ...
@@ -334,6 +361,24 @@ for n = 1:length(dumpIters_inst)-1
         + WpmpC_inst.*squeeze(next_s(iC+1,jC,:)) ...
         + WmppC_inst.*squeeze(next_s(iC,jC+1,:)) ...
         + WpppC_inst.*squeeze(next_s(iC+1,jC+1,:));
+      seal_dsdx{m}(p,:) = ...
+          WmmmW.*squeeze(this_dsdx(iG,jC,:)) ...
+        + WpmmW.*squeeze(this_dsdx(iG+1,jC,:)) ...
+        + WmpmW.*squeeze(this_dsdx(iG,jC+1,:)) ...
+        + WppmW.*squeeze(this_dsdx(iG+1,jC+1,:)) ...
+        + WmmpW.*squeeze(next_dsdx(iG,jC,:)) ...
+        + WpmpW.*squeeze(next_dsdx(iG+1,jC,:)) ...
+        + WmppW.*squeeze(next_dsdx(iG,jC+1,:)) ...
+        + WpppW.*squeeze(next_dsdx(iG+1,jC+1,:));
+      seal_dsdy{m}(p,:) = ...
+          WmmmS.*squeeze(this_dsdy(iC,jG,:)) ...
+        + WpmmS.*squeeze(this_dsdy(iC+1,jG,:)) ...
+        + WmpmS.*squeeze(this_dsdy(iC,jG+1,:)) ...
+        + WppmS.*squeeze(this_dsdy(iC+1,jG+1,:)) ...
+        + WmmpS.*squeeze(next_dsdy(iC,jG,:)) ...
+        + WpmpS.*squeeze(next_dsdy(iC+1,jG,:)) ...
+        + WmppS.*squeeze(next_dsdy(iC,jG+1,:)) ...
+        + WpppS.*squeeze(next_dsdy(iC+1,jG+1,:));
       seal_theta{m}(p,:) = ...
           WmmmC_inst.*squeeze(this_t(iC,jC,:)) ...
         + WpmmC_inst.*squeeze(this_t(iC+1,jC,:)) ...
@@ -343,6 +388,24 @@ for n = 1:length(dumpIters_inst)-1
         + WpmpC_inst.*squeeze(next_t(iC+1,jC,:)) ...
         + WmppC_inst.*squeeze(next_t(iC,jC+1,:)) ...
         + WpppC_inst.*squeeze(next_t(iC+1,jC+1,:));
+      seal_dtdx{m}(p,:) = ...
+          WmmmW.*squeeze(this_dtdx(iG,jC,:)) ...
+        + WpmmW.*squeeze(this_dtdx(iG+1,jC,:)) ...
+        + WmpmW.*squeeze(this_dtdx(iG,jC+1,:)) ...
+        + WppmW.*squeeze(this_dtdx(iG+1,jC+1,:)) ...
+        + WmmpW.*squeeze(next_dtdx(iG,jC,:)) ...
+        + WpmpW.*squeeze(next_dtdx(iG+1,jC,:)) ...
+        + WmppW.*squeeze(next_dtdx(iG,jC+1,:)) ...
+        + WpppW.*squeeze(next_dtdx(iG+1,jC+1,:));
+      seal_dtdy{m}(p,:) = ...
+          WmmmS.*squeeze(this_dtdy(iC,jG,:)) ...
+        + WpmmS.*squeeze(this_dtdy(iC+1,jG,:)) ...
+        + WmpmS.*squeeze(this_dtdy(iC,jG+1,:)) ...
+        + WppmS.*squeeze(this_dtdy(iC+1,jG+1,:)) ...
+        + WmmpS.*squeeze(next_dtdy(iC,jG,:)) ...
+        + WpmpS.*squeeze(next_dtdy(iC+1,jG,:)) ...
+        + WmppS.*squeeze(next_dtdy(iC,jG+1,:)) ...
+        + WpppS.*squeeze(next_dtdy(iC+1,jG+1,:));
       seal_zeta{m}(p,:) = ...
           WmmmZ.*squeeze(this_z(iG,jG,:)) ...
         + WpmmZ.*squeeze(this_z(iG+1,jG,:)) ...
@@ -408,11 +471,15 @@ for m = 1:2*Nseals
   uvel = seal_uvel{m};
   vvel = seal_vvel{m};
   salt = seal_salt{m};
+  dsdx = seal_dsdx{m};
+  dsdy = seal_dsdy{m};
   theta = seal_theta{m};
+  dtdx = seal_dtdx{m};
+  dtdy = seal_dtdy{m};
   zeta = seal_zeta{m};
   wteddy = seal_wteddy{m};
   wseddy = seal_wseddy{m};
   SIarea = seal_SIarea{m};
   SIheff = seal_SIheff{m};
-  save(fullfile(sealdir,outfname),'lon','lat','time','yearday','uvel','vvel','salt','theta','zeta','wteddy','wseddy','depth','SIarea','SIheff');
+  save(fullfile(sealdir,outfname),'lon','lat','time','yearday','uvel','vvel','salt','dsdx','dsdy','theta','dtdx','dtdy','zeta','wteddy','wseddy','depth','SIarea','SIheff');
 end

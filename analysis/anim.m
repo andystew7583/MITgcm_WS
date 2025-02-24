@@ -14,8 +14,8 @@ mac_plots = false;
 % loadexp;
 
 %%% Select diagnostic variable to animate
-% diagnum = 75;
-diagnum = 5;
+% diagnum = 66;
+diagnum = 19;
 % diagnum = 7;
 outfname =diag_fileNames{1,diagnum};
 % outfname = 'Eta';
@@ -32,7 +32,7 @@ xylayer = 1;
 
 %%% Set true to plot the field in the lowest active cell at each horizontal
 %%% location
-botplot = 1;
+botplot = 0;
 
 %%% Set true to plot the field in the topmost wet cell at each horizontal
 %%% location
@@ -61,32 +61,32 @@ set_crange = 1;
 
 % crange = [-2.2 -1.6]; %/%% Filchner temp
 % crange = [-2 2]; %/%%temp
-crange = [34.2 34.8]; %%% salinity
-% crange = [31 34.5]; %%% salinity
+% crange = [34.2 34.8]; %%% salinity
+% crange = [34.2 34.5]; %%% salinity
 % crange = [0 10]; %%%% for KPP hbl
 % crange = [0 1]; %%% For sea ice area
 % crange = [-.6 .6]; %%% For velocities or stresses
 % crange = [-1 1]*1e-4; %%% For freshwater fluxes
 % crange =[-100 100]; %%% Qnet
-% crange = [-300 300]; %%% swnet
+crange = [-300 300]; %%% swnet
 % % crange = [0 3];
 % crange = [-0.5 0.5];
 % crange = [0.2 1.2]; %% SSH
 
 % cmap = pmkmp(100,'Swtth');
 % cmap = cmocean('haline',100);
-cmap = cmocean('thermal',20);
+% cmap = cmocean('thermal',20);
 % cmap = cmocean('ice',100);
 % cmap = haxby;
 % cmap = jet(200);
-% cmap = redblue(100);
+cmap = redblue(100);
 % cmap = cmocean('amp',100);
-
-% titlestr = 'Salinity (g/kg)';
+% 
+titlestr = 'Salinity (g/kg)';
 % titlestr = 'Surface salinity (g/kg)';
 % titlestr = 'Temperature ($^\circ$C)';
 % titlestr = 'Surface temperature ($^\circ$C)';
-titlestr = 'Sea ice concentration';
+% titlestr = 'Sea ice concentration';
 % titlestr = '';
 
 months = {'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'};
@@ -207,7 +207,7 @@ Amax = [];
 
 % for n = 15*12:length(dumpIters)
 % for n = 1:length(dumpIters)
-for n = 1:366
+for n = 90:366
 % for n=5*12
 % for n=7*12:8*12
 % for n = 34a
@@ -238,8 +238,9 @@ for n = 1:366
   
 
    [idx1 idx2] = find(isnan(A));
+   
 
-   if (size(A,3)>1)
+   if (size(A,3)==size(hFacC,3))
      A(hFacC==0) = NaN;
    end
    
@@ -277,7 +278,8 @@ for n = 1:366
     else
 %       if (strcmp(outfname,'
           FF = squeeze(A(:,:,xylayer,outfidx));        
-          FF(hFacC(:,:,xylayer)==0) = NaN;
+%           FF(hFacC(:,:,xylayer)==0) = NaN;
+%           FF = sum(A(:,:,xylayer:end,outfidx),3);
     end
       
       
@@ -329,6 +331,11 @@ for n = 1:366
     pcolorm(YC,XC,FF);
 %     pcolorm(YC,XC,FF/920/35*86400*365);
     shading interp
+    
+    
+    hold on;
+    [cs,C] = contourm(YC,XC,bathy,[-5000:1000:-1000 -600 -200],'EdgeColor','k');
+    hold off;
 
     %%% Add colorbar and title
     h = colorbar;

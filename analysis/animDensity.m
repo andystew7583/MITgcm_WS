@@ -11,7 +11,7 @@
 mac_plots = false;
 
 %%% Read experiment data
-% loadexp;
+loadexp;
 
 %%% Vertical level to which potential density should be referenced
 k_pot_dens = 94;
@@ -52,18 +52,15 @@ yzlayer = 322;
 
 
 %%% Specify color range
-set_crange = 0;
-
-
-crange = [34.2 34.8]; %%% salinity
-
+set_crange = 1;
+crange = [36.9 37.6];
 cmap = cmocean('dense',20);
 
 % titlestr = 'Salinity (g/kg)';
 % titlestr = 'Surface salinity (g/kg)';
 % titlestr = 'Temperature ($^\circ$C)';
 % titlestr = 'Surface temperature ($^\circ$C)';
-titlestr = 'Sea floor density';
+titlestr = 'Sea floor density (kg/m$^3$)';
 % titlestr = '';
 
 months = {'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'};
@@ -78,17 +75,17 @@ years = 2007:1:2015;
 % nIter0 = 394509; 
 
 %%% For 1/24 run with tides
-dumpFreq = abs(diag_frequency(diagnum));
-nDumps = round(endTime/dumpFreq);
-dumpIters = round((1:nDumps)*dumpFreq/deltaT);
-dumpIters = dumpIters(dumpIters > nIter0);
+% dumpFreq = abs(diag_frequency(diagnum));
+% nDumps = round(endTime/dumpFreq);
+% dumpIters = round((1:nDumps)*dumpFreq/deltaT);
+% dumpIters = dumpIters(dumpIters > nIter0);
 
 %%% For daily/12-hourly outputs
-% dumpStart = 1578240;
-% % dumpStart = 1945440;
-% dumpStep = 86400/2/60;
-% nDumps = 731;
-% dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
+dumpStart = 1578240;
+% dumpStart = 1945440;
+dumpStep = 86400/2/60;
+nDumps = 731;
+dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
 
 %%% Mesh grids for plotting
 if (botplot || topplot || midplot || ~xyplot)
@@ -171,7 +168,8 @@ else
 %   plotloc = [0.0855    0.0888    0.7916    0.8624];  
   plotloc = [0.04  0.02   0.84  0.9];
 %   framepos = [100   306   936   676];
-  framepos = [100   462   810   520];
+%   framepos = [100   462   810   520];
+  framepos = [441         253        1529         994];
 end
 
 %%% Set up the figure
@@ -184,13 +182,13 @@ Amax = [];
 
 % for n = 15*12:length(dumpIters)
 % for n = 1:length(dumpIters)
-for n = 1:366
+% for n = 1:366
 % for n=5*12
 % for n=7*12:8*12
 % for n = 34a
 % for n=48:length(dumpIters)
 % for n=2:length(dumpIters)
-% for n =1:length(dumpIters)
+for n =1:length(dumpIters)
   dumpIters(n);
     
   t = dumpIters(n)*deltaT/t1year;
@@ -199,8 +197,9 @@ for n = 1:366
   tyears(n) = t;
   tdays(n) = dumpIters(n)*deltaT/t1day;
   
-  T = rdmdsWrapper(fullfile(exppath,'results','THETA'),dumpIters(n));          
-  S = rdmdsWrapper(fullfile(exppath,'results','SALT'),dumpIters(n));          
+  suff = '_12hourly';
+  T = rdmdsWrapper(fullfile(exppath,'results',['THETA',suff]),dumpIters(n));          
+  S = rdmdsWrapper(fullfile(exppath,'results',['SALT',suff]),dumpIters(n));          
   if (isempty(S) || isempty(T))
     error(['Ran out of data at t=,',num2str(tyears(n)),' years']);
   end    
@@ -298,8 +297,8 @@ for n = 1:366
     'MapLatLimit',[latMin latMax], ...
     'MapLonLimit',[lonMin lonMax], ... 
     'MapParallels',[-85 -65], ...
-    'PLineLocation', 1, ...
-    'MLineLocation', 2,...
+    'PLineLocation', 5, ...
+    'MLineLocation', 10,...
     'MeridianLabel', 'on', ...
     'ParallelLabel', 'on');    %, ...
     %           'origin',[yc(round(size(yc,1)/2),round(size(yc,2)/2)),xc(round(size(xc,1)/2),round(size(xc,2)/2))])
@@ -308,10 +307,16 @@ for n = 1:366
     pcolorm(YC,XC,FF);
 %     pcolorm(YC,XC,FF/920/35*86400*365);
     shading interp
+    
+    hold on;
+    [cs,C]=contourm(YC,XC,SHELFICEtopo-bathy,[100 500 1000 2000 3000 4000],'EdgeColor','k');
+    chandle = clabelm(cs,C);
+    set(chandle,'fontsize',12,'Color','k','BackgroundColor','none','Edgecolor','none') 
+    hold off;
 
     %%% Add colorbar and title
     h = colorbar;
-    set(gca,'FontSize',10);
+    set(gca,'FontSize',14);
     set(h,'Position',[0.92 0.33 0.02 .26])
     tightmap;
 
@@ -366,7 +371,7 @@ for n = 1:366
 %     title([titlestr,', $t=',num2str(tdays(n),'%.1f'),'$ days'],'interpreter','latex');
     thedate = datenum('2008-01-01')+floor(tdays(n));
 %     annotation('textbox',[0.3 0.95 0.5 0.05],'String',[titlestr,', ',months{mod(n-1,12)+1},' ',num2str(years(floor((n-1)/12)+1))],'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');   
-    annotation('textbox',[0.3 0.95 0.5 0.05],'String',[titlestr,', ',datestr(thedate)],'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');   
+    annotation('textbox',[0.4 0.95 0.5 0.05],'String',[titlestr,', ',datestr(thedate)],'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');   
   end
   if (set_crange)  
     caxis(crange);

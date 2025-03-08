@@ -172,6 +172,10 @@ end
 
 datevec = datenum('01-Jan-2008 00:00') + tt/t1day;
 
+save('./products/SWIT_timeseries.mat',...
+  'datevec','SWIT_edge_melt','SWIT_melt','RL_melt','SWIT_KE','SWIT_temp',...
+  'SWIT_Ro','SWIT_speed','RL_speed','SWIT_uvel','RL_uvel');
+
 
 figure(9);
 plot(datevec,SWIT_edge_melt/1e12*t1year);

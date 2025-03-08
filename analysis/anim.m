@@ -11,12 +11,12 @@
 mac_plots = false;
 
 %%% Read experiment data
-% loadexp;
+loadexp;
 
 %%% Select diagnostic variable to animate
 % diagnum = 66;
-diagnum = 19;
-% diagnum = 7;
+% diagnum = 46;
+diagnum = 1;
 outfname =diag_fileNames{1,diagnum};
 % outfname = 'Eta';
 
@@ -47,7 +47,10 @@ yzavg = 0;
 
 %%% Layer to plot in the y/z plane
 %%%for 1/3 DEGREE yzlayer = 126; 1/6 = 404;
-yzlayer = 322;
+% yzlayer = 246;
+yzlayer = 215;
+% yzlayer = Nx-10;
+% yzlayer = 1;
 
 % load ../newexp/ELEV.mat
 % 
@@ -59,7 +62,7 @@ yzlayer = 322;
 set_crange = 1;
 
 
-% crange = [-2.2 -1.6]; %/%% Filchner temp
+% crange = [-2.2 -1]; %/%% Filchner temp
 % crange = [-2 2]; %/%%temp
 % crange = [34.2 34.8]; %%% salinity
 % crange = [34.2 34.5]; %%% salinity
@@ -68,10 +71,13 @@ set_crange = 1;
 % crange = [-.6 .6]; %%% For velocities or stresses
 % crange = [-1 1]*1e-4; %%% For freshwater fluxes
 % crange =[-100 100]; %%% Qnet
-crange = [-300 300]; %%% swnet
+% crange = [-300 300]; %%% swnet
+% crange =[-.1 .1]; %%% SFLUX
+% crange =[-1 1]*1e-3; %%% WVEL
 % % crange = [0 3];
-% crange = [-0.5 0.5];
+crange = [-0.5 0.5];
 % crange = [0.2 1.2]; %% SSH
+% crange = [-0.3 0.3]; %%% Melt rate 
 
 % cmap = pmkmp(100,'Swtth');
 % cmap = cmocean('haline',100);
@@ -82,9 +88,10 @@ crange = [-300 300]; %%% swnet
 cmap = redblue(100);
 % cmap = cmocean('amp',100);
 % 
-titlestr = 'Salinity (g/kg)';
+% titlestr = 'Salinity (g/kg)';
 % titlestr = 'Surface salinity (g/kg)';
 % titlestr = 'Temperature ($^\circ$C)';
+titlestr = 'Zonal velocity (m/s)';
 % titlestr = 'Surface temperature ($^\circ$C)';
 % titlestr = 'Sea ice concentration';
 % titlestr = '';
@@ -207,7 +214,7 @@ Amax = [];
 
 % for n = 15*12:length(dumpIters)
 % for n = 1:length(dumpIters)
-for n = 90:366
+for n = 1:366
 % for n=5*12
 % for n=7*12:8*12
 % for n = 34a
@@ -329,7 +336,7 @@ for n = 90:366
     axis off;
     setm(gca,'MLabelParallel',-20)
     pcolorm(YC,XC,FF);
-%     pcolorm(YC,XC,FF/920/35*86400*365);
+%     pcolorm(YC,XC,-FF/920/35*86400*365);
     shading interp
     
     
@@ -350,7 +357,7 @@ for n = 90:366
  
  else
     
-    
+    clf;
 %     if (yzavg)
       Ayz = ((squeeze(A(yzlayer,:,:))));    
 %     else
@@ -378,7 +385,7 @@ for n = 90:366
     xlabel('Offshore $y$ (latitude)','interpreter','latex','fontsize',15);
     ylabel('Height $z$ (km)','interpreter','latex','fontsize',15);
     set(gca,'YLim',[-1.3 0]);
-    set(gca,'XLim',[-83 -64]);    
+    set(gca,'XLim',[YC(1,1) YC(1,end)]);    
     handle=colorbar;
     set(handle,'FontSize',fontsize);
 

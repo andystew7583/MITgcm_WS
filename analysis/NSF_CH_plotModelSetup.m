@@ -456,6 +456,10 @@ set(ax2,'Position',axpos);%+[-0.04 -0.013 0.08 0.067]);
 caxis([-10 10]);
 
 
+load('EddyDetections/April 1 centers.mat');
+hold on;
+plotm(centers4.y1,centers4.x1,'x','Color','g');
+hold off;
 
 
 

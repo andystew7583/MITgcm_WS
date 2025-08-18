@@ -5,9 +5,9 @@
 %%%
 
 %%% Load experiment
-loadexp;
+% loadexp;
 
-ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,false);
+ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,false,true);
 
 bathy_plot = bathy;
 bathy_plot(SHELFICEtopo-bathy<=0) = NaN;
@@ -23,7 +23,8 @@ shading interp;
 colormap(flip(haxby,1))
 colorbar;
 hold on
-[C,h]=contour(XC,YC,ETA_plot,[-9:1:20],'EdgeColor','k');
+% [C,h]=contour(XC,YC,ETA_plot,[-86:0.2:-70],'EdgeColor','k');
+[C,h]=contour(XC,YC,ETA_plot,[-9:.1:20],'EdgeColor','k');
 % [C,h]=contour(XC,YC,ETA_plot,[0:.5:2 3:1:20],'EdgeColor','k');
 hold off;
 clabel(C,h);

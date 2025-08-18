@@ -60,7 +60,7 @@ ff = 2*Omega*sind(YG);
 %%% Loop through iterations
 % for n=88:length(dumpIters)
 % for n = 1:88
-for n = 350:372
+for n = 475:522
 % for n=250:300
  
   tt(n) =  dumpIters(n)*deltaT/86400;
@@ -87,8 +87,8 @@ for n = 350:372
 
   %%% Vorticity on a z-level
   vort = zeros(Nx,Ny);
-  zlev = 1;
-%   zlev = 25;
+%   zlev = 1;
+  zlev = 25;
 %   zlev = 44;
   uvel = uvel(:,:,zlev);
   vvel = vvel(:,:,zlev);
@@ -123,7 +123,8 @@ for n = 350:372
   meltrate = -SHIfwFlx/rho_i*t1year;
   meltrate((hFacC(:,:,1)>0) | (sum(hFacC,3)==0)) = NaN;
 
-  latMin = YC(1,spongethickness+1);
+  % latMin = YC(1,spongethickness+1);
+  latMin = YC(1,1);
 %   latMin = -78.5;
   latMax = YC(1,end-spongethickness);
   lonMin = XC(spongethickness+1,1);

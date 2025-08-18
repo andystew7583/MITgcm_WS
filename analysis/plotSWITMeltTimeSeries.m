@@ -77,44 +77,44 @@ Omega = 2*pi*366/365/86400;
 ff = 2*Omega*sind(YG);  
   
 %%% Loop through iterations
-for n = 1:372
+for n = 1:522
  
   tt(n) =  dumpIters(n)*deltaT;
   tt(n)/t1day
   
   %%% Attempt to load either instantaneous velocities or their squares
-%   SIarea = rdmdsWrapper(fullfile(exppath,'/results/SIarea_inst'),dumpIters(n)); 
-%   if (isempty(SIarea))   
-%     break;
-%   end  
+  SIarea = rdmdsWrapper(fullfile(exppath,'/results/SIarea_inst'),dumpIters(n)); 
+  if (isempty(SIarea))   
+    break;
+  end  
   SHIfwFlx = rdmdsWrapper(fullfile(exppath,'/results/SHIfwFlx_inst'),dumpIters(n)); 
   if (isempty(SHIfwFlx))   
     break;
   end
-%   uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_inst'),dumpIters(n));      
-%   if (isempty(uvel))   
-%     break;
-%   end
-%   vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_inst'),dumpIters(n)); 
-%   if (isempty(vvel))   
-%     break;
-%   end
-%   theta = rdmdsWrapper(fullfile(exppath,'/results/THETA_inst'),dumpIters(n));      
-%   if (isempty(theta))   
-%     break;
-%   end
-%   salt = rdmdsWrapper(fullfile(exppath,'/results/SALT_inst'),dumpIters(n));      
-%   if (isempty(salt))   
-%     break;
-%   end
+  uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_inst'),dumpIters(n));      
+  if (isempty(uvel))   
+    break;
+  end
+  vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_inst'),dumpIters(n)); 
+  if (isempty(vvel))   
+    break;
+  end
+  theta = rdmdsWrapper(fullfile(exppath,'/results/THETA_inst'),dumpIters(n));      
+  if (isempty(theta))   
+    break;
+  end
+  salt = rdmdsWrapper(fullfile(exppath,'/results/SALT_inst'),dumpIters(n));      
+  if (isempty(salt))   
+    break;
+  end
   
 
-%   %%% Slice of horizontal velocity field
-%   zlev = 1;
-%   uvel_lev = uvel(:,:,zlev);
-%   vvel_lev = vvel(:,:,zlev);
-%   uvel_lev(hFacW(:,:,zlev)==0) = NaN;
-%   vvel_lev(hFacS(:,:,zlev)==0) = NaN;
+  %%% Slice of horizontal velocity field
+  zlev = 1;
+  uvel_lev = uvel(:,:,zlev);
+  vvel_lev = vvel(:,:,zlev);
+  uvel_lev(hFacW(:,:,zlev)==0) = NaN;
+  vvel_lev(hFacS(:,:,zlev)==0) = NaN;
 
   %%% Compute area-averaged melt of SWIT
   massloss = -SHIfwFlx.*RAC;
@@ -124,49 +124,49 @@ for n = 1:372
   
   
   
-%   %%% Calculate kinetic energy and maximum horizontal speed
-%   KE = 0.25*(uvel(1:Nx,1:Ny,:).^2+uvel([2:Nx 1],1:Ny,:).^2) ...
-%      + 0.25*(vvel(1:Nx,1:Ny,:).^2+vvel(1:Nx,[2:Ny 1],:).^2);     
-%   KE = KE.*vol_msk;
-%   SWIT_KE(n) = sum(sum(sum(KE(imin_SWIT:imax_SWIT,jmin_SWIT:jmax_SWIT,:))));
-%   
-%   %%% Okubo-Weiss on a z-level upstream of SWIT
-%   dudx = (uvel_lev([2:Nx 1],:) - uvel_lev(1:Nx,:)) ./ DXG; %%% du/dx on cell centers
-%   dvdy = (vvel_lev(:,[2:Ny 1]) - vvel_lev(:,1:Ny)) ./ DYG; %%% dv/dy on cell centers
-%   dvdx = (vvel_lev(1:Nx,:) - vvel_lev([Nx 1:Nx-1],:)) ./ DXC; %%% dv/dx on cell corners
-%   dudy = (uvel_lev(:,1:Ny) - uvel_lev(:,[Ny 1:Ny-1])) ./ DYC; %%% du/du on cell corners
-%   Sn = dudx - dvdy;
-%   Ss = dudy + dvdx;
-%   omega = dvdx - dudy;
-%   OW = Ss.^2 - omega.^2 + 0.25*(Sn(1:Nx,1:Ny).^2 + Sn([Nx 1:Nx-1],1:Ny).^2 + Sn(1:Nx,[Ny 1:Ny-1]).^2 + Sn([Nx 1:Nx-1],[Ny 1:Ny-1]).^2);
-%   msk_OW = (XG > -24) & (XG < -22) & (YG > -74) & (YG < -73.5);
-%   msk_OW(isnan(OW)) = 0;
-%   OWdist = OW(msk_OW);
-%   SWIT_OW(n) = prctile(OWdist,5);
-% %   SWIT_OW(n) = sum(sum(OW.*RAZ.*msk_OW)) / sum(sum(RAZ.*msk_OW));
-%   
-%   
-%   %%% Compute RMS Rossby number next to SWIT
-%   Ro = omega ./ ff;
-%   Ro(isnan(Ro)) = 0;
-%   SWIT_Ro(n) = sqrt(sum(sum(Ro.^2.*RAZ.*msk_OW)) / sum(sum(RAZ.*msk_OW)));
-%   
-%   %%% Mean flow speed next to cavities
-%   uabs_sq = 0.5 * (uvel_lev(1:Nx,1:Ny).^2 + uvel_lev([2:Nx 1],1:Ny).^2) + 0.5 * (vvel_lev(1:Nx,1:Ny).^2 + vvel_lev(1:Nx,[2:Ny 1]).^2);  
-%   msk_speed_SWIT = (XC > -26) & (XC < -24) & (YC > -74) & (YC < -73.5);
-%   msk_speed_RL = (XC > -20) & (XC < -18) & (YC > -72.75) & (YC < -72.25);
-%   msk_speed_SWIT(isnan(uabs_sq)) = 0;
-%   msk_speed_RL(isnan(uabs_sq)) = 0;
-%   uabs_sq(isnan(uabs_sq)) = 0;
-%   SWIT_speed(n) = sqrt(sum(sum(uabs_sq.*RAC.*msk_speed_SWIT)) / sum(sum(RAC.*msk_speed_SWIT)));
-%   RL_speed(n) = sqrt(sum(sum(uabs_sq.*RAC.*msk_speed_RL)) / sum(sum(RAC.*msk_speed_RL)));
-%   uvel_lev(isnan(uvel_lev)) = 0;
-%   SWIT_uvel(n) = sum(sum(uvel_lev.*RAC.*msk_speed_SWIT)) / sum(sum(RAC.*msk_speed_SWIT));
-%   RL_uvel(n) = sum(sum(uvel_lev.*RAC.*msk_speed_RL)) / sum(sum(RAC.*msk_speed_RL));
-%     
-%   %%% Cavity-averaged temperature
-%   theta = theta.*vol_msk;
-%   SWIT_temp(n) = sum(sum(sum(theta(imin_SWIT:imax_SWIT,jmin_SWIT:jmax_SWIT,:)))) / SWIT_vol;
+  %%% Calculate kinetic energy and maximum horizontal speed
+  KE = 0.25*(uvel(1:Nx,1:Ny,:).^2+uvel([2:Nx 1],1:Ny,:).^2) ...
+     + 0.25*(vvel(1:Nx,1:Ny,:).^2+vvel(1:Nx,[2:Ny 1],:).^2);     
+  KE = KE.*vol_msk;
+  SWIT_KE(n) = sum(sum(sum(KE(imin_SWIT:imax_SWIT,jmin_SWIT:jmax_SWIT,:))));
+  
+  %%% Okubo-Weiss on a z-level upstream of SWIT
+  dudx = (uvel_lev([2:Nx 1],:) - uvel_lev(1:Nx,:)) ./ DXG; %%% du/dx on cell centers
+  dvdy = (vvel_lev(:,[2:Ny 1]) - vvel_lev(:,1:Ny)) ./ DYG; %%% dv/dy on cell centers
+  dvdx = (vvel_lev(1:Nx,:) - vvel_lev([Nx 1:Nx-1],:)) ./ DXC; %%% dv/dx on cell corners
+  dudy = (uvel_lev(:,1:Ny) - uvel_lev(:,[Ny 1:Ny-1])) ./ DYC; %%% du/du on cell corners
+  Sn = dudx - dvdy;
+  Ss = dudy + dvdx;
+  omega = dvdx - dudy;
+  OW = Ss.^2 - omega.^2 + 0.25*(Sn(1:Nx,1:Ny).^2 + Sn([Nx 1:Nx-1],1:Ny).^2 + Sn(1:Nx,[Ny 1:Ny-1]).^2 + Sn([Nx 1:Nx-1],[Ny 1:Ny-1]).^2);
+  msk_OW = (XG > -24) & (XG < -22) & (YG > -74) & (YG < -73.5);
+  msk_OW(isnan(OW)) = 0;
+  OWdist = OW(msk_OW);
+  SWIT_OW(n) = prctile(OWdist,5);
+%   SWIT_OW(n) = sum(sum(OW.*RAZ.*msk_OW)) / sum(sum(RAZ.*msk_OW));
+  
+  
+  %%% Compute RMS Rossby number next to SWIT
+  Ro = omega ./ ff;
+  Ro(isnan(Ro)) = 0;
+  SWIT_Ro(n) = sqrt(sum(sum(Ro.^2.*RAZ.*msk_OW)) / sum(sum(RAZ.*msk_OW)));
+  
+  %%% Mean flow speed next to cavities
+  uabs_sq = 0.5 * (uvel_lev(1:Nx,1:Ny).^2 + uvel_lev([2:Nx 1],1:Ny).^2) + 0.5 * (vvel_lev(1:Nx,1:Ny).^2 + vvel_lev(1:Nx,[2:Ny 1]).^2);  
+  msk_speed_SWIT = (XC > -26) & (XC < -24) & (YC > -74) & (YC < -73.5);
+  msk_speed_RL = (XC > -20) & (XC < -18) & (YC > -72.75) & (YC < -72.25);
+  msk_speed_SWIT(isnan(uabs_sq)) = 0;
+  msk_speed_RL(isnan(uabs_sq)) = 0;
+  uabs_sq(isnan(uabs_sq)) = 0;
+  SWIT_speed(n) = sqrt(sum(sum(uabs_sq.*RAC.*msk_speed_SWIT)) / sum(sum(RAC.*msk_speed_SWIT)));
+  RL_speed(n) = sqrt(sum(sum(uabs_sq.*RAC.*msk_speed_RL)) / sum(sum(RAC.*msk_speed_RL)));
+  uvel_lev(isnan(uvel_lev)) = 0;
+  SWIT_uvel(n) = sum(sum(uvel_lev.*RAC.*msk_speed_SWIT)) / sum(sum(RAC.*msk_speed_SWIT));
+  RL_uvel(n) = sum(sum(uvel_lev.*RAC.*msk_speed_RL)) / sum(sum(RAC.*msk_speed_RL));
+    
+  %%% Cavity-averaged temperature
+  theta = theta.*vol_msk;
+  SWIT_temp(n) = sum(sum(sum(theta(imin_SWIT:imax_SWIT,jmin_SWIT:jmax_SWIT,:)))) / SWIT_vol;
    
 end
 
@@ -189,46 +189,48 @@ plot(datevec,RL_melt/1e12*t1year);
 hold off;
 datetick('x');
 grid on;
-% 
-% figure(11);
-% plot(datevec,SWIT_KE);
-% datetick('x');
-% grid on;
-% 
-% figure(12);
-% plot(datevec,SWIT_temp);
-% datetick('x');
-% grid on;
-% 
-% figure(13);
-% plotyy(datevec,SWIT_edge_melt/1e12*t1year,datevec,-SWIT_OW);
-% datetick('x');
-% grid on;
-% 
-% figure(14);
-% scatter(SWIT_KE(:),SWIT_melt/1e12*t1year)
-% 
-% figure(15);
-% plot(datevec,SWIT_Ro);
-% datetick('x');
-% grid on;
-% 
-% figure(16);
-% plot(datevec,SWIT_speed);
-% datetick('x');
-% grid on;
-% 
-% figure(17);
-% plot(datevec,RL_speed);
-% datetick('x');
-% grid on;
-% 
-% figure(18);
-% plot(datevec,SWIT_uvel);
-% datetick('x');
-% grid on;
-% 
-% figure(19);
-% plot(datevec,RL_uvel);
-% datetick('x');
-% grid on;
+
+figure(11);
+plot(datevec,SWIT_KE);
+datetick('x');
+grid on;
+
+figure(12);
+plot(datevec,SWIT_temp);
+datetick('x');
+grid on;
+
+figure(13);
+ax = plotyy(datevec,SWIT_edge_melt/1e12*t1year,datevec,-SWIT_OW);
+datetick('x');
+grid on;
+axis(ax(1),'tight');
+axis(ax(2),'tight');
+
+figure(14);
+scatter(SWIT_KE(:),SWIT_edge_melt/1e12*t1year)
+
+figure(15);
+plot(datevec,SWIT_Ro);
+datetick('x');
+grid on;
+
+figure(16);
+plot(datevec,SWIT_speed);
+datetick('x');
+grid on;
+
+figure(17);
+plot(datevec,RL_speed);
+datetick('x');
+grid on;
+
+figure(18);
+plot(datevec,SWIT_uvel);
+datetick('x');
+grid on;
+
+figure(19);
+plot(datevec,RL_uvel);
+datetick('x');
+grid on;

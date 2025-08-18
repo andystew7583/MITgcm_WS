@@ -16,7 +16,7 @@ loadexp;
 %%% Select diagnostic variable to animate
 % diagnum = 66;
 % diagnum = 46;
-diagnum = 1;
+diagnum = 6;
 outfname =diag_fileNames{1,diagnum};
 % outfname = 'Eta';
 
@@ -75,26 +75,26 @@ set_crange = 1;
 % crange =[-.1 .1]; %%% SFLUX
 % crange =[-1 1]*1e-3; %%% WVEL
 % % crange = [0 3];
-crange = [-0.5 0.5];
-% crange = [0.2 1.2]; %% SSH
+% crange = [-0.5 0.5];
+crange = [0.2 1.2]; %% SSH
 % crange = [-0.3 0.3]; %%% Melt rate 
 
 % cmap = pmkmp(100,'Swtth');
 % cmap = cmocean('haline',100);
 % cmap = cmocean('thermal',20);
 % cmap = cmocean('ice',100);
-% cmap = haxby;
+cmap = haxby;
 % cmap = jet(200);
-cmap = redblue(100);
+% cmap = redblue(100);
 % cmap = cmocean('amp',100);
 % 
 % titlestr = 'Salinity (g/kg)';
 % titlestr = 'Surface salinity (g/kg)';
 % titlestr = 'Temperature ($^\circ$C)';
-titlestr = 'Zonal velocity (m/s)';
+% titlestr = 'Zonal velocity (m/s)';
 % titlestr = 'Surface temperature ($^\circ$C)';
 % titlestr = 'Sea ice concentration';
-% titlestr = '';
+titlestr = '';
 
 months = {'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'};
 years = 2007:1:2015;
@@ -214,7 +214,7 @@ Amax = [];
 
 % for n = 15*12:length(dumpIters)
 % for n = 1:length(dumpIters)
-for n = 1:366
+for n = 60
 % for n=5*12
 % for n=7*12:8*12
 % for n = 34a

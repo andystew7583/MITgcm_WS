@@ -31,11 +31,14 @@ loadexp;
 %%% Set true to deform coordinates in the cavity
 deform_cavity = false;
 
+%%% Set true to use grounding line coordinate
+gl_coord = true;
+
 %%% Set true to decompose eddy fluxes
 calc_eddy_decomp = false;
 
 %%% Define coordinate system for integrating to compute streamfunction
-ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity);
+ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity,gl_coord);
 eta = -9:.1:11;
 Neta = length(eta);
 
@@ -218,6 +221,8 @@ sltflux_fluc = eflux_eddy - mean(sltflux_eddy,2);
 outfname = [expname,'_TSfluxes'];
 if (deform_cavity)
   outfname = [outfname,'_deform'];
+elseif (gl_coord)
+  outfname = [outfname,'_GLcoord'];
 end
 outfname = [outfname,'.mat'];
 save(fullfile('products',outfname), ...

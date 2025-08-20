@@ -29,6 +29,9 @@ deform_cavity = false;
 %%% Set true to use barotropic streamfunction as the coordinate system
 use_PsiBT = false;
 
+%%% Set true to use grounding line coordinate
+gl_coord = true;
+
 %%% Set true to use depth-averaged temperature as the coordinate system
 use_meanT = false;
 
@@ -65,6 +68,8 @@ else
   else 
     if (deform_cavity)
       outfname = [outfname,'_deform'];
+    elseif (gl_coord)
+      outfname = [outfname,'_GLcoord'];
     end
   end
 end
@@ -89,6 +94,21 @@ end
 
 psiT_tot_plot = -mean(psiT_tot-psi_tot*theta0,3) * rho0*Cp/1e12 .* msk;
 psiT_mean_plot = -mean(psiT_mean-psi_tot*theta0,3) * rho0*Cp/1e12 .* msk;
+
+msk = ones(size(psiT_neg_mean));
+msk_ice = NaN*msk;
+for j=1:Neta  
+  idx = find(psiT_neg_mean(j,:)==psiT_neg_mean(j,1));
+  idx(end) = [];
+  msk(j,idx) = NaN;
+  if (~isempty(idx))
+    msk_ice(j,1:idx(end)) = 1;
+  end
+  idx = find(abs(psiT_neg_mean(j,:))<1e-12,1,'first');
+  msk(j,idx+1:end) = NaN;
+end
+
+
 psiT_pos_plot = -mean(psiT_pos_mean,3) * rho0*Cp/1e12 .* msk;
 psiT_neg_plot = -mean(psiT_neg_mean,3) * rho0*Cp/1e12 .* msk;
 

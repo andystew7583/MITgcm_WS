@@ -11,9 +11,12 @@ expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
 
 %%% Options (see calcTSfluxes)
 deform_cavity = false;
+gl_coord = true;
 outfname = ['','_TSfluxes'];
 if (deform_cavity)
   outfname = [outfname,'_deform'];
+elseif (gl_coord)
+  outfname = [outfname,'_GLcoord'];
 end
 outfname = [outfname,'.mat'];
 outfname = [expname,outfname];
@@ -35,7 +38,7 @@ surfQflux(sum(hFacC,3)==0) = 0;
 %%% Load positive and negative heatfunction components
 outfname = [expname,'_PosNegHeatFunction'];
 outfname = [outfname,'.mat'];
-load(fullfile('products',outfname));
+load(fullfile('products',outfname),'psiT_pos_mean','psiT_neg_mean');
 
 %%% Depth-integrated heat fluxes due to positive and negative heat function
 %%% components
@@ -261,7 +264,7 @@ plot([0 0],[-5 15],'--','Color',[.3 .3 .3],'LineWidth',2);
 hold off;
 ylabel('Shoreward heat flux (TW)');
 xlabel('\eta');
-axis([-8 5 -3.5 7]);
+axis([-9 5 -3.5 7]);
 set(gca,'FontSize',fontsize);
 leghandle = legend('Mean','Seasonal/interannual','Eddy','Total','Location','NorthWest');
 set(leghandle,'FontSize',fontsize);
@@ -295,7 +298,7 @@ plot([0 0],[-5 15],'--','Color',[.3 .3 .3],'LineWidth',2);
 hold off;
 % ylabel('Heat flux (TW)');
 xlabel('\eta');
-axis([-8 4 -3.5 7]);
+axis([-9 4 -3.5 7]);
 set(gca,'FontSize',fontsize);
 leghandle = legend('Total','``Warm'''' component','``Cold'''' component','Location','NorthWest');
 set(leghandle,'FontSize',fontsize);

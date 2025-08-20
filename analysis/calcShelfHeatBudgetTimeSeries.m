@@ -10,9 +10,9 @@
 
 %%% Load experiment data
 expdir = '../experiments';
-expname = 'hires_seq_onethird_RTOPO2';
-tmin = 19.05;
-tmax = 27.05;
+% expname = 'hires_seq_onethird_RTOPO2';
+% tmin = 19.05;
+% tmax = 27.05;
 % expname = 'hires_seq_onesixth_RTOPO2';
 % tmin = 10.05;
 % tmax = 18.05;
@@ -22,6 +22,9 @@ tmax = 27.05;
 % expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
 % tmin = 1.05;
 % tmax = 7.05;
+expname = 'hires_nest_onethirtieth_notides_RTOPO2';
+tmin = 0.05;
+tmax = 7.05;
 loadexp;
 
 %%% Index of the upper grid cell face dividing the upper and lower portions

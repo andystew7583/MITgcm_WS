@@ -40,11 +40,14 @@ theta0 = -1.9;
 %%% Set true to deform coordinates in the cavity
 deform_cavity = false;
 
+%%% Set true to use grounding line coordinate
+gl_coord = true;
+
 %%% Set true to use barotropic streamfunction as the coordinate system
 use_PsiBT = false;
 
 %%% Set true to use depth-averaged temperature as the coordinate system
-use_meanT = true;
+use_meanT = false;
 
 %%% Define coordinate system for integrating to compute heatfunction
 if (use_PsiBT)
@@ -83,8 +86,8 @@ else
 
   else
 
-    ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity);
-    eta = -9:.1:11;
+    ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity,gl_coord);
+    eta = -9:.05:11;
     Neta = length(eta);
 
   end
@@ -194,6 +197,8 @@ else
   else 
     if (deform_cavity)
       outfname = [outfname,'_deform'];
+    elseif (gl_coord)
+      outfname = [outfname,'_GLcoord'];
     end
   end
 end

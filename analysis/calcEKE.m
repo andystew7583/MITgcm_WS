@@ -13,7 +13,8 @@ expdir = '../experiments';
 % expname = 'hires_seq_onethird_notides_RTOPO2';
 % expname = 'hires_seq_onesixth_RTOPO2';
 % expname = 'hires_seq_onetwelfth_notides_RTOPO2';
-expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+expname = 'hires_nest_onethirtieth_notides_RTOPO2';
 loadexp;
 
 %%% Time frame over which to average thermodynamic variables to create
@@ -24,7 +25,7 @@ loadexp;
 % tmax = 18.05*86400*365;
 % tmin = 1.05*86400*365;
 % tmax = 9.05*86400*365;
-tmin = 1.05*86400*365;
+tmin = 0.05*86400*365;
 tmax = 7.05*86400*365;
 
 

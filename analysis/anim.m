@@ -16,7 +16,7 @@ loadexp;
 %%% Select diagnostic variable to animate
 % diagnum = 66;
 % diagnum = 46;
-diagnum = 6;
+diagnum = 69;
 outfname =diag_fileNames{1,diagnum};
 % outfname = 'Eta';
 
@@ -76,14 +76,14 @@ set_crange = 1;
 % crange =[-1 1]*1e-3; %%% WVEL
 % % crange = [0 3];
 % crange = [-0.5 0.5];
-crange = [0.2 1.2]; %% SSH
+crange = [0.3 1]; %% SSH
 % crange = [-0.3 0.3]; %%% Melt rate 
 
 % cmap = pmkmp(100,'Swtth');
 % cmap = cmocean('haline',100);
 % cmap = cmocean('thermal',20);
 % cmap = cmocean('ice',100);
-cmap = haxby;
+cmap = haxby(56);
 % cmap = jet(200);
 % cmap = redblue(100);
 % cmap = cmocean('amp',100);
@@ -214,7 +214,7 @@ Amax = [];
 
 % for n = 15*12:length(dumpIters)
 % for n = 1:length(dumpIters)
-for n = 60
+for n = 3*730+565;
 % for n=5*12
 % for n=7*12:8*12
 % for n = 34a
@@ -285,7 +285,7 @@ for n = 60
     else
 %       if (strcmp(outfname,'
           FF = squeeze(A(:,:,xylayer,outfidx));        
-%           FF(hFacC(:,:,xylayer)==0) = NaN;
+          FF(hFacC(:,:,xylayer)==0) = NaN;
 %           FF = sum(A(:,:,xylayer:end,outfidx),3);
     end
       
@@ -341,7 +341,8 @@ for n = 60
     
     
     hold on;
-    [cs,C] = contourm(YC,XC,bathy,[-5000:1000:-1000 -600 -200],'EdgeColor','k');
+    % [cs,C] = contourm(YC,XC,bathy,[-5000:1000:-1000 -600 -200],'EdgeColor','k');
+    [cs,C] = contourm(YC,XC,bathy,[-5000:1000:-1000 -500],'EdgeColor','k');
     hold off;
 
     %%% Add colorbar and title
@@ -365,6 +366,7 @@ for n = 60
 %     end
 %     Ayz =  squeeze(Ayz(jrange,:,:));
     Ayz(Ayz==0)=NaN;
+
     jrange = 1:Ny;
 %     [C h] = contourf(YY(jrange,:),ZZ(jrange,:)/1000,Ayz,200,'EdgeColor','None');              
     pcolor(YY(jrange,:),ZZ(jrange,:)/1000,Ayz(jrange,:));

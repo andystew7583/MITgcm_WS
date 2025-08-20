@@ -17,10 +17,17 @@ diagfreq = diag_frequency(end);
 % dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
 
 %%% For daily/12-hourly outputs, SSH-specific re-run
-dumpStart = 720;
-dumpStep = 86400/2/60;
-nDumps = 731;
-dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
+% dumpStart = 720;
+% dumpStep = 86400/2/60;
+% nDumps = 731;
+% dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
+
+%%% Sub-domain re-run
+dumpFreq = abs(diag_frequency(69));
+nDumps = round(endTime/dumpFreq);
+dumpIters = round((1:nDumps)*dumpFreq/deltaT);
+dumpIters = dumpIters(dumpIters > nIter0);
+nDumps = length(dumpIters)
 
 %%% To store the result
 ssh = zeros(Nx,Ny);
@@ -52,10 +59,14 @@ for n=1:nDumps
   tt(n)
 
   %%% Attempt to load melt ave per month
-  SIheff = rdmdsWrapper(fullfile(exppath,'/results/SIheff_12hourly'),dumpIters(n));  
-  SIhsnow = rdmdsWrapper(fullfile(exppath,'/results/SIhsnow_12hourly'),dumpIters(n));  
-  SIarea = rdmdsWrapper(fullfile(exppath,'/results/SIarea_12hourly'),dumpIters(n));  
-  eta = rdmdsWrapper(fullfile(exppath,'/results/ETAN_12hourly'),dumpIters(n));  
+  % SIheff = rdmdsWrapper(fullfile(exppath,'/results/SIheff_12hourly'),dumpIters(n));  
+  % SIhsnow = rdmdsWrapper(fullfile(exppath,'/results/SIhsnow_12hourly'),dumpIters(n));  
+  % SIarea = rdmdsWrapper(fullfile(exppath,'/results/SIarea_12hourly'),dumpIters(n));  
+  % eta = rdmdsWrapper(fullfile(exppath,'/results/ETAN_12hourly'),dumpIters(n));  
+  SIheff = rdmdsWrapper(fullfile(exppath,'/results/SIheff_inst'),dumpIters(n));  
+  SIhsnow = rdmdsWrapper(fullfile(exppath,'/results/SIhsnow_inst'),dumpIters(n));  
+  SIarea = rdmdsWrapper(fullfile(exppath,'/results/SIarea_inst'),dumpIters(n));  
+  eta = rdmdsWrapper(fullfile(exppath,'/results/ETAN_inst'),dumpIters(n));  
   if (isempty(eta))
     error(['No data at n = ',num2str(n)]);
   end

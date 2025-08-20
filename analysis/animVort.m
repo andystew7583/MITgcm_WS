@@ -15,7 +15,8 @@ DZ = repmat(reshape(delR,[1 1 Nr]),[Nx Ny 1]);
 
 %%% Diagnostic indix corresponding to instantaneous velocity
 diagnum = length(diag_frequency);
-diagnum = 1;
+% diagnum = 1;
+diagnum = 69;
 
 %%% This needs to be set to ensure we are using the correct output
 %%% frequency
@@ -50,12 +51,13 @@ M = moviein(nDumps);
 % vort = zeros(Nx,Ny,Nr);
 Omega = 2*pi*366/365/86400;
 ff = 2*Omega*sind(YG);
+g = 9.81;
   
 %%% Loop through iterations
 % for n=88:length(dumpIters)
 % for n = 1:88
-for n = 60:127
-% for n=250:300
+% for n = 60:127
+for n=730:length(dumpIters)
  
   tt(n) =  dumpIters(n)*deltaT/86400;
   tt(n)
@@ -67,13 +69,14 @@ for n = 60:127
 %   vvel = rdmdsWrapper(fullfile(exppath,'/results/SIvice_12hourly'),dumpIters(n));
 %   uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_daily'),dumpIters(n)) ;      
 %   vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_daily'),dumpIters(n)); 
-  uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_inst'),dumpIters(n));      
-  vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_inst'),dumpIters(n));    
+  % uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_inst'),dumpIters(n));      
+  % vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_inst'),dumpIters(n));    
 %   uvel = rdmdsWrapper(fullfile(exppath,'/results/U'),dumpIters(n)) ;      
 %   vvel = rdmdsWrapper(fullfile(exppath,'/results/V'),dumpIters(n)); 
-  if (isempty(uvel) || isempty(vvel))   
-    break;
-  end
+  eta = rdmdsWrapper(fullfile(exppath,'/results/ETAN_inst'),dumpIters(n));
+  % if (isempty(uvel) || isempty(vvel))   
+  %   break;
+  % end
   
   %%% Plot the vorticity  
 
@@ -88,22 +91,34 @@ for n = 60:127
 %   vvel(hFacS(:,:,zlev)==0) = NaN;
 %   vort(:,2:Ny) = - (uvel(:,2:Ny)-uvel(:,1:Ny-1))./DYC(:,2:Ny);
 %   vort(2:Nx,:) = vort(2:Nx,:) + (vvel(2:Nx,:)-vvel(1:Nx-1,:))./DXC(2:Nx,:);
+
+
+  %%% Geostrophic relative vorticity
+  eta(hFacC(:,:,1)==0) = NaN;
+  vvel = 0*eta;
+  uvel = 0*eta;
+  vvel(2:end,1:end) = g * (diff(eta,1,1) ./ DXC(2:end,1:end)) ./ ff(2:end,1:end);
+  uvel(1:end,2:end) = -g * diff(eta,1,2) ./ DYC(1:end,2:end) ./ ff(1:end,2:end);   
+  vort = 0*eta;
+  vort(2:end-1,2:end-1) = (vvel(3:end,2:end-1) - vvel(2:end-1,2:end-1)) ./ DXG(2:end-1,2:end-1) ...
+                        - (uvel(2:end-1,3:end) - uvel(2:end-1,2:end-1)) ./ DYG(2:end-1,2:end-1);
+    
   
   %%% Okubo-Weiss on a z-level
  
-  zlev = 1;
-  uvel = uvel(:,:,zlev);
-  vvel = vvel(:,:,zlev);
-  uvel(hFacW(:,:,zlev)==0) = NaN;
-  vvel(hFacS(:,:,zlev)==0) = NaN;
-  dudx = (uvel([2:Nx 1],:) - uvel(1:Nx,:)) ./ DXG; %%% du/dx on cell centers
-  dvdy = (vvel(:,[2:Ny 1]) - vvel(:,1:Ny)) ./ DYG; %%% dv/dy on cell centers  
-  dvdx = (vvel(1:Nx,:) - vvel([Nx 1:Nx-1],:)) ./ DXC; %%% dv/dx on cell corners
-  dudy = (uvel(:,1:Ny) - uvel(:,[Ny 1:Ny-1])) ./ DYC; %%% du/du on cell corners
-  Sn = dudx - dvdy;
-  Ss = dudy + dvdx;
-  omega = dvdx - dudy;
-  OW = Ss.^2 - omega.^2 + 0.25*(Sn(1:Nx,1:Ny).^2 + Sn([Nx 1:Nx-1],1:Ny).^2 + Sn(1:Nx,[Ny 1:Ny-1]).^2 + Sn([Nx 1:Nx-1],[Ny 1:Ny-1]).^2);
+  % zlev = 1;
+  % uvel = uvel(:,:,zlev);
+  % vvel = vvel(:,:,zlev);
+  % uvel(hFacW(:,:,zlev)==0) = NaN;
+  % vvel(hFacS(:,:,zlev)==0) = NaN;
+  % dudx = (uvel([2:Nx 1],:) - uvel(1:Nx,:)) ./ DXG; %%% du/dx on cell centers
+  % dvdy = (vvel(:,[2:Ny 1]) - vvel(:,1:Ny)) ./ DYG; %%% dv/dy on cell centers  
+  % dvdx = (vvel(1:Nx,:) - vvel([Nx 1:Nx-1],:)) ./ DXC; %%% dv/dx on cell corners
+  % dudy = (uvel(:,1:Ny) - uvel(:,[Ny 1:Ny-1])) ./ DYC; %%% du/du on cell corners
+  % Sn = dudx - dvdy;
+  % Ss = dudy + dvdx;
+  % omega = dvdx - dudy;
+  % OW = Ss.^2 - omega.^2 + 0.25*(Sn(1:Nx,1:Ny).^2 + Sn([Nx 1:Nx-1],1:Ny).^2 + Sn(1:Nx,[Ny 1:Ny-1]).^2 + Sn([Nx 1:Nx-1],[Ny 1:Ny-1]).^2);
   
   
   %%% Divergence on a z-level
@@ -128,12 +143,18 @@ for n = 60:127
 %   vort(2:Nx,:,:) = vort(2:Nx,:,:) + (vvel(2:Nx,:,:)-vvel(1:Nx-1,:,:))./DXC3D;
 %   vort = nanmean(vort,3); %%% Approximate depth-average
 
-  latMin = min(min(YC));
+  % latMin = min(min(YC));
+  % latMin = YC(1,spongethickness+1);
+  latMin = -75.5;
 %   latMin = -78.5;
-  latMax = YC(1,end-spongethickness);
-  lonMin = min(min(XC));
+  % latMax = YC(1,end-spongethickness);
+  % lonMin = min(min(XC));
+  latMax = -72;
+  % lonMin = XC(spongethickness+1,1);
+  lonMin = -44;
 %   lonMin = -62;
-  lonMax = XC(end-spongethickness,1);
+  % lonMax = XC(end-spongethickness,1);
+  lonMax = -28;
   
   clf;    
   set(gcf,'color','w');
@@ -151,8 +172,8 @@ for n = 60:127
   %           'origin',[yc(round(size(yc,1)/2),round(size(yc,2)/2)),xc(round(size(xc,1)/2),round(size(xc,2)/2))])
   axis off;
   setm(gca,'MLabelParallel',-20)
-%   pcolorm(YG,XG,vort./abs(ff));
-  pcolorm(YG,XG,OW./ff.^2);
+  pcolorm(YG,XG,vort./abs(ff));
+  % pcolorm(YG,XG,OW./ff.^2);
   shading interp
   colormap(cmocean('balance'));
 
@@ -173,10 +194,10 @@ for n = 60:127
 %   h = title(['\zeta/|f| at t= ',num2str(round(tt(n)),'%3d'),' days']);
 %   h = title(['\delta/|f| at t= ',num2str(round(tt(n)),'%3d'),' days']);
   %  h = title(['\zeta/f at t= ',num2str(tt(n)/365,'%.1f'),' years']);  
-  set(gca,'Position',[0.02 0 0.93 0.9])
+  set(gca,'Position',[0.04 0 0.89 0.9])
   tightmap;
   drawnow;
-  set(h,'Position',get(h,'Position')+[0 +0.0075 0])
+  set(h,'Position',get(h,'Position')+[0 -0.0075 0])
 
 
   M(n) = getframe(gcf);  

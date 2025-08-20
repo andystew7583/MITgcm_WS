@@ -80,6 +80,10 @@ function ETA = defineMOCgrid (XC,YC,icedraft,bathy,deform_cavity,gl_coord)
     ETA2((XC > -67) & (YC>-81) & (XC<-42) & (YC<-77.5) & (icedraft<=bathy)) = NaN; %%% Manually remove islands in FRISs
     ETA2((XC<=-67) & (YC>-80.5) & (XC>-72) & (YC<-78.1) & (icedraft<=bathy)) = NaN;
     ETA2 = inpaint_nans(ETA2);
+    % idx_known = find(~isnan(ETA2));
+    % idx_unknown = find(isnan(ETA2));
+    % F = scatteredInterpolant(XC(idx_known),YC(idx_known),ETA2(idx_known));
+    % ETA2(idx_unknown) = F(XC(idx_unknown),YC(idx_unknown));
 
     %%% Grid outside cavity - approaches standard ETA grid at eta_t
     ETA1 = ETA2;
@@ -89,6 +93,10 @@ function ETA = defineMOCgrid (XC,YC,icedraft,bathy,deform_cavity,gl_coord)
     ETA1(icedraft <= bathy) = NaN;
     ETA1((icedraft<0) & (icedraft > bathy) & (ETA0 < 0)) = eta_if;
     ETA1 = inpaint_nans(ETA1);
+    % idx_known = find(~isnan(ETA1));
+    % idx_unknown = find(isnan(ETA1));
+    % F = scatteredInterpolant(XC(idx_known),YC(idx_known),ETA1(idx_known));
+    % ETA1(idx_unknown) = F(XC(idx_unknown),YC(idx_unknown));
 
     %%% Grid deeper inside cavity - interpolates better toward complex GL
     ETA3 = ETA2;

@@ -326,6 +326,7 @@ for n=1:Ntime
 
     %%% Shortcut if fine grid resolution = coarse grid resolution    
     vvel_f = vvel;        
+
     dens_v_f = dens_v;
 
   else   

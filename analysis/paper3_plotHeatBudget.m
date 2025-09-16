@@ -21,9 +21,6 @@ salt0 = 34.6;
 eta_icefront = -1.1;
 eta_shelfbreak = 3.5;  
 
-%%% Depth of ice front for heat budget calculation
-zidx_icefront = 25;    
-
 %%% Set true to deform coordinates in the cavity
 deform_cavity = false;
 
@@ -33,15 +30,26 @@ use_PsiBT = false;
 %%% Set true to use depth-averaged temperature as the coordinate system
 use_meanT = false;
 
+%%% set true to use grounding line coordinate
+gl_coord = true;
+
 %%% Set true to decompose eddy fluxes
 calc_eddy_decomp = false;
+
+%%% Index of the upper grid cell face dividing the upper and lower portions
+%%% of the water column
+if (gl_coord)
+  zidx_icefront = 15;
+else
+  zidx_icefront = 25;
+end
 
 %%% Physical parameters
 rho0 = 1000;
 Cp = 4000;
 
 %%% Define coordinate system for integrating to compute heatfunction
-ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity);
+ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity,gl_coord);
 eta = -9:.1:11;
 Neta = length(eta);
 
@@ -62,6 +70,8 @@ else
   else 
     if (deform_cavity)
       outfname = [outfname,'_deform'];
+    elseif (gl_coord)
+      outfname = [outfname,'_GLcoord'];
     end
   end
 end
@@ -78,6 +88,8 @@ else
   else 
     if (deform_cavity)
       outfname = [outfname,'_deform'];
+    elseif (gl_coord)
+      outfname = [outfname,'_GLcoord'];
     end
   end
 end
@@ -91,13 +103,19 @@ if (use_PsiBT)
 else
   if (deform_cavity)
     outfname = [outfname,'_deform'];
+  elseif (gl_coord)
+    outfname = [outfname,'_GLcoord'];
   end
 end
 outfname = [outfname,'.mat'];
 load(fullfile('products',outfname));
  
 %%% Load shelf heat budget diagnostics
-outfname = [expname,'_ShelfHeatBudget.mat'];
+outfname = [expname,'_ShelfHeatBudget'];
+if (gl_coord)
+  outfname = [outfname,'_GLcoord'];
+end
+outfname = [outfname,'.mat'];
 load(fullfile('products',outfname));
 
 %%% Compute volume averages
@@ -624,7 +642,7 @@ annotation(figure1,'arrow',[0.343 0.269],...
 % Create textbox
 annotation(figure1,'textbox',...
   [0.629 0.973197264218865 0.3085 0.0242980561555076],...
-  'String',{'Vertical eddy heat flux at 255m depth'},...
+  'String',{'Vertical eddy heat flux at 246m depth'},...
   'Interpreter','latex',...
   'FontSize',16,...
   'FitBoxToText','off',...

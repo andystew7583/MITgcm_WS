@@ -77,7 +77,7 @@ Omega = 2*pi*366/365/86400;
 ff = 2*Omega*sind(YG);  
   
 %%% Loop through iterations
-for n = 1:522
+for n = 1:1202
  
   tt(n) =  dumpIters(n)*deltaT;
   tt(n)/t1day
@@ -232,5 +232,10 @@ grid on;
 
 figure(19);
 plot(datevec,RL_uvel);
+datetick('x');
+grid on;
+
+figure(20);
+plot(datevec,SWIT_OW);
 datetick('x');
 grid on;

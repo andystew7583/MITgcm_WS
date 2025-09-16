@@ -31,10 +31,6 @@ tmin = 1.05;
 tmax = 7.05;
 loadexp;
 
-%%% Index of the upper grid cell face dividing the upper and lower portions
-%%% of the water column
-zidx_icefront = 25;
-
 %%% Reference surface freezing temperature
 theta0 = -1.9;
 
@@ -46,6 +42,17 @@ use_PsiBT = false;
 
 %%% Set true to use depth-averaged temperature as the coordinate system
 use_meanT = false;
+
+%%% Set true to use grounding line coordinate
+gl_coord = true;
+
+%%% Index of the upper grid cell face dividing the upper and lower portions
+%%% of the water column
+if (gl_coord)
+  zidx_icefront = 15;
+else
+  zidx_icefront = 25;
+end
 
 %%% Define coordinate system for integrating to compute heatfunction
 if (use_PsiBT)
@@ -84,8 +91,8 @@ else
 
   else
 
-    ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity);
-    eta = -9:.1:11;
+    ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity,gl_coord);
+    eta = -9:.05:11;
     Neta = length(eta);
 
   end
@@ -373,6 +380,8 @@ else
   else 
     if (deform_cavity)
       outfname = [outfname,'_deform'];
+    elseif (gl_coord)
+      outfname = [outfname,'_GLcoord'];
     end
   end
 end

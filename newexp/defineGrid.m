@@ -200,7 +200,7 @@ switch (res_fac)
     endyr = 2014;
   case 32
     start_year = 2008;
-    endyr = 2009;
+    endyr = 2014;
   case 48
     start_year = 2011;
     endyr = 2012;

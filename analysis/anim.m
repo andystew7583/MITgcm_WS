@@ -16,7 +16,7 @@ loadexp;
 %%% Select diagnostic variable to animate
 % diagnum = 66;
 % diagnum = 46;
-diagnum = 69;
+diagnum = 3;
 outfname =diag_fileNames{1,diagnum};
 % outfname = 'Eta';
 
@@ -28,7 +28,7 @@ outfidx = 1;
 xyplot = 1;
 
 %%% Vertical layer index to use for top-down plots
-xylayer = 1;
+xylayer = 25;
 
 %%% Set true to plot the field in the lowest active cell at each horizontal
 %%% location
@@ -73,19 +73,19 @@ set_crange = 1;
 % crange =[-100 100]; %%% Qnet
 % crange = [-300 300]; %%% swnet
 % crange =[-.1 .1]; %%% SFLUX
-% crange =[-1 1]*1e-3; %%% WVEL
+crange =[-1 1]*1e-3; %%% WVEL
 % % crange = [0 3];
 % crange = [-0.5 0.5];
-crange = [0.3 1]; %% SSH
+% crange = [0.3 1]; %% SSH
 % crange = [-0.3 0.3]; %%% Melt rate 
 
 % cmap = pmkmp(100,'Swtth');
 % cmap = cmocean('haline',100);
 % cmap = cmocean('thermal',20);
 % cmap = cmocean('ice',100);
-cmap = haxby(56);
+% cmap = haxby(56);
 % cmap = jet(200);
-% cmap = redblue(100);
+cmap = redblue(100);
 % cmap = cmocean('amp',100);
 % 
 % titlestr = 'Salinity (g/kg)';
@@ -213,8 +213,8 @@ Amean = [];
 Amax = [];
 
 % for n = 15*12:length(dumpIters)
-% for n = 1:length(dumpIters)
-for n = 3*730+565;
+for n = 730:length(dumpIters)
+% for n = 3*730+565;
 % for n=5*12
 % for n=7*12:8*12
 % for n = 34a

@@ -27,12 +27,9 @@ expdir = '../experiments';
 % tmax = 9.05;
 expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
 tmin = 1.05;
+% tmax = 1.1;
 tmax = 7.05;
 loadexp;
-
-%%% Index of the upper grid cell face dividing the upper and lower portions
-%%% of the water column
-zidx_icefront = 25;
 
 %%% Reference surface freezing temperature
 theta0 = -1.9;
@@ -48,6 +45,14 @@ use_PsiBT = false;
 
 %%% Set true to use depth-averaged temperature as the coordinate system
 use_meanT = false;
+
+%%% Index of the upper grid cell face dividing the upper and lower portions
+%%% of the water column
+if (gl_coord)
+  zidx_icefront = 15;
+else
+  zidx_icefront = 25;
+end
 
 %%% Define coordinate system for integrating to compute heatfunction
 if (use_PsiBT)

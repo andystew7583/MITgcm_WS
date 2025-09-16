@@ -15,7 +15,7 @@ DZ = repmat(reshape(delR,[1 1 Nr]),[Nx Ny 1]);
 
 %%% Diagnostic indix corresponding to instantaneous velocity
 diagnum = length(diag_frequency);
-% diagnum = 1;
+diagnum = 1;
 
 %%% This needs to be set to ensure we are using the correct output
 %%% frequency
@@ -60,7 +60,8 @@ ff = 2*Omega*sind(YG);
 %%% Loop through iterations
 % for n=88:length(dumpIters)
 % for n = 1:88
-for n = 475:522
+% for n = 730:length(dumpIters)
+for n = 1143:length(dumpIters)
 % for n=250:300
  
   tt(n) =  dumpIters(n)*deltaT/86400;
@@ -87,8 +88,8 @@ for n = 475:522
 
   %%% Vorticity on a z-level
   vort = zeros(Nx,Ny);
-%   zlev = 1;
-  zlev = 25;
+  zlev = 1;
+  % zlev = 25;
 %   zlev = 44;
   uvel = uvel(:,:,zlev);
   vvel = vvel(:,:,zlev);

@@ -8,15 +8,15 @@
 %%%
 
 %%% Read experiment data
-loadexp;
+% loadexp;
 
 %%% Vertical grid spacing matrix
 DZ = repmat(reshape(delR,[1 1 Nr]),[Nx Ny 1]);
 
 %%% Diagnostic indix corresponding to instantaneous velocity
 diagnum = length(diag_frequency);
-% diagnum = 1;
-diagnum = 69;
+diagnum = 1;
+% diagnum = 69;
 
 %%% This needs to be set to ensure we are using the correct output
 %%% frequency
@@ -74,6 +74,8 @@ for n=730:length(dumpIters)
 %   uvel = rdmdsWrapper(fullfile(exppath,'/results/U'),dumpIters(n)) ;      
 %   vvel = rdmdsWrapper(fullfile(exppath,'/results/V'),dumpIters(n)); 
   eta = rdmdsWrapper(fullfile(exppath,'/results/ETAN_inst'),dumpIters(n));
+  % eta = rdmdsWrapper(fullfile(exppath,'/results/SIarea_inst'),dumpIters(n));
+  % eta = rdmdsWrapper(fullfile(exppath,'/results/ETAN'),dumpIters(n));
   % if (isempty(uvel) || isempty(vvel))   
   %   break;
   % end
@@ -82,9 +84,9 @@ for n=730:length(dumpIters)
 
   %%% Vorticity on a z-level
 %   vort = zeros(Nx,Ny);
-% %   zlev = 1;
+%   zlev = 1;
 % %   zlev = 25;
-%   zlev = 44;
+%   % zlev = 44;
 %   uvel = uvel(:,:,zlev);
 %   vvel = vvel(:,:,zlev);
 %   uvel(hFacW(:,:,zlev)==0) = NaN;
@@ -144,17 +146,17 @@ for n=730:length(dumpIters)
 %   vort = nanmean(vort,3); %%% Approximate depth-average
 
   % latMin = min(min(YC));
-  % latMin = YC(1,spongethickness+1);
-  latMin = -75.5;
-%   latMin = -78.5;
-  % latMax = YC(1,end-spongethickness);
+  latMin = YC(1,spongethickness+1);
+  % latMin = -75.5;
+  % latMin = -78.5;
+  latMax = YC(1,end-spongethickness);
   % lonMin = min(min(XC));
-  latMax = -72;
-  % lonMin = XC(spongethickness+1,1);
-  lonMin = -44;
-%   lonMin = -62;
-  % lonMax = XC(end-spongethickness,1);
-  lonMax = -28;
+  % latMax = -72;
+  lonMin = XC(spongethickness+1,1);
+  % lonMin = -44;
+  % lonMin = -62;
+  lonMax = XC(end-spongethickness,1);
+  % lonMax = -28;
   
   clf;    
   set(gcf,'color','w');

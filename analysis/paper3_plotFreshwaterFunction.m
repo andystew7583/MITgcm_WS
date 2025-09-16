@@ -1,91 +1,101 @@
-% %%%
-% %%% paper3_plotTSfluxes.m
-% %%%
-% %%% Plots heat/salt fluxes in quasi-latitude coordinates
-% %%%
-% 
-% %%% Load experiment
-% expdir = '../experiments';
-% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-% % loadexp;
-% 
-% %%% Reference surface freezing temperature
-% theta0 = -1.9;
-% 
-% %%% Reference salinity
-% salt0 = 34.6;
-% % salt0 = 34.72;
-% 
-% %%% Cross-shelf locations of ice front and shelf break for heat budget calculation
-% eta_icefront = -1.1;
-% eta_shelfbreak = 3.5;  
-% 
-% %%% Depth of ice front for heat budget calculation
-% zidx_icefront = 25;    
-% 
-% %%% Set true to deform coordinates in the cavity
-% deform_cavity = false;
-% 
-% %%% Set true to use barotropic streamfunction as the coordinate system
-% use_PsiBT = false;
-% 
-% %%% Set true to use depth-averaged temperature as the coordinate system
-% use_meanT = false;
-% 
-% %%% Set true to decompose eddy fluxes
-% calc_eddy_decomp = false;
-% 
-% %%% Parameters
-% rho0 = 1000;
-% Cp = 4000;
-% 
-% %%% Load HeatFunction data file
-% outfname = [expname,'_HeatFunction'];
-% if (use_PsiBT)
-%   outfname = [outfname,'_PsiBT'];
-% else 
-%   if (use_meanT)
-%     outfname = [outfname,'_meanT'];
-%   else 
-%     if (deform_cavity)
-%       outfname = [outfname,'_deform'];
-%     end
-%   end
-% end
-% load(fullfile('products',outfname));
-% Neta = length(eta);
-% 
-% %%% Load positive and negative heatfunction components
-% outfname = [expname,'_PosNegHeatFunction'];
-% if (use_PsiBT)
-%   outfname = [outfname,'_PsiBT'];
-% else
-%   if (use_meanT)
-%     outfname = [outfname,'_meanT'];
-%   else 
-%     if (deform_cavity)
-%       outfname = [outfname,'_deform'];
-%     end
-%   end
-% end
-% outfname = [outfname,'.mat'];
-% load(fullfile('products',outfname));
-% 
-% %%% Mask for ice/land
-% psiF_tot_mean = mean(psiS_tot-psi_tot*salt0,3)/ -salt0 * rhoFresh*t1year / 1e12;
-% msk = ones(size(psiF_tot_mean));
-% msk_ice = NaN*msk;
-% for j=1:Neta  
-%   idx = find(psiF_tot_mean(j,:)==psiF_tot_mean(j,1));
-%   idx(end) = [];
-%   msk(j,idx) = NaN;
-%   if (~isempty(idx))
-%     msk_ice(j,1:idx(end)) = 1;
-%   end
-%   idx = find(abs(psiF_tot_mean(j,:))<1e-12,1,'first');
-%   msk(j,idx+1:end) = NaN;
-% end
-% 
+%%%
+%%% paper3_plotTSfluxes.m
+%%%
+%%% Plots heat/salt fluxes in quasi-latitude coordinates
+%%%
+
+%%% Load experiment
+expdir = '../experiments';
+expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+loadexp;
+
+%%% Reference surface freezing temperature
+theta0 = -1.9;
+
+%%% Reference salinity
+salt0 = 34.6;
+% salt0 = 34.72;
+
+%%% Cross-shelf locations of ice front and shelf break for heat budget calculation
+eta_icefront = -1.1;
+eta_shelfbreak = 3.5;  
+
+%%% Depth of ice front for heat budget calculation
+zidx_icefront = 25;    
+
+%%% Set true to deform coordinates in the cavity
+deform_cavity = false;
+
+%%% Set true to use barotropic streamfunction as the coordinate system
+use_PsiBT = false;
+
+%%% Set true to use depth-averaged temperature as the coordinate system
+use_meanT = false;
+
+%%% Set true to decompose eddy fluxes
+calc_eddy_decomp = false;
+
+%%% Parameters
+rho0 = 1000;
+Cp = 4000;
+
+%%% Load HeatFunction data file
+outfname = [expname,'_HeatFunction'];
+if (use_PsiBT)
+  outfname = [outfname,'_PsiBT'];
+else 
+  if (use_meanT)
+    outfname = [outfname,'_meanT'];
+  else 
+    if (deform_cavity)
+      outfname = [outfname,'_deform'];
+    end
+  end
+end
+load(fullfile('products',outfname));
+Neta = length(eta);
+
+%%% Load positive and negative heatfunction components
+outfname = [expname,'_PosNegHeatFunction'];
+if (use_PsiBT)
+  outfname = [outfname,'_PsiBT'];
+else
+  if (use_meanT)
+    outfname = [outfname,'_meanT'];
+  else 
+    if (deform_cavity)
+      outfname = [outfname,'_deform'];
+    end
+  end
+end
+outfname = [outfname,'.mat'];
+load(fullfile('products',outfname));
+
+%%% Mask for ice/land
+psiF_tot_mean = mean(psiS_tot-psi_tot*salt0,3)/ -salt0 * rhoFresh*t1year / 1e12;
+msk = ones(size(psiF_tot_mean));
+msk_ice = NaN*msk;
+for j=1:Neta  
+  idx = find(psiF_tot_mean(j,:)==psiF_tot_mean(j,1));
+  idx(end) = [];
+  msk(j,idx) = NaN;
+  if (~isempty(idx))
+    msk_ice(j,1:idx(end)) = 1;
+  end
+  idx = find(abs(psiF_tot_mean(j,:))<1e-12,1,'first');
+  msk(j,idx+1:end) = NaN;
+end
+
+%%% Compute mean latitude of eta isopleths
+equiv_lats = NaN*eta;
+eta_mid = 0.5*(eta(1:end-1)+eta(2:end));
+msk_ocean = sum(hFacC,3)>0;
+for j=2:Neta-1
+  msk_ETA = (ETA>eta_mid(j-1)) & (ETA<=eta_mid(j));
+  equiv_lats(j) = sum(YC.*msk_ETA.*msk_ocean) / sum(msk_ETA.*msk_ocean);
+end
+equiv_lats(equiv_lats==0) = NaN;
+
 
 psiF_tot_plot = -mean(psiS_tot-psi_tot*salt0,3) / -salt0 * rhoFresh*t1year / 1e12 .* msk;
 psiF_mean_plot = -mean(psiS_mean-psi_tot*salt0,3) / -salt0 * rhoFresh*t1year / 1e12 .* msk;
@@ -105,7 +115,7 @@ axpos(1,:) = [0.07 0.55 .86 .42];
 axpos(2,:) = [0.07 0.05 .86 .42];
 cbpos1 = [0.95 0.55 0.01 .42];
 cbpos2 = [0.95 0.05 0.01 .42];
-axlabels = {'(a)','(b)'};
+axlabels = {'(A)','(B)'};
 rho0 = 1027;
 Cp = 4000;
 arrowcolor = [0.301960784313725 0.35098039215686 0.93333333333333];
@@ -119,6 +129,13 @@ psimax = 1.2;
 psistep = 0.1;
 psisteps = [-psimax:psistep:-psistep psistep:psistep:psimax];
 xlim = [-8.6 4];
+xticks = [-8:2:4];
+eticks = [-83:1:-74];
+eticklabels = cell(1,length(eticks));
+for n=1:length(eticklabels)
+  eticklabels{n} = num2str(eticks(n));
+end
+eticklocs = interp1(equiv_lats(~isnan(equiv_lats)),eta(~isnan(equiv_lats)),eticks,'nearest');
 icecolor = [186 242 239]/255;
 [ZZ,EE] = meshgrid(squeeze(-RF),eta);
 
@@ -178,7 +195,7 @@ set(ax2,'XLim',xlim);
 set(ax2,'Color','None')
 
 
-psi_tot_plot = -mean(psi_eddy,3)/1e6.*msk;
+psi_tot_plot = -mean(psi_tot,3)/1e6.*msk;
 
 %%% Total heat function
 axes('Position',axpos(2,:));
@@ -215,6 +232,20 @@ set(ax2,'YLim',ylim);
 set(ax2,'YDir','reverse');
 set(ax2,'XLim',xlim);
 set(ax2,'Color','None')
+
+%%% TODO!!!
+ax3 = axes('Position',get(ax1,'Position'));
+set(ax3,'Color','None');
+set(ax3,'XAxisLocation','Top');
+set(ax3,'YAxisLocation','Right');
+set(ax3,'YLim',get(ax1,'YLim'));
+set(ax3,'YTick',[]);
+% set(ax3,'XTick',eticklocs);
+% set(ax3,'XTickLabel',eticklabels);
+box off;
+set(ax3,'XLim',xlim-77);
+set(ax3,'FontSize',fontsize);
+set(get(ax3,'XLabel'),'String','Approx. latitude');
 
 
 %%% Add panel labels

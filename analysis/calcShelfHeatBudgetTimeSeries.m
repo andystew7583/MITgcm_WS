@@ -19,17 +19,25 @@ expdir = '../experiments';
 % expname = 'hires_seq_onetwelfth_RTOPO2';
 % tmin = 1.05;
 % tmax = 9.05;
-% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-% tmin = 1.05;
-% tmax = 7.05;
-expname = 'hires_nest_onethirtieth_notides_RTOPO2';
-tmin = 0.05;
+expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+tmin = 1.05;
 tmax = 7.05;
+% expname = 'hires_nest_onethirtieth_notides_RTOPO2';
+% tmin = 0.05;
+% tmax = 7.05;
+% tmax = 0.;
 loadexp;
+
+%%% Set true to use grounding line coordinate
+gl_coord = true;
 
 %%% Index of the upper grid cell face dividing the upper and lower portions
 %%% of the water column
-zidx_icefront = 25;
+if (gl_coord)
+  zidx_icefront = 15;
+else
+  zidx_icefront = 25;
+end
 
 %%% Reference surface freezing temperature
 theta0 = -1.9;
@@ -313,7 +321,11 @@ end
 
 
 %%% Write to output file
-outfname = [expname,'_ShelfHeatBudget.mat'];
+outfname = [expname,'_ShelfHeatBudget'];
+if (gl_coord)
+  outfname = [outfname,'_GLcoord'];
+end
+outfname = [outfname,'.mat'];
 save(fullfile('products',outfname), ...
     'tt','usq_eddy_int','vsq_eddy_int',...
     'salt_int_lower','salt_int_upper',...

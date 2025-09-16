@@ -39,7 +39,7 @@ calc_eddy_decomp = false;
 
 %%% Define coordinate system for integrating to compute streamfunction
 ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity,gl_coord);
-eta = -9:.1:11;
+eta = -9:.05:11;
 Neta = length(eta);
 
 %%% Frequency of diagnostic output - should match that specified in

@@ -1,233 +1,252 @@
-% %%%
-% %%% paper3_plotFreshwaterBudget.m
-% %%%
-% %%% Plots freshwater budget in quasi-latitude coordinates
-% %%%
-% 
-% %%% Load experiment
-% expdir = '../experiments';
-% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-% startyear = 2008; %%% Year in which simulation starts
-% loadexp;
-% 
-% %%% Reference surface freezing temperature
-% theta0 = -1.9;
-% 
-% %%% Reference salinity
-% salt0 = 34.6;
-% % salt0 = 34.72;
-% 
-% %%% Cross-shelf locations of ice front and shelf break for heat budget calculation
-% eta_icefront = -1.1;
-% eta_shelfbreak = 3.5;  
-% 
-% %%% Depth of ice front for heat budget calculation
-% zidx_icefront = 25;    
-% 
-% %%% Set true to deform coordinates in the cavity
-% deform_cavity = false;
-% 
-% %%% Set true to use grounding line coordinate
-% gl_coord = false;
-% 
-% %%% Set true to use barotropic streamfunction as the coordinate system
-% use_PsiBT = false;
-% 
-% %%% Set true to use depth-averaged temperature as the coordinate system
-% use_meanT = false;
-% 
-% %%% Set true to decompose eddy fluxes
-% calc_eddy_decomp = false;
-% 
-% %%% Physical parameters
-% rho0 = rhoConst;
-% Cp = 4000;
-% rhoFresh = 1000;
-% 
-% %%% Define coordinate system for integrating to compute heatfunction
-% ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity,gl_coord);
-% eta = -9:.1:11;
-% Neta = length(eta);
-% 
-% %%% Bounds and horizontal mask for heat budget volume
-% eidx_icefront = find(abs(eta-eta_icefront)==min(abs(eta-eta_icefront)));
-% eidx_shelfbreak = find(abs(eta-eta_shelfbreak)==min(abs(eta-eta_shelfbreak)));
-% msk_wholeshelf = (ETA > eta_icefront) & (ETA < eta_shelfbreak);
-% msk_slope = (ETA > eta_shelfbreak & ETA < 5); 
-% msk_outershelf = (ETA > 1.5 & ETA < eta_shelfbreak); 
-% 
-% %%% Load HeatFunction data file
-% outfname = [expname,'_HeatFunction'];
-% if (use_PsiBT)
-%   outfname = [outfname,'_PsiBT'];
-% else 
-%   if (use_meanT)
-%     outfname = [outfname,'_meanT'];
-%   else 
-%     if (deform_cavity)
-%       outfname = [outfname,'_deform'];
-%     end
-%   end
+%%%
+%%% paper3_plotFreshwaterBudget.m
+%%%
+%%% Plots freshwater budget in quasi-latitude coordinates
+%%%
+
+%%% Load experiment
+expdir = '../experiments';
+expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+startyear = 2008; %%% Year in which simulation starts
+loadexp;
+
+%%% Reference surface freezing temperature
+theta0 = -1.9;
+
+%%% Reference salinity
+salt0 = 34.73;
+% salt0 = 34.72;
+
+%%% Set true to deform coordinates in the cavity
+deform_cavity = false;
+
+%%% Set true to use grounding line coordinate
+gl_coord = true;
+
+%%% Set true to use barotropic streamfunction as the coordinate system
+use_PsiBT = false;
+
+%%% Set true to use depth-averaged temperature as the coordinate system
+use_meanT = false;
+
+%%% Set true to decompose eddy fluxes
+calc_eddy_decomp = false;
+
+%%% Cross-shelf locations of ice front and shelf break for heat budget calculation
+if (gl_coord)
+  eta_icefront = 0;
+else
+  eta_icefront = -1.1;
+end
+eta_shelfbreak = 3.5; 
+
+%%% Index of the upper grid cell face dividing the upper and lower portions
+%%% of the water column
+if (gl_coord)
+  zidx_icefront = 15;
+else
+  zidx_icefront = 25;
+end
+
+%%% Physical parameters
+rho0 = rhoConst;
+Cp = 4000;
+rhoFresh = 1000;
+
+%%% Define coordinate system for integrating to compute heatfunction
+ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity,gl_coord);
+eta = -9:.05:11;
+Neta = length(eta);
+
+%%% Bounds and horizontal mask for heat budget volume
+eidx_icefront = find(abs(eta-eta_icefront)==min(abs(eta-eta_icefront)));
+eidx_shelfbreak = find(abs(eta-eta_shelfbreak)==min(abs(eta-eta_shelfbreak)));
+msk_wholeshelf = (ETA > eta_icefront) & (ETA < eta_shelfbreak);
+msk_slope = (ETA > eta_shelfbreak & ETA < 5); 
+msk_outershelf = (ETA > 1.5 & ETA < eta_shelfbreak); 
+
+%%% Load HeatFunction data file
+outfname = [expname,'_HeatFunction'];
+if (use_PsiBT)
+  outfname = [outfname,'_PsiBT'];
+else 
+  if (use_meanT)
+    outfname = [outfname,'_meanT'];
+  else 
+    if (deform_cavity)
+      outfname = [outfname,'_deform'];
+    elseif (gl_coord)
+      outfname = [outfname,'_GLcoord'];
+    end
+  end
+end
+load(fullfile('products',outfname));
+Neta = length(eta);
+
+%%% Load positive and negative heatfunction components
+outfname = [expname,'_PosNegHeatFunction'];
+if (use_PsiBT)
+  outfname = [outfname,'_PsiBT'];
+else
+  if (use_meanT)
+    outfname = [outfname,'_meanT'];
+  else 
+    if (deform_cavity)
+      outfname = [outfname,'_deform'];
+    elseif (gl_coord)
+      outfname = [outfname,'_GLcoord'];
+    end
+  end
+end
+outfname = [outfname,'.mat'];
+load(fullfile('products',outfname));
+
+%%% Load eddy-induced components of heatfunction/transport
+outfname = [expname,'_HeatFunctionEddyDecomp'];
+if (use_PsiBT)
+  outfname = [outfname,'_PsiBT'];
+else
+  if (deform_cavity)
+    outfname = [outfname,'_deform'];
+  elseif (gl_coord)
+    outfname = [outfname,'_GLcoord'];
+  end
+end
+outfname = [outfname,'.mat'];
+load(fullfile('products',outfname));
+
+%%% Load shelf heat budget diagnostics
+outfname = [expname,'_ShelfHeatBudget'];
+if (gl_coord)
+  outfname = [outfname,'_GLcoord'];
+end
+outfname = [outfname,'.mat'];
+load(fullfile('products',outfname));
+
+%%% Compute volume averages
+EKE_avg = zeros(1,length(tt));
+EKE_slope = zeros(1,length(tt));
+EKE_outershelf = zeros(1,length(tt));
+PEtoEKE_avg = zeros(1,length(tt));
+PEtoEKE_slope = zeros(1,length(tt));
+PEtoEKE_outershelf = zeros(1,length(tt));
+MKEtoEKE_avg = zeros(1,length(tt));
+MKEtoEKE_outershelf = zeros(1,length(tt));
+salt_upper_avg = zeros(1,length(tt));
+salt_lower_avg = zeros(1,length(tt));
+theta_upper_avg = zeros(1,length(tt));
+theta_lower_avg = zeros(1,length(tt));
+theta_pos_lower_avg = zeros(1,length(tt));
+theta_neg_lower_avg = zeros(1,length(tt));
+volW_lower = sum(sum(sum(RAW.*msk_wholeshelf.*DRF(:,:,zidx_icefront:end).*hFacW(:,:,zidx_icefront:end))));
+volS_lower = sum(sum(sum(RAS.*msk_wholeshelf.*DRF(:,:,zidx_icefront:end).*hFacS(:,:,zidx_icefront:end))));
+volC_lower = sum(sum(sum(RAC.*msk_wholeshelf.*DRF(:,:,zidx_icefront:end).*hFacC(:,:,zidx_icefront:end))));
+volW_upper = sum(sum(sum(RAW.*msk_wholeshelf.*DRF(:,:,1:zidx_icefront-1).*hFacW(:,:,1:zidx_icefront-1))));
+volS_upper = sum(sum(sum(RAS.*msk_wholeshelf.*DRF(:,:,1:zidx_icefront-1).*hFacS(:,:,1:zidx_icefront-1))));
+volC_upper = sum(sum(sum(RAC.*msk_wholeshelf.*DRF(:,:,1:zidx_icefront-1).*hFacC(:,:,1:zidx_icefront-1))));
+volC_slope = sum(sum(sum(RAC.*msk_slope.*DRF.*hFacC)));
+volW_slope = sum(sum(sum(RAW.*msk_slope.*DRF.*hFacW)));
+volS_slope = sum(sum(sum(RAS.*msk_slope.*DRF.*hFacS)));
+volC_outershelf = sum(sum(sum(RAC.*msk_outershelf.*DRF.*hFacC)));
+volW_outershelf = sum(sum(sum(RAW.*msk_outershelf.*DRF.*hFacW)));
+volS_outershelf = sum(sum(sum(RAS.*msk_outershelf.*DRF.*hFacS)));
+for n=1:length(tt)
+  EKE_avg(n) = sum(sum(0.5.*usq_eddy_int(:,:,n).*RAW.*msk_wholeshelf)) / (volW_upper+volW_lower)  ...
+             + sum(sum(0.5.*vsq_eddy_int(:,:,n).*RAS.*msk_wholeshelf)) / (volS_upper+volW_lower);
+  EKE_slope(n) = sum(sum(0.5.*usq_eddy_int(:,:,n).*RAW.*msk_slope)) / (volW_slope)  ...
+             + sum(sum(0.5.*vsq_eddy_int(:,:,n).*RAS.*msk_slope)) / (volS_slope);  
+  EKE_outershelf(n) = sum(sum(0.5.*usq_eddy_int(:,:,n).*RAW.*msk_outershelf)) / (volW_outershelf)  ...
+             + sum(sum(0.5.*vsq_eddy_int(:,:,n).*RAS.*msk_outershelf)) / (volS_outershelf);  
+  PEtoEKE_avg(n) = sum(sum(PEtoEKE_int(:,:,n).*RAC.*msk_wholeshelf)) / (volC_upper+volC_lower);
+  PEtoEKE_slope(n) = sum(sum(PEtoEKE_int(:,:,n).*RAC.*msk_slope)) / (volC_slope);
+  PEtoEKE_outershelf(n) = sum(sum(PEtoEKE_int(:,:,n).*RAC.*msk_outershelf)) / (volC_outershelf);
+  MKEtoEKE_outershelf(n) = sum(sum(MKEtoEKE_int(:,:,n).*RAC.*msk_outershelf)) / (volC_outershelf);
+  MKEtoEKE_avg(n) = sum(sum(MKEtoEKE_int(:,:,n).*RAC.*msk_wholeshelf)) / (volC_upper+volC_lower);             
+  salt_lower_avg(n) = sum(sum(salt_int_lower(:,:,n).*RAC.*msk_wholeshelf)) / volC_lower; 
+  salt_upper_avg(n) = sum(sum(salt_int_upper(:,:,n).*RAC.*msk_wholeshelf)) / volC_upper; 
+  theta_lower_avg(n) = sum(sum(theta_int_lower(:,:,n).*RAC.*msk_wholeshelf)) / volC_lower; 
+  theta_pos_lower_avg(n) = sum(sum(theta_pos_int_lower(:,:,n).*RAC.*msk_wholeshelf)) / volC_lower; 
+  theta_neg_lower_avg(n) = sum(sum(theta_neg_int_lower(:,:,n).*RAC.*msk_wholeshelf)) / volC_lower; 
+  theta_upper_avg(n) = sum(sum(theta_int_upper(:,:,n).*RAC.*msk_wholeshelf)) / volC_upper; 
+end
+
+%%% Area-integrated vertical heat flux
+ws_tot_mod = ws_tot_flux - w_flux.*salt0;
+ws_mean_mod = ws_mean_flux - w_flux.*salt0;
+
+%%% Heat function
+psiS_mod = psiS_tot-psi_tot*salt0;
+psiS_mean_mod = psiS_mean-psi_tot*salt0;
+psiS_eddy_adv_mod = psiS_eddy_adv - psi_eddy*salt0;
+psiS_eddy_stir = psiS_eddy - psiS_eddy_adv_mod;
+
+%%% Decomposition of vertical salt flux
+sflux_vert = squeeze(sum(sum(ws_tot_mod.*RAC.*msk_wholeshelf,1),2) / -salt0 * rhoFresh*t1year / 1e12); %%% Convert to Gt/yr);
+sflux_mean_vert = squeeze(sum(sum(ws_mean_mod.*RAC.*msk_wholeshelf,1),2)/ -salt0 * rhoFresh*t1year / 1e12);
+sflux_eddy_vert = squeeze(sum(sum(ws_eddy_flux.*RAC.*msk_wholeshelf,1),2)/ -salt0 * rhoFresh*t1year / 1e12);
+sflux_eddy_adv_vert = squeeze(sum(sum(w_eddy_flux.*(salt_bnd-salt0).*RAC.*msk_wholeshelf,1),2)/ -salt0 * rhoFresh*t1year / 1e12);
+sflux_eddy_stir_vert = sflux_eddy_vert - sflux_eddy_adv_vert;
+
+%%% Decomposition of cross-shelf break salt flux
+sflux_shelfbreak = squeeze(-psiS_mod(eidx_shelfbreak,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
+sflux_mean_shelfbreak = squeeze(-psiS_mean_mod(eidx_shelfbreak,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
+sflux_eddy_shelfbreak = squeeze(-psiS_eddy(eidx_shelfbreak,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
+sflux_eddy_adv_shelfbreak = squeeze(-psiS_eddy_adv_mod(eidx_shelfbreak,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
+sflux_eddy_stir_shelfbreak = squeeze(-psiS_eddy_stir(eidx_shelfbreak,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
+
+%%% Decomposition of cross-ice front salt flux
+sflux_icefront = squeeze(psiS_mod(eidx_icefront,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
+sflux_mean_icefront = squeeze(psiS_mean_mod(eidx_icefront,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
+sflux_eddy_icefront = squeeze(psiS_eddy(eidx_icefront,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
+sflux_eddy_adv_icefront = squeeze(psiS_eddy_adv_mod(eidx_icefront,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
+sflux_eddy_stir_icefront = squeeze(psiS_eddy_stir(eidx_icefront,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
+
+%%% Estimate heat tendency
+salt_fit = polyfit(tt,salt_lower_avg,1);
+salt_lin = salt_fit(1)*tt + salt_fit(2); %%% Linear best fit to monthly mean time series
+salt_res = salt_lower_avg - salt_lin; %%% Residual from linear fit
+Nt = length(tt);
+M = zeros(Nt,Nt);
+M(1,1) = 3/4;
+M(1,2) = 1/8;
+M(1,Nt) = 1/8;
+for n=2:Nt-1
+  M(n,n-1) = 1/8;
+  M(n,n) = 3/4;
+  M(n,n+1) = 1/8;
+end
+M(Nt,Nt-1) = 1/8;
+M(Nt,Nt) = 3/4;
+M(Nt,1) = 1/8;
+% for n=1:Nt-1
+%   M(n,n) = 0.5;
+%   M(n,n+1) = 0.5;
 % end
-% load(fullfile('products',outfname));
-% Neta = length(eta);
-% 
-% %%% Load positive and negative heatfunction components
-% outfname = [expname,'_PosNegHeatFunction'];
-% if (use_PsiBT)
-%   outfname = [outfname,'_PsiBT'];
-% else
-%   if (use_meanT)
-%     outfname = [outfname,'_meanT'];
-%   else 
-%     if (deform_cavity)
-%       outfname = [outfname,'_deform'];
-%     end
-%   end
-% end
-% outfname = [outfname,'.mat'];
-% load(fullfile('products',outfname));
-% 
-% %%% Load eddy-induced components of heatfunction/transport
-% outfname = [expname,'_HeatFunctionEddyDecomp'];
-% if (use_PsiBT)
-%   outfname = [outfname,'_PsiBT'];
-% else
-%   if (deform_cavity)
-%     outfname = [outfname,'_deform'];
-%   end
-% end
-% outfname = [outfname,'.mat'];
-% load(fullfile('products',outfname));
-% 
-% %%% Load shelf heat budget diagnostics
-% outfname = [expname,'_ShelfHeatBudget.mat'];
-% load(fullfile('products',outfname));
-% 
-% %%% Compute volume averages
-% EKE_avg = zeros(1,length(tt));
-% EKE_slope = zeros(1,length(tt));
-% EKE_outershelf = zeros(1,length(tt));
-% PEtoEKE_avg = zeros(1,length(tt));
-% PEtoEKE_slope = zeros(1,length(tt));
-% PEtoEKE_outershelf = zeros(1,length(tt));
-% MKEtoEKE_avg = zeros(1,length(tt));
-% MKEtoEKE_outershelf = zeros(1,length(tt));
-% salt_upper_avg = zeros(1,length(tt));
-% salt_lower_avg = zeros(1,length(tt));
-% theta_upper_avg = zeros(1,length(tt));
-% theta_lower_avg = zeros(1,length(tt));
-% theta_pos_lower_avg = zeros(1,length(tt));
-% theta_neg_lower_avg = zeros(1,length(tt));
-% volW_lower = sum(sum(sum(RAW.*msk_wholeshelf.*DRF(:,:,zidx_icefront:end).*hFacW(:,:,zidx_icefront:end))));
-% volS_lower = sum(sum(sum(RAS.*msk_wholeshelf.*DRF(:,:,zidx_icefront:end).*hFacS(:,:,zidx_icefront:end))));
-% volC_lower = sum(sum(sum(RAC.*msk_wholeshelf.*DRF(:,:,zidx_icefront:end).*hFacC(:,:,zidx_icefront:end))));
-% volW_upper = sum(sum(sum(RAW.*msk_wholeshelf.*DRF(:,:,1:zidx_icefront-1).*hFacW(:,:,1:zidx_icefront-1))));
-% volS_upper = sum(sum(sum(RAS.*msk_wholeshelf.*DRF(:,:,1:zidx_icefront-1).*hFacS(:,:,1:zidx_icefront-1))));
-% volC_upper = sum(sum(sum(RAC.*msk_wholeshelf.*DRF(:,:,1:zidx_icefront-1).*hFacC(:,:,1:zidx_icefront-1))));
-% volC_slope = sum(sum(sum(RAC.*msk_slope.*DRF.*hFacC)));
-% volW_slope = sum(sum(sum(RAW.*msk_slope.*DRF.*hFacW)));
-% volS_slope = sum(sum(sum(RAS.*msk_slope.*DRF.*hFacS)));
-% volC_outershelf = sum(sum(sum(RAC.*msk_outershelf.*DRF.*hFacC)));
-% volW_outershelf = sum(sum(sum(RAW.*msk_outershelf.*DRF.*hFacW)));
-% volS_outershelf = sum(sum(sum(RAS.*msk_outershelf.*DRF.*hFacS)));
-% for n=1:length(tt)
-%   EKE_avg(n) = sum(sum(0.5.*usq_eddy_int(:,:,n).*RAW.*msk_wholeshelf)) / (volW_upper+volW_lower)  ...
-%              + sum(sum(0.5.*vsq_eddy_int(:,:,n).*RAS.*msk_wholeshelf)) / (volS_upper+volW_lower);
-%   EKE_slope(n) = sum(sum(0.5.*usq_eddy_int(:,:,n).*RAW.*msk_slope)) / (volW_slope)  ...
-%              + sum(sum(0.5.*vsq_eddy_int(:,:,n).*RAS.*msk_slope)) / (volS_slope);  
-%   EKE_outershelf(n) = sum(sum(0.5.*usq_eddy_int(:,:,n).*RAW.*msk_outershelf)) / (volW_outershelf)  ...
-%              + sum(sum(0.5.*vsq_eddy_int(:,:,n).*RAS.*msk_outershelf)) / (volS_outershelf);  
-%   PEtoEKE_avg(n) = sum(sum(PEtoEKE_int(:,:,n).*RAC.*msk_wholeshelf)) / (volC_upper+volC_lower);
-%   PEtoEKE_slope(n) = sum(sum(PEtoEKE_int(:,:,n).*RAC.*msk_slope)) / (volC_slope);
-%   PEtoEKE_outershelf(n) = sum(sum(PEtoEKE_int(:,:,n).*RAC.*msk_outershelf)) / (volC_outershelf);
-%   MKEtoEKE_outershelf(n) = sum(sum(MKEtoEKE_int(:,:,n).*RAC.*msk_outershelf)) / (volC_outershelf);
-%   MKEtoEKE_avg(n) = sum(sum(MKEtoEKE_int(:,:,n).*RAC.*msk_wholeshelf)) / (volC_upper+volC_lower);             
-%   salt_lower_avg(n) = sum(sum(salt_int_lower(:,:,n).*RAC.*msk_wholeshelf)) / volC_lower; 
-%   salt_upper_avg(n) = sum(sum(salt_int_upper(:,:,n).*RAC.*msk_wholeshelf)) / volC_upper; 
-%   theta_lower_avg(n) = sum(sum(theta_int_lower(:,:,n).*RAC.*msk_wholeshelf)) / volC_lower; 
-%   theta_pos_lower_avg(n) = sum(sum(theta_pos_int_lower(:,:,n).*RAC.*msk_wholeshelf)) / volC_lower; 
-%   theta_neg_lower_avg(n) = sum(sum(theta_neg_int_lower(:,:,n).*RAC.*msk_wholeshelf)) / volC_lower; 
-%   theta_upper_avg(n) = sum(sum(theta_int_upper(:,:,n).*RAC.*msk_wholeshelf)) / volC_upper; 
-% end
-% 
-% %%% Area-integrated vertical heat flux
-% ws_tot_mod = ws_tot_flux - w_flux.*salt0;
-% ws_mean_mod = ws_mean_flux - w_flux.*salt0;
-% 
-% %%% Heat function
-% psiS_mod = psiS_tot-psi_tot*salt0;
-% psiS_mean_mod = psiS_mean-psi_tot*salt0;
-% psiS_eddy_adv_mod = psiS_eddy_adv - psi_eddy*salt0;
-% psiS_eddy_stir = psiS_eddy - psiS_eddy_adv_mod;
-% 
-% %%% Decomposition of vertical salt flux
-% sflux_vert = squeeze(sum(sum(ws_tot_mod.*RAC.*msk_wholeshelf,1),2) / -salt0 * rhoFresh*t1year / 1e12); %%% Convert to Gt/yr);
-% sflux_mean_vert = squeeze(sum(sum(ws_mean_mod.*RAC.*msk_wholeshelf,1),2)/ -salt0 * rhoFresh*t1year / 1e12);
-% sflux_eddy_vert = squeeze(sum(sum(ws_eddy_flux.*RAC.*msk_wholeshelf,1),2)/ -salt0 * rhoFresh*t1year / 1e12);
-% sflux_eddy_adv_vert = squeeze(sum(sum(w_eddy_flux.*(salt_bnd-salt0).*RAC.*msk_wholeshelf,1),2)/ -salt0 * rhoFresh*t1year / 1e12);
-% sflux_eddy_stir_vert = sflux_eddy_vert - sflux_eddy_adv_vert;
-% 
-% %%% Decomposition of cross-shelf break salt flux
-% sflux_shelfbreak = squeeze(-psiS_mod(eidx_shelfbreak,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
-% sflux_mean_shelfbreak = squeeze(-psiS_mean_mod(eidx_shelfbreak,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
-% sflux_eddy_shelfbreak = squeeze(-psiS_eddy(eidx_shelfbreak,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
-% sflux_eddy_adv_shelfbreak = squeeze(-psiS_eddy_adv_mod(eidx_shelfbreak,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
-% sflux_eddy_stir_shelfbreak = squeeze(-psiS_eddy_stir(eidx_shelfbreak,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
-% 
-% %%% Decomposition of cross-ice front salt flux
-% sflux_icefront = squeeze(psiS_mod(eidx_icefront,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
-% sflux_mean_icefront = squeeze(psiS_mean_mod(eidx_icefront,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
-% sflux_eddy_icefront = squeeze(psiS_eddy(eidx_icefront,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
-% sflux_eddy_adv_icefront = squeeze(psiS_eddy_adv_mod(eidx_icefront,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
-% sflux_eddy_stir_icefront = squeeze(psiS_eddy_stir(eidx_icefront,zidx_icefront,:))/ -salt0 * rhoFresh*t1year / 1e12;
-% 
-% %%% Estimate heat tendency
-% salt_fit = polyfit(tt,salt_lower_avg,1);
-% salt_lin = salt_fit(1)*tt + salt_fit(2); %%% Linear best fit to monthly mean time series
-% salt_res = salt_lower_avg - salt_lin; %%% Residual from linear fit
-% Nt = length(tt);
-% M = zeros(Nt,Nt);
-% M(1,1) = 3/4;
-% M(1,2) = 1/8;
-% M(1,Nt) = 1/8;
-% for n=2:Nt-1
-%   M(n,n-1) = 1/8;
-%   M(n,n) = 3/4;
-%   M(n,n+1) = 1/8;
-% end
-% M(Nt,Nt-1) = 1/8;
-% M(Nt,Nt) = 3/4;
-% M(Nt,1) = 1/8;
-% % for n=1:Nt-1
-% %   M(n,n) = 0.5;
-% %   M(n,n+1) = 0.5;
-% % end
-% % M(Nt,Nt) = 1;
-% % % M(Nt,1) = 0.5;
-% salt_lower_inst = M \ salt_res';
-% stend = (salt_lower_inst([2:end 1]) - salt_lower_inst([end 1:end-1]))/(2*(times(2)-times(1)))*volC_lower/ -salt0 * rhoFresh*t1year / 1e12;
-% stend = stend + salt_fit(1)*volC_lower/ -salt0 * rhoFresh*t1year / 1e12; %%% Add back in linear trend
-% 
-% 
-% %%% Mask for ice/land
-% psiS_tot_mean = mean(psiS_tot-psi_tot*salt0,3)* rho0/1e9;
-% msk = ones(size(psiS_tot_mean));
-% msk_ice = NaN*msk;
-% for j=1:Neta  
-%   idx = find(psiS_tot_mean(j,:)==psiS_tot_mean(j,1));
-%   idx(end) = [];
-%   msk(j,idx) = NaN;
-%   if (~isempty(idx))
-%     msk_ice(j,1:idx(end)) = 1;
-%   end
-%   idx = find(abs(psiS_tot_mean(j,:))<1e-12,1,'first');
-%   msk(j,idx+1:end) = NaN;
-% end
-% 
-% stot = - sflux_vert + sflux_icefront + sflux_shelfbreak - stend;
-% 
-% 
+% M(Nt,Nt) = 1;
+% % M(Nt,1) = 0.5;
+salt_lower_inst = M \ salt_res';
+stend = (salt_lower_inst([2:end 1]) - salt_lower_inst([end 1:end-1]))/(2*(times(2)-times(1)))*volC_lower/ -salt0 * rhoFresh*t1year / 1e12;
+stend = stend + salt_fit(1)*volC_lower/ -salt0 * rhoFresh*t1year / 1e12; %%% Add back in linear trend
+
+
+%%% Mask for ice/land
+psiS_tot_mean = mean(psiS_tot-psi_tot*salt0,3)* rho0/1e9;
+msk = ones(size(psiS_tot_mean));
+msk_ice = NaN*msk;
+for j=1:Neta  
+  idx = find(psiS_tot_mean(j,:)==psiS_tot_mean(j,1));
+  idx(end) = [];
+  msk(j,idx) = NaN;
+  if (~isempty(idx))
+    msk_ice(j,1:idx(end)) = 1;
+  end
+  idx = find(abs(psiS_tot_mean(j,:))<1e-12,1,'first');
+  msk(j,idx+1:end) = NaN;
+end
+
+stot = - sflux_vert + sflux_icefront + sflux_shelfbreak - stend;
+
+
 
 %%%%%%%%%%%%%%%%%%
 %%% MAKE PLOTS %%%
@@ -294,7 +313,7 @@ set(gcf,'Position',[417    34  1000  1200]);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 eidx_icefront = find(abs(eta-eta_icefront)<1e-8);
-zminidx_icefront = find(isnan(msk(eidx_icefront,:)),1);
+zminidx_icefront = find(~isnan(msk(eidx_icefront,:)),1,'last');
 eidx_shelfbreak = find(abs(eta-eta_shelfbreak)<1e-8);
 zminidx_shelfbreak = find(isnan(msk(eidx_shelfbreak,:)),1);
 
@@ -440,7 +459,7 @@ hold off
 
 
 axes('Position',axpos(3,:));
-fluxlist = {'F_s_h_e_l_f','F_v_e_r_t','F_c_a_v_i_t_y','F_t_e_n_d','Residual'};
+fluxlist = {'F_s_h_e_l_f','F_v_e_r_t','F_c_a_v_i_t_y','F_t_e_n_d','F_r_e_s'};
 thelabels = categorical(fluxlist);
 thelabels = reordercats(thelabels,fluxlist);
 thebars = [mean(sflux_shelfbreak),mean(sflux_vert),mean(sflux_icefront),mean(stend),mean(stot)];
@@ -463,8 +482,8 @@ hold off;
 er.Color = [0 0 0];
 er.LineStyle = 'None';
 ylabel('Freshwater flux (Gt/yr)');
-set(gca,'YLim',[-300 1000]);
-
+set(gca,'YLim',[-500 1100]);
+grid on;
 
 axes('Position',axpos(4,:));
 fluxlist = {'F_s_h_e_l_f','F_v_e_r_t','F_c_a_v_i_t_y'};
@@ -511,7 +530,8 @@ end
 hold off
 set(gca,'XTickLabel',fluxlist);
 leghandle = legend('Mean flow','Eddy advection','Eddy Stirring');
-set(gca,'YLim',[-300 1000]);
+set(gca,'YLim',[-500 1100]);
+grid on;
 
 
 
@@ -553,12 +573,12 @@ set(ax(2),'XAxisLocation','Top');
 set(ax(2),'Color','None');
 set(h2,'LineWidth',1.5);
 hold on;
-area(ax(2),[2011 2012],flip(1-[34.64,34.80;34.64,34.80]/salt0)*1e3,'FaceColor','y','FaceAlpha',0.25);
+area(ax(2),[2011 2012],flip(1-[34.55 34.71;34.55 34.71]/salt0)*1e3,'FaceColor','y','FaceAlpha',0.25);
 hold off;
-legend(ax(1),'F_c_a_v_i_t_y','F_s_h_e_l_f','Location','NorthWest');
+legend(ax(1),'F_c_a_v_i_t_y','F_s_h_e_l_f','Location','NorthWest','Orientation','Horizontal');
 set(ax(1),'XLim',[2009 2015])
 set(ax(2),'XLim',[2009 2015])
-set(ax(2),'YLim',flip(1-[34.64 34.80]/salt0)*1e3);
+set(ax(2),'YLim',flip(1-[34.55 34.71]/salt0)*1e3);
 % set(ax(2),'YTick',[34.46:0.02:34.62]);
 % xlabel(ax(1),'Year');
 set(ax(2),'XTick',[]);
@@ -577,9 +597,9 @@ ax(2).YColor = saltcolor;
 axes('Position',axpos(6,:));
 tyears = startyear+times/t1year;
 plot(tyears,sflux_vert,'LineWidth',1.5,'Color',fvertcolor);
-hold on;
-area([2011 2012],[0,2000;0,2000],'FaceColor','y','FaceAlpha',0.25);
-hold off;
+% hold on;
+% area([2011 2012],[-500,2000;-500,2000],'FaceColor','y','FaceAlpha',0.25);
+% hold off;
 clear ax;
 ax(1) = gca;
 ax(2) = axes('Position',get(ax(1),'Position'));
@@ -587,6 +607,8 @@ ax(2) = axes('Position',get(ax(1),'Position'));
 plot(ax(2),tyears,1000*PEtoEKE_avg*1e6,'Color',bcprodcolor,'LineWidth',1.5);
 hold on;
 plot(ax(2),tyears,1000*MKEtoEKE_avg*1e6,'Color',btprodcolor,'LineWidth',1.5);
+area([2011 2012],[-25/4;-25/4],'FaceColor','y','FaceAlpha',0.25);
+area([2011 2012],[25;25],'FaceColor','y','FaceAlpha',0.25);
 set(ax(1),'YAxisLocation','Left');
 set(ax(2),'YAxisLocation','Right');
 set(ax(2),'XAxisLocation','Top');
@@ -594,7 +616,7 @@ set(ax(2),'Color','None');
 hold off;
 set(ax(1),'XLim',[2009 2015])
 set(ax(2),'XLim',[2009 2015])
-set(ax(2),'YLim',[-1 25]);
+set(ax(2),'YLim',[-25/4 25]);
 % set(ax(2),'YTick',[34.46:0.02:34.62]);
 xlabel(ax(1),'Year');
 set(ax(2),'XTick',[]);
@@ -618,9 +640,23 @@ figure1 = gcf;
 
 
 
+
+% Create textbox
+annotation(figure1,'textbox',...
+  [0.59 0.973197264218865 0.3385 0.0242980561555076],...
+  'String',{['Vertical eddy freshwater flux at ',num2str(round(-RF(zidx_icefront))),'m depth']},...
+  'Interpreter','latex',...
+  'FontSize',16,...
+  'FitBoxToText','off',...
+  'EdgeColor','none');
+
+if (gl_coord)
+
+
+
 % Create arrow
-annotation(figure1,'arrow',[0.274 0.348],...
-  [0.879186465082794 0.879186465082795],'Color',1-(1-fcavitycolor)*1,...
+annotation(figure1,'arrow',[0.373 0.373],...
+  [0.912500000000001 0.963342332613395],'Color',[0.85 0.325 0.098],...
   'LineWidth',30,...
   'HeadWidth',60,...
   'HeadStyle','plain',...
@@ -628,12 +664,60 @@ annotation(figure1,'arrow',[0.274 0.348],...
 
 % Create textbox
 annotation(figure1,'textbox',...
-  [0.59 0.973197264218865 0.3385 0.0242980561555076],...
-  'String',{'Vertical eddy freshwater flux at 246m depth'},...
+  [0.339 0.891530597552201 0.0499999999999997 0.0242980561555076],...
+  'Color',[0.85 0.325 0.098],...
+  'String','$F_\mathrm{vert}$',...
   'Interpreter','latex',...
   'FontSize',16,...
   'FitBoxToText','off',...
   'EdgeColor','none');
+
+% Create textbox
+annotation(figure1,'textbox',...
+  [0.392 0.874863930885532 0.0499999999999997 0.0242980561555076],...
+  'Color',[0.494 0.184 0.556],...
+  'String','$F_\mathrm{shelf}$',...
+  'Interpreter','latex',...
+  'FontSize',16,...
+  'FitBoxToText','off',...
+  'EdgeColor','none');
+
+% Create arrow
+annotation(figure1,'arrow',[0.471 0.408000000000002],...
+  [0.915 0.915188984881213],'Color',[0.494 0.184 0.556],'LineWidth',30,...
+  'HeadWidth',60,...
+  'HeadStyle','plain',...
+  'HeadLength',35);
+
+% Create arrow
+annotation(figure1,'arrow',[0.318 0.383],...
+  [0.871666666666667 0.872519798416129],'Color',[0 0.447 0.741],...
+  'LineWidth',30,...
+  'HeadWidth',60,...
+  'HeadStyle','plain',...
+  'HeadLength',35);
+
+% Create textbox
+annotation(figure1,'textbox',...
+  [0.286 0.837363930885534 0.0499999999999998 0.0242980561555076],...
+  'Color',[0 0.447 0.741],...
+  'String','$F_\mathrm{cavity}$',...
+  'Interpreter','latex',...
+  'FontSize',16,...
+  'FitBoxToText','off',...
+  'EdgeColor','none');
+
+
+else
+
+  % Create arrow
+annotation(figure1,'arrow',[0.274 0.348],...
+  [0.879186465082794 0.879186465082795],'Color',1-(1-fcavitycolor)*1,...
+  'LineWidth',30,...
+  'HeadWidth',60,...
+  'HeadStyle','plain',...
+  'HeadLength',35);
+
 
 % Create arrow
 annotation(figure1,'arrow',[0.471 0.408000000000002],...
@@ -681,3 +765,4 @@ annotation(figure1,'textbox',...
    'Color',fcavitycolor);
 
 
+end

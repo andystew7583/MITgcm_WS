@@ -13,7 +13,7 @@
 % theta0 = -1.9;
 % 
 % %%% Reference salinity
-% salt0 = 34.6;
+% salt0 = 34.73;
 % 
 % %%% Set true to deform coordinates in the cavity
 % deform_cavity = false;
@@ -68,46 +68,46 @@
 % end
 % %%% Latent heat of freezing
 % Lf = 3.34e5;
-
-
-
-
-psiT_mod = psiT_tot-psi_tot*theta0;
-psiT_mean_mod = psiT_mean-psi_tot*theta0;
- 
-thflux_tot_plot = -mean(psiT_mod(:,1,:),3) * rho0*Cp/1e12;
-thflux_mean_plot = -mean(psiT_mean_mod(:,1,:),3)* rho0*Cp/1e12;
-thflux_eddy_plot = -mean(psiT_eddy(:,1,:),3)* rho0*Cp/1e12;
-thflux_eddy_adv_plot = -mean(psiT_eddy_adv(:,1,:),3)* rho0*Cp/1e12;
-thflux_eddy_stir_plot = -mean(psiT_eddy_stir(:,1,:),3)* rho0*Cp/1e12;
-
-
-
-
-%%%%%%%%%%%%%%%%%%
-%%% MAKE PLOTS %%%
-%%%%%%%%%%%%%%%%%%
-
-%%% Plotting options
-fontsize = 14;
-bathycntrs = [0 250 500 1000 2000 3000 4000];
-axpos = zeros(4,4);
-axpos(1,:) = [0.02 0.45 0.9 .5];
-axpos(2,:) = [0.1 0.06 .81 .39];
-cbpos = [0.84 0.56 0.01 .1];
-axlabels = {'(a)','(b)','(c)','(d)'};
-rho0 = rhoConst;
-Cp = 4000;
-colororder = get(gca,'ColorOrder');
-linewidth = 1.5;
-xlim = [-2.6 0];
-ylim = [0 2000];
-
-%%% Plotting range for salinity figure
-latMin_b = min(min(YC));
-latMax_b = YC(1,end-spongethickness);
-lonMin_b = min(min(XC));
-lonMax_b = XC(end-spongethickness,1);
+% 
+% 
+% 
+% 
+% psiT_mod = psiT_tot-psi_tot*theta0;
+% psiT_mean_mod = psiT_mean-psi_tot*theta0;
+% 
+% thflux_tot_plot = -mean(psiT_mod(:,1,:),3) * rho0*Cp/1e12;
+% thflux_mean_plot = -mean(psiT_mean_mod(:,1,:),3)* rho0*Cp/1e12;
+% thflux_eddy_plot = -mean(psiT_eddy(:,1,:),3)* rho0*Cp/1e12;
+% thflux_eddy_adv_plot = -mean(psiT_eddy_adv(:,1,:),3)* rho0*Cp/1e12;
+% thflux_eddy_stir_plot = -mean(psiT_eddy_stir(:,1,:),3)* rho0*Cp/1e12;
+% 
+% 
+% 
+% 
+% %%%%%%%%%%%%%%%%%%
+% %%% MAKE PLOTS %%%
+% %%%%%%%%%%%%%%%%%%
+% 
+% %%% Plotting options
+% fontsize = 14;
+% bathycntrs = [0 250 500 1000 2000 3000 4000];
+% axpos = zeros(4,4);
+% axpos(1,:) = [0.02 0.45 0.9 .5];
+% axpos(2,:) = [0.1 0.06 .81 .39];
+% cbpos = [0.84 0.56 0.01 .1];
+% axlabels = {'\textbf{A}','\textbf{B}','\textbf{C}','\textbf{D}'};
+% rho0 = rhoConst;
+% Cp = 4000;
+% colororder = get(gca,'ColorOrder');
+% linewidth = 1.5;
+% xlim = [-2.6 0];
+% ylim = [0 2000];
+% 
+% %%% Plotting range for salinity figure
+% latMin_b = min(min(YC));
+% latMax_b = YC(1,end-spongethickness);
+% lonMin_b = min(min(XC));
+% lonMax_b = XC(end-spongethickness,1);
 
 
 
@@ -202,7 +202,7 @@ hold off
 % Create title
 annotation(gcf,'textbox',...
   [0.24 0.952023758099355 0.7005 0.0242980561555075],...
-  'String',{'Mean depth-averaged potential temperature, $\langle\theta\rangle$'},'EdgeColor','None','FontSize',fontsize+2,'interpreter','latex');
+  'String',{'Mean depth-averaged potential temperature, $\widetilde{\theta}$'},'EdgeColor','None','FontSize',fontsize+2,'interpreter','latex');
 
 
 
@@ -225,7 +225,7 @@ plot([0 0],[-5 15],'--','Color',[.3 .3 .3],'LineWidth',2);
 hold off;
 set(gca,'FontSize',fontsize);
 ylabel('Shoreward heat flux (TW)');
-xlabel('$\langle\theta\rangle$ ($^\circ$C)','interpreter','latex','FontSize',fontsize+2);
+xlabel('$\widetilde{\theta}$ ($^\circ$C)','interpreter','latex','FontSize',fontsize+2);
 axis([-2.5 -1.5 -5 8]);
 leghandle = legend('Mean','Eddy','Eddy advection','Eddy stirring','Total','Location','NorthWest');
 set(leghandle,'FontSize',fontsize);
@@ -239,4 +239,4 @@ box on;
 
 %%% Add panel labels
 annotation('textbox',[axpos(1,1)+0.01 axpos(1,2)+0.04 0.03 0.03],'String',axlabels{1},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
-annotation('textbox',[axpos(2,1)-0.04 axpos(2,2)-0.05 0.03 0.03],'String',axlabels{3},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
+annotation('textbox',[axpos(2,1)-0.06 axpos(2,2)-0.05 0.03 0.03],'String',axlabels{2},'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');

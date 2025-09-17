@@ -37,6 +37,9 @@ surfQflux(sum(hFacC,3)==0) = 0;
 
 %%% Load positive and negative heatfunction components
 outfname = [expname,'_PosNegHeatFunction'];
+if (gl_coord)
+  outfname = [outfname,'_GLcoord'];
+end
 outfname = [outfname,'.mat'];
 load(fullfile('products',outfname),'psiT_pos_mean','psiT_neg_mean');
 
@@ -62,7 +65,7 @@ axpos(4,:) = [0.56 0.06 .41 .39];
 cbpos = zeros(2,4);
 cbpos(1,:) = [0.42 0.56 0.01 .1];
 cbpos(2,:) = [0.92 0.56 0.01 .1];
-axlabels = {'(a)','(b)','(c)','(d)'};
+axlabels = {'\textbf{A}','\textbf{B}','\textbf{C}','\textbf{D}'};
 rho0 = 1027;
 Cp = 4000;
 colororder = get(gca,'ColorOrder');
@@ -252,38 +255,39 @@ end
 
 %%% Heat flux
 axes('Position',axpos(3,:));
-plot(eta,-rho0*Cp*thflux_mean_plot/1e12,'Color',colororder(6,:),'LineWidth',linewidth);
+plot(eta,-rho0*Cp*(thflux_mean_plot+thflux_fluc_plot)/1e12,'Color',colororder(6,:),'LineWidth',linewidth);
 hold on;
-plot(eta,-rho0*Cp*thflux_fluc_plot/1e12,'Color',colororder(3,:),'LineWidth',linewidth);
+% plot(eta,-rho0*Cp*thflux_fluc_plot/1e12,'Color',colororder(3,:),'LineWidth',linewidth);
 plot(eta,-rho0*Cp*thflux_eddy_plot/1e12,'Color',colororder(5,:),'LineWidth',linewidth);
 plot(eta,-rho0*Cp*thflux_tot_plot/1e12,'Color',colororder(4,:),'LineWidth',linewidth);
 % plot(eta,-surfQint/1e12,'Color',colororder(4,:),'LineWidth',linewidth);
 % plot(eta,0*eta,'k--');
-plot([4 4],[-5 15],'--','Color',[.3 .3 .3],'LineWidth',2);
-plot([0 0],[-5 15],'--','Color',[.3 .3 .3],'LineWidth',2);
+plot([3.5 3.5],[-5 15],'--','Color',[.3 .3 .3],'LineWidth',1.5);
+plot([0 0],[-5 15],'--','Color',[.3 .3 .3],'LineWidth',1.5);
 hold off;
 ylabel('Shoreward heat flux (TW)');
 xlabel('\eta');
 axis([-9 5 -3.5 7]);
 set(gca,'FontSize',fontsize);
-leghandle = legend('Mean','Seasonal/interannual','Eddy','Total','Location','NorthWest');
+leghandle = legend('Mean','Eddy','Total','Location','NorthWest');
 set(leghandle,'FontSize',fontsize);
 text(-4.5,-3,'FRIS','FontSize',fontsize);
 text(1.3,-3,'Shelf','FontSize',fontsize);
 grid on;
 box off;
 
+%%% Add reference latitudes
 ax1 = gca;
-ax2 = axes('Position',get(ax1,'Position'));
-set(ax2,'Color','None');
-set(ax2,'XAxisLocation','Top');
-set(ax2,'YAxisLocation','Right');
-set(ax2,'YLim',get(ax1,'YLim'));
-set(ax2,'YTick',[]);
+ax3 = axes('Position',get(ax1,'Position'));
+set(ax3,'Color','None');
+set(ax3,'XAxisLocation','Top');
+set(ax3,'YAxisLocation','Right');
+set(ax3,'YLim',get(ax1,'YLim'));
+set(ax3,'YTick',[]);
 box off;
-set(ax2,'XLim',get(ax1,'XLim')-78.16);
-set(ax2,'FontSize',fontsize);
-set(get(ax2,'XLabel'),'String','Approx. latitude');
+set(ax3,'XLim',xlim-77);
+set(ax3,'FontSize',fontsize);
+set(get(ax3,'XLabel'),'String','Reference latitude');
 
 %%% Positive/negative heat flux
 axes('Position',axpos(4,:));
@@ -293,12 +297,12 @@ plot(eta,-rho0*Cp*thflux_pos/1e12,'Color',colororder(2,:),'LineWidth',linewidth)
 plot(eta,-rho0*Cp*thflux_neg/1e12,'Color',colororder(1,:),'LineWidth',linewidth);
 % plot(eta,-rho0*Cp*(thflux_pos+thflux_neg)/1e12,'--','Color',colororder(4,:),'LineWidth',linewidth);
 % plot(eta,0*eta,'k--')
-plot([4 4],[-5 15],'--','Color',[.3 .3 .3],'LineWidth',2);
-plot([0 0],[-5 15],'--','Color',[.3 .3 .3],'LineWidth',2);
+plot([3.5 3.5],[-5 15],'--','Color',[.3 .3 .3],'LineWidth',1.5);
+plot([0 0],[-5 15],'--','Color',[.3 .3 .3],'LineWidth',1.5);
 hold off;
 % ylabel('Heat flux (TW)');
 xlabel('\eta');
-axis([-9 4 -3.5 7]);
+axis([-9 5 -3.5 7]);
 set(gca,'FontSize',fontsize);
 leghandle = legend('Total','``Warm'''' component','``Cold'''' component','Location','NorthWest');
 set(leghandle,'FontSize',fontsize);
@@ -307,17 +311,18 @@ text(1.3,-3,'Shelf','FontSize',fontsize);
 grid on;
 box off;
 
+%%% Add reference latitudes
 ax1 = gca;
-ax2 = axes('Position',get(ax1,'Position'));
-set(ax2,'Color','None');
-set(ax2,'XAxisLocation','Top');
-set(ax2,'YAxisLocation','Right');
-set(ax2,'YLim',get(ax1,'YLim'));
-set(ax2,'YTick',[]);
+ax3 = axes('Position',get(ax1,'Position'));
+set(ax3,'Color','None');
+set(ax3,'XAxisLocation','Top');
+set(ax3,'YAxisLocation','Right');
+set(ax3,'YLim',get(ax1,'YLim'));
+set(ax3,'YTick',[]);
 box off;
-set(ax2,'XLim',get(ax1,'XLim')-78.16);
-set(ax2,'FontSize',fontsize);
-set(get(ax2,'XLabel'),'String','Approx. latitude');
+set(ax3,'XLim',xlim-77);
+set(ax3,'FontSize',fontsize);
+set(get(ax3,'XLabel'),'String','Reference latitude');
 
 
 

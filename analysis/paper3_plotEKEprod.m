@@ -7,11 +7,11 @@
 %%% Load experiment
 expdir = '../experiments';
 expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-% loadexp;
-% 
-% %%% Load shelf heat budget diagnostics
-% outfname = [expname,'_ShelfHeatBudget.mat'];
-% load(fullfile('products',outfname),'usq_eddy_int','vsq_eddy_int','PEtoEKE_int','MKEtoEKE_int');
+loadexp;
+
+%%% Load shelf heat budget diagnostics
+outfname = [expname,'_ShelfHeatBudget.mat'];
+load(fullfile('products',outfname),'usq_eddy_int','vsq_eddy_int','PEtoEKE_int','MKEtoEKE_int');
 
 
 
@@ -29,7 +29,7 @@ axpos(3,:) = [0.47 0.01 .55 .45];
 cbpos = zeros(2,4);
 cbpos(1,:) = [0.7 0.56 0.01 .1];
 cbpos(2,:) = [0.46 0.1 0.01 .1];
-axlabels = {'(a)','(b)','(c)','(d)'};
+axlabels = {'\textbf{A}','\textbf{B}','\textbf{C}'};
 rho0 = 1027;
 Cp = 4000;
 colororder = get(gca,'ColorOrder');

@@ -8,18 +8,10 @@
 expdir = '../experiments';
 expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
 startyear = 2008; %%% Year in which simulation starts
-% loadexp;
+loadexp;
 
 %%% Reference surface freezing temperature
 theta0 = -1.9;
-
-%%% Reference salinity
-salt0 = 34.6;
-% salt0 = 34.72;
-
-%%% Cross-shelf locations of ice front and shelf break for heat budget calculation
-eta_icefront = -1.1;
-eta_shelfbreak = 3.5;  
 
 %%% Set true to deform coordinates in the cavity
 deform_cavity = false;
@@ -36,6 +28,14 @@ gl_coord = true;
 %%% Set true to decompose eddy fluxes
 calc_eddy_decomp = false;
 
+%%% Cross-shelf locations of ice front and shelf break for heat budget calculation
+if (gl_coord)
+  eta_icefront = 0;
+else
+  eta_icefront = -1.1;
+end
+eta_shelfbreak = 3.5; 
+
 %%% Index of the upper grid cell face dividing the upper and lower portions
 %%% of the water column
 if (gl_coord)
@@ -50,7 +50,7 @@ Cp = 4000;
 
 %%% Define coordinate system for integrating to compute heatfunction
 ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity,gl_coord);
-eta = -9:.1:11;
+eta = -9:.05:11;
 Neta = length(eta);
 
 %%% Bounds and horizontal mask for heat budget volume
@@ -59,6 +59,7 @@ eidx_shelfbreak = find(abs(eta-eta_shelfbreak)==min(abs(eta-eta_shelfbreak)));
 msk_wholeshelf = (ETA > eta_icefront) & (ETA < eta_shelfbreak);
 msk_slope = (ETA > eta_shelfbreak & ETA < 5); 
 msk_outershelf = (ETA > 1.5 & ETA < eta_shelfbreak); 
+msk_innershelf = (ETA > 0 & ETA < 1.5); 
 
 %%% Load HeatFunction data file
 outfname = [expname,'_HeatFunction'];
@@ -109,7 +110,7 @@ else
 end
 outfname = [outfname,'.mat'];
 load(fullfile('products',outfname));
- 
+
 %%% Load shelf heat budget diagnostics
 outfname = [expname,'_ShelfHeatBudget'];
 if (gl_coord)
@@ -129,8 +130,12 @@ MKEtoEKE_avg = zeros(1,length(tt));
 MKEtoEKE_outershelf = zeros(1,length(tt));
 salt_upper_avg = zeros(1,length(tt));
 salt_lower_avg = zeros(1,length(tt));
+salt_outershelf_avg = zeros(1,length(tt));
+salt_innershelf_avg = zeros(1,length(tt));
 theta_upper_avg = zeros(1,length(tt));
 theta_lower_avg = zeros(1,length(tt));
+theta_upper_outer_avg = zeros(1,length(tt));
+theta_lower_outer_avg = zeros(1,length(tt));
 theta_pos_lower_avg = zeros(1,length(tt));
 theta_neg_lower_avg = zeros(1,length(tt));
 volW_lower = sum(sum(sum(RAW.*msk_wholeshelf.*DRF(:,:,zidx_icefront:end).*hFacW(:,:,zidx_icefront:end))));
@@ -139,9 +144,12 @@ volC_lower = sum(sum(sum(RAC.*msk_wholeshelf.*DRF(:,:,zidx_icefront:end).*hFacC(
 volW_upper = sum(sum(sum(RAW.*msk_wholeshelf.*DRF(:,:,1:zidx_icefront-1).*hFacW(:,:,1:zidx_icefront-1))));
 volS_upper = sum(sum(sum(RAS.*msk_wholeshelf.*DRF(:,:,1:zidx_icefront-1).*hFacS(:,:,1:zidx_icefront-1))));
 volC_upper = sum(sum(sum(RAC.*msk_wholeshelf.*DRF(:,:,1:zidx_icefront-1).*hFacC(:,:,1:zidx_icefront-1))));
+volC_upper_outer = sum(sum(sum(RAC.*msk_outershelf.*DRF(:,:,1:zidx_icefront-1).*hFacC(:,:,1:zidx_icefront-1))));
+volC_lower_outer = sum(sum(sum(RAC.*msk_outershelf.*DRF(:,:,zidx_icefront:end).*hFacC(:,:,zidx_icefront:end))));
 volC_slope = sum(sum(sum(RAC.*msk_slope.*DRF.*hFacC)));
 volW_slope = sum(sum(sum(RAW.*msk_slope.*DRF.*hFacW)));
 volS_slope = sum(sum(sum(RAS.*msk_slope.*DRF.*hFacS)));
+volC_innershelf = sum(sum(sum(RAC.*msk_innershelf.*DRF.*hFacC)));
 volC_outershelf = sum(sum(sum(RAC.*msk_outershelf.*DRF.*hFacC)));
 volW_outershelf = sum(sum(sum(RAW.*msk_outershelf.*DRF.*hFacW)));
 volS_outershelf = sum(sum(sum(RAS.*msk_outershelf.*DRF.*hFacS)));
@@ -159,10 +167,14 @@ for n=1:length(tt)
   MKEtoEKE_avg(n) = sum(sum(MKEtoEKE_int(:,:,n).*RAC.*msk_wholeshelf)) / (volC_upper+volC_lower);             
   salt_lower_avg(n) = sum(sum(salt_int_lower(:,:,n).*RAC.*msk_wholeshelf)) / volC_lower; 
   salt_upper_avg(n) = sum(sum(salt_int_upper(:,:,n).*RAC.*msk_wholeshelf)) / volC_upper; 
+  salt_outershelf_avg(n) = sum(sum((salt_int_lower(:,:,n)+salt_int_upper(:,:,n)).*RAC.*msk_outershelf)) / volC_outershelf; 
+  salt_innershelf_avg(n) = sum(sum((salt_int_lower(:,:,n)+salt_int_upper(:,:,n)).*RAC.*msk_innershelf)) / volC_innershelf; 
   theta_lower_avg(n) = sum(sum(theta_int_lower(:,:,n).*RAC.*msk_wholeshelf)) / volC_lower; 
+  theta_lower_outer_avg(n) = sum(sum(theta_int_lower(:,:,n).*RAC.*msk_outershelf)) / volC_lower_outer; 
   theta_pos_lower_avg(n) = sum(sum(theta_pos_int_lower(:,:,n).*RAC.*msk_wholeshelf)) / volC_lower; 
   theta_neg_lower_avg(n) = sum(sum(theta_neg_int_lower(:,:,n).*RAC.*msk_wholeshelf)) / volC_lower; 
   theta_upper_avg(n) = sum(sum(theta_int_upper(:,:,n).*RAC.*msk_wholeshelf)) / volC_upper; 
+  theta_upper_outer_avg(n) = sum(sum(theta_int_upper(:,:,n).*RAC.*msk_outershelf)) / volC_upper_outer; 
 end
 
 %%% Area-integrated vertical heat flux
@@ -233,19 +245,20 @@ htend = htend + theta_fit(1)*volC_lower/1e12*rho0*Cp; %%% Add back in linear tre
 
 %%% Mask for ice/land
 psiT_tot_mean = mean(psiT_tot-psi_tot*theta0,3)* rho0*Cp/1e12;
-msk = ones(size(psiT_tot_mean));
-msk_ice = NaN*msk;
+msk_ice_land = ones(size(psiT_tot_mean));
+msk_ice = NaN*msk_ice_land;
 for j=1:Neta  
   idx = find(psiT_tot_mean(j,:)==psiT_tot_mean(j,1));
   idx(end) = [];
-  msk(j,idx) = NaN;
+  msk_ice_land(j,idx) = NaN;
   if (~isempty(idx))
     msk_ice(j,1:idx(end)) = 1;
   end
   idx = find(abs(psiT_tot_mean(j,:))<1e-12,1,'first');
-  msk(j,idx+1:end) = NaN;
+  msk_ice_land(j,idx+1:end) = NaN;
 end
 
+%%% Residual heat flux
 htot = - hflux_vert - hflux_icefront + hflux_shelfbreak - htend;
 
 
@@ -258,7 +271,7 @@ htot = - hflux_vert - hflux_icefront + hflux_shelfbreak - htend;
 fontsize = 14;
 bathycntrs = [0 250 500 1000 2000 3000 4000];
 axpos = zeros(5,4);
-axpos(1,:) = [0.07 0.75 .4 .23];
+axpos(1,:) = [0.07 0.75 .4 .21];
 axpos(2,:) = [0.52 0.69 .4 .28];
 axpos(3,:) = [0.07 0.5 .25 .2];
 axpos(4,:) = [0.37 0.5 .56 .2];
@@ -266,7 +279,7 @@ axpos(5,:) = [0.07 0.27 .86 .18];
 axpos(6,:) = [0.07 0.04 .86 .18];
 cbpos1 = [0.5 0.75 0.01 .23];
 cbpos2 = [0.94 0.75 0.01 .23];
-axlabels = {'(a)','(b)','(c)','(d)','(e)','(f)'};
+axlabels = {'\textbf{A}','\textbf{B}','\textbf{C}','\textbf{D}','\textbf{E}','\textbf{F}'};
 rho0 = 1027;
 Cp = 4000;
 arrowcolor = [0.301960784313725 0.55098039215686 0.93333333333333];
@@ -315,9 +328,9 @@ set(gcf,'Position',[417    34  1000  1200]);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 eidx_icefront = find(abs(eta-eta_icefront)<1e-8);
-zminidx_icefront = find(isnan(msk(eidx_icefront,:)),1);
+zminidx_icefront = find(~isnan(msk_ice_land(eidx_icefront,:)),1,'last');
 eidx_shelfbreak = find(abs(eta-eta_shelfbreak)<1e-8);
-zminidx_shelfbreak = find(isnan(msk(eidx_shelfbreak,:)),1);
+zminidx_shelfbreak = find(isnan(msk_ice_land(eidx_shelfbreak,:)),1);
 
 
 
@@ -327,7 +340,7 @@ zminidx_shelfbreak = find(isnan(msk(eidx_shelfbreak,:)),1);
 %%% TODO shade region used to compute averages of vertical buoyancy fluxes
 %%% Schematic 
 
-psiT_tot_plot = -mean(psiT_mod,3) * rho0*Cp/1e12 .* msk;
+psiT_tot_plot = -mean(psiT_mod,3) * rho0*Cp/1e12 .* msk_ice_land;
 axes('Position',axpos(1,:));
 pcolor(EE,ZZ,psiT_tot_plot*0);
 shading flat;
@@ -364,6 +377,17 @@ set(ax2,'YDir','reverse');
 set(ax2,'XLim',xlim);
 set(ax2,'Color','None')
 
+%%% Add reference latitudes
+ax3 = axes('Position',get(ax1,'Position'));
+set(ax3,'Color','None');
+set(ax3,'XAxisLocation','Top');
+set(ax3,'YAxisLocation','Right');
+set(ax3,'YLim',get(ax1,'YLim'));
+set(ax3,'YTick',[]);
+box off;
+set(ax3,'XLim',xlim-77);
+set(ax3,'FontSize',fontsize);
+set(get(ax3,'XLabel'),'String','Reference latitude');
 
 
 
@@ -372,11 +396,15 @@ set(ax2,'Color','None')
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% SURFACE HEAT FLUX MAP %%%
+%%% VERTICAL HEAT FLUX MAP %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% Plotting options
-clim = [-100 100];
+if (gl_coord)
+  clim = [-50 50];
+else
+  clim = [-100 100];
+end
 cmap = cmocean('balance',50);
 % cmap = cmap(8:23,:);
 % cmap = cmocean('thermal',16);
@@ -450,7 +478,7 @@ hold off
 axes('Position',axpos(3,:));
 
 
-fluxlist = {'Q_s_h_e_l_f','Q_v_e_r_t','Q_c_a_v_i_t_y','Q_t_e_n_d','Residual'};
+fluxlist = {'Q_s_h_e_l_f','Q_v_e_r_t','Q_c_a_v_i_t_y','Q_t_e_n_d','Q_r_e_s'};
 thelabels = categorical(fluxlist);
 thelabels = reordercats(thelabels,fluxlist);
 thebars = [mean(hflux_shelfbreak),mean(hflux_vert),mean(hflux_icefront),mean(htend),mean(htot)];
@@ -572,7 +600,11 @@ hold off;
 legend(ax(1),'Q_c_a_v_i_t_y','Q_s_h_e_l_f','Location','NorthWest');
 set(ax(1),'XLim',[2009 2015])
 set(ax(2),'XLim',[2009 2015])
-set(ax(2),'YLim',[34.64 34.80]);
+if (gl_coord)
+  set(ax(2),'YLim',[34.55 34.71]);
+else
+  set(ax(2),'YLim',[34.64 34.80]);
+end
 % set(ax(2),'YTick',[34.46:0.02:34.62]);
 % xlabel(ax(1),'Year');
 set(ax(2),'XTick',[]);
@@ -592,12 +624,13 @@ axes('Position',axpos(6,:));
 tyears = startyear+times/t1year;
 plot(tyears,hflux_vert,'LineWidth',1.5,'Color',qvertcolor);
 hold on;
-area([2011 2012],[0,4;0,4],'FaceColor','y','FaceAlpha',0.25);
+area([2011 2012],[4;4],'FaceColor','y','FaceAlpha',0.25);
+area([2011 2012],[-1;-1],'FaceColor','y','FaceAlpha',0.25);
 hold off;
 clear ax;
 ax(1) = gca;
 ax(2) = axes('Position',get(ax(1),'Position'));
-plot(ax(2),tyears,1000*PEtoEKE_outershelf*1e6,'Color',bcprodcolor,'LineWidth',1.5);
+plot(ax(2),tyears,1000*PEtoEKE_avg*1e6,'Color',bcprodcolor,'LineWidth',1.5);
 hold on;
 plot(ax(2),tyears,1000*MKEtoEKE_avg*1e6,'Color',btprodcolor,'LineWidth',1.5);
 set(ax(1),'YAxisLocation','Left');
@@ -607,7 +640,9 @@ set(ax(2),'Color','None');
 hold off;
 set(ax(1),'XLim',[2009 2015])
 set(ax(2),'XLim',[2009 2015])
-% set(ax(2),'YLim',[34.64 34.80]);
+if (gl_coord)
+  set(ax(2),'YLim',[-8 32]);
+end
 % set(ax(2),'YTick',[34.46:0.02:34.62]);
 xlabel(ax(1),'Year');
 set(ax(2),'XTick',[]);
@@ -621,8 +656,39 @@ ax(2).YColor = bcprodcolor;
 ax(1).YColor = qvertcolor;
 legend(ax(2),'Baroclinic production','Barotropic production','Location','NorthEast');
 
+%%% Compute and remove mean seasonal cycles
+hflux_eddy_vert_mss = zeros(1,12);
+PEtoEKE_avg_mss = zeros(1,12);
+dtheta_avg_mss = zeros(1,12);
+dtheta_avg = theta_lower_outer_avg-theta_upper_outer_avg;
+% dtheta_avg = theta_lower_avg-theta_upper_avg;
+hflux_eddy_param = ((salt_innershelf_avg-salt_outershelf_avg).*EKE_avg.*dtheta_avg);
+hflux_eddy_param_mss = zeros(1,12);
+iter_cntr = zeros(1,12);
+for n=1:length(hflux_eddy_vert)
+  hflux_eddy_vert_mss(mod(n-1,12)+1) = hflux_eddy_vert_mss(mod(n-1,12)+1) + hflux_eddy_vert(n);
+  PEtoEKE_avg_mss(mod(n-1,12)+1) = PEtoEKE_avg_mss(mod(n-1,12)+1) + PEtoEKE_avg(n);
+  dtheta_avg_mss(mod(n-1,12)+1) = dtheta_avg_mss(mod(n-1,12)+1) + dtheta_avg(n);
+  hflux_eddy_param_mss(mod(n-1,12)+1) = hflux_eddy_param_mss(mod(n-1,12)+1) + hflux_eddy_param(n);
+  iter_cntr(mod(n-1,12)+1) = iter_cntr(mod(n-1,12)+1) + 1;
+end
+hflux_eddy_vert_mss = hflux_eddy_vert_mss./iter_cntr;
+PEtoEKE_avg_mss = PEtoEKE_avg_mss./iter_cntr;
+dtheta_avg_mss = dtheta_avg_mss./iter_cntr;
+hflux_eddy_param_mss = hflux_eddy_param_mss./iter_cntr;
+hflux_eddy_vert_noss= hflux_eddy_vert' - repmat(hflux_eddy_vert_mss,[1 length(hflux_eddy_vert)/12]);
+PEtoEKE_avg_noss= PEtoEKE_avg - repmat(PEtoEKE_avg_mss,[1 length(PEtoEKE_avg)/12]);
+dtheta_avg_noss= dtheta_avg - repmat(dtheta_avg_mss,[1 length(dtheta_avg)/12]);
+hflux_eddy_param_noss= hflux_eddy_param - repmat(hflux_eddy_param_mss,[1 length(hflux_eddy_param)/12]);
 
-
+[r,p] = corr(PEtoEKE_avg',hflux_eddy_vert)
+[r,p] = corr(PEtoEKE_avg_noss',hflux_eddy_vert_noss')
+[r,p] = corr(EKE_avg',hflux_eddy_vert)
+[r,p] = corr(dtheta_avg',hflux_eddy_vert)
+[r,p] = corr(dtheta_avg'.*EKE_avg',hflux_eddy_vert)
+[r,p] = corr(dtheta_avg_noss',hflux_eddy_vert_noss')
+[r,p] = corr(hflux_eddy_param',hflux_eddy_vert)
+[r,p] = corr(hflux_eddy_param_noss',hflux_eddy_vert_noss')
 
 %%% ANNOTATIONS %%%
 
@@ -631,9 +697,36 @@ figure1 = gcf;
 
 
 
+
+% Create textbox
+annotation(figure1,'textbox',...
+  [0.629 0.973197264218865 0.3085 0.0242980561555076],...
+  'String',{['Vertical eddy heat flux at ',num2str(round(-RF(zidx_icefront))),'m depth']},...
+  'Interpreter','latex',...
+  'FontSize',16,...
+  'FitBoxToText','off',...
+  'EdgeColor','none');
+
+if (gl_coord)
+
+  % Create arrow
+annotation(figure1,'arrow',[0.471 0.408000000000002],...
+  [0.92 0.920188984881213],'Color',[0.494 0.184 0.556],'LineWidth',30,...
+  'HeadWidth',60,...
+  'HeadStyle','plain',...
+  'HeadLength',35);
+
 % Create arrow
-annotation(figure1,'arrow',[0.343 0.269],...
-  [0.879186465082794 0.879186465082795],'Color',1-(1-qcavitycolor)*1,...
+annotation(figure1,'arrow',[0.373 0.299],...
+  [0.880853131749461 0.880853131749462],'Color',[0 0.447 0.741],...
+  'LineWidth',30,...
+  'HeadWidth',60,...
+  'HeadStyle','plain',...
+  'HeadLength',35);
+
+% Create arrow
+annotation(figure1,'arrow',[0.38 0.381],[0.9175 0.96167566594673],...
+  'Color',[0.85 0.325 0.098],...
   'LineWidth',30,...
   'HeadWidth',60,...
   'HeadStyle','plain',...
@@ -641,12 +734,36 @@ annotation(figure1,'arrow',[0.343 0.269],...
 
 % Create textbox
 annotation(figure1,'textbox',...
-  [0.629 0.973197264218865 0.3085 0.0242980561555076],...
-  'String',{'Vertical eddy heat flux at 246m depth'},...
+  [0.34 0.897363930885536 0.0499999999999997 0.0242980561555076],...
+  'Color',[0.85 0.325 0.098],...
+  'String','$Q_\mathrm{vert}$',...
   'Interpreter','latex',...
   'FontSize',16,...
   'FitBoxToText','off',...
   'EdgeColor','none');
+
+% Create textbox
+annotation(figure1,'textbox',...
+  [0.4 0.875697264218866 0.0499999999999997 0.0242980561555076],...
+  'Color',[0.494 0.184 0.556],...
+  'String','$Q_\mathrm{shelf}$',...
+  'Interpreter','latex',...
+  'FontSize',16,...
+  'FitBoxToText','off',...
+  'EdgeColor','none');
+
+% Create textbox
+annotation(figure1,'textbox',...
+  [0.269 0.847363930885537 0.0499999999999998 0.0242980561555076],...
+  'Color',[0 0.447 0.741],...
+  'String','$Q_\mathrm{cavity}$',...
+  'Interpreter','latex',...
+  'FontSize',16,...
+  'FitBoxToText','off',...
+  'EdgeColor','none');
+
+
+else
 
 % Create arrow
 annotation(figure1,'arrow',[0.471 0.408000000000002],...
@@ -693,4 +810,13 @@ annotation(figure1,'textbox',...
   'EdgeColor','none',...
    'Color',qcavitycolor);
 
+% Create arrow
+annotation(figure1,'arrow',[0.343 0.269],...
+  [0.879186465082794 0.879186465082795],'Color',1-(1-qcavitycolor)*1,...
+  'LineWidth',30,...
+  'HeadWidth',60,...
+  'HeadStyle','plain',...
+  'HeadLength',35);
+
+end
 

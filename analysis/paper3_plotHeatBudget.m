@@ -585,6 +585,8 @@ tyears = startyear+times/t1year;
 plot(tyears,hflux_icefront,'LineWidth',1.5,'Color',qcavitycolor);
 hold on;
 plot(tyears,hflux_shelfbreak,'LineWidth',1.5,'Color',qshelfcolor);
+plot(tyears,hflux_eddy_icefront,'--','LineWidth',1.5,'Color',qcavitycolor);
+plot(tyears,hflux_eddy_shelfbreak,'--','LineWidth',1.5,'Color',qshelfcolor);
 clear ax;
 ax(1) = gca;
 ax(2) = axes('Position',get(ax(1),'Position'));

@@ -27,9 +27,11 @@ deform_cavity = false;
 %%% Set true to use barotropic streamfunction as the coordinate system
 use_PsiBT = false;
 
+%%% set true to use grounding line coordinate
+gl_coord = true;
 
 %%% Set true to use depth-averaged temperature as the coordinate system
-use_meanT = true;
+use_meanT = false;
 
 %%% Set true to decompose eddy fluxes
 calc_eddy_decomp = false;
@@ -41,8 +43,8 @@ ylim = [0 2000];
 psimax = 4;
 psistep = 0.2;
 fontsize = 14;
-xlim = [-2.6 0];
-% xlim = [-9 4];
+% xlim = [-2.6 0];
+xlim = [-9 4];
 
 %%% Load HeatFunction data file
 outfname = [expname,'_HeatFunction'];
@@ -54,6 +56,8 @@ else
   else 
     if (deform_cavity)
       outfname = [outfname,'_deform'];
+    elseif (gl_coord)
+      outfname = [outfname,'_GLcoord'];
     end
   end
 end
@@ -73,6 +77,8 @@ if (strcmp(expname,'hires_seq_onetwentyfourth_notides_RTOPO2'))
     else 
       if (deform_cavity)
         outfname = [outfname,'_deform'];
+      elseif (gl_coord)
+        outfname = [outfname,'_GLcoord'];
       end
     end
   end
@@ -92,6 +98,8 @@ if (strcmp(expname,'hires_seq_onetwentyfourth_notides_RTOPO2'))
     else 
       if (deform_cavity)
         outfname = [outfname,'_deform'];
+      elseif (gl_coord)
+        outfname = [outfname,'_GLcoord'];
       end
     end
   end
@@ -161,7 +169,29 @@ set(gca,'FontSize',fontsize);
 caxis([-psimax psimax]);
 
 
-
+psiT_plot = -mean(psiT_pos_mean+psiT_neg_mean,3) * rho0*Cp/1e12;
+psiT_plot = psiT_plot.*msk;
+figure(83);
+clf;
+set(gcf,'Position',[325         460        550         398]);
+[ZZ,EE] = meshgrid(squeeze(-RF),eta);
+[C,h] = contourf(EE,ZZ,psiT_plot,[-psimax:psistep:-psistep psistep:psistep:psimax],'EdgeColor','k');
+clabel(C,h);
+set(gca,'YDir','reverse');
+set(gca,'XLim',xlim);
+set(gca,'YLim',ylim);
+set(gca,'Color',[.7 .7 .7])
+% colormap redblue(32);
+% colormap(cmocean('balance',round(2*psimax/psistep)));
+colormap(cmocean('balance',40));
+colorbar;
+xlabel('MOC coordinate \eta');
+ylabel('Depth (m)');
+title('Heat function, positive + negative components (TW)');
+set(gca,'Position',axpos);
+set(gca,'FontSize',fontsize);
+set(gca,'Position',[0.0787    0.1300    0.8383    0.7950]);
+caxis([-psimax psimax]);
 
 psiT_plot = -mean(psiT_pos_mean,3) * rho0*Cp/1e12;
 psiT_plot = psiT_plot.*msk;

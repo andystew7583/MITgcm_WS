@@ -39,7 +39,7 @@ p_ref = -rhoConst*gravity*RC(1)/1e4; %%% Reference pressure for surface-referenc
 
 %%% Frequency of diagnostic output - should match that specified in
 %%% data.diagnostics.
-dumpFreq = abs(diag_frequency(end));
+dumpFreq = abs(diag_frequency(1));
 nDumps = round(endTime/dumpFreq);
 dumpIters = round((1:nDumps)*dumpFreq/deltaT);
 dumpIters = dumpIters(dumpIters > nIter0);

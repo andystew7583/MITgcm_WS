@@ -1,7 +1,7 @@
 %%%
-%%% calcInstOverturning.m
+%%% plotInstOverturning.m
 %%%
-%%% Calculates the overturning circulation in density surfaces, similar to 
+%%% Plots the overturning circulation in density surfaces, similar to 
 %%% that calculated using the MITgcm 'layers' package, from instantaneous
 %%% model output
 %%%
@@ -100,8 +100,7 @@ hold off;
 caxis([0 psimax]);
 set(gca,'YDir','reverse');
 set(gca,'YLim',ylim);
-set(gca,'XLim',[-7 10.5]);
-% grid on;
+set(gca,'XLim',[-7 10.5])% grid on;
 colormap(gca,cmocean('amp',round(psimax/(psistep))));%,'pivot',0));
 xlabel('MOC coordinate, \eta');
 ylabel('Potential density (kg/m^3)')

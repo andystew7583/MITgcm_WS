@@ -1,79 +1,83 @@
-% %%%
-% %%% plotFilchnerSSH.m
-% %%%
-% %%% Plots variations of Filchner overflow transport and SSH variance.
-% %%%
-% 
-% 
-% %%% Options
-% expdir = '../experiments';
-% expname = 'hires_nest_onethirtieth_notides_RTOPO2';
-% tmin = 1.01;
-% tmax = 7.01;
-% 
-% %%% Load experiment
-% loadexp;
-% 
-% %%% Select density variable in which to compute isopycnal fluxes
-% densvar = 'PD0';
-% % densvar = 'ND1';
-% % densvar = 'ND2';
-% % densvar = 'PT';
-% 
-% %%% Month index to start reading SSH data (first year is skipped in DSW
-% %%% flux)
-% startidx_ssh = 13;
-% 
-% outfname = [expname,'_ShelfHeatBudget.mat'];
-% load(fullfile('products',outfname),'usq_eddy_int','vsq_eddy_int');
-% EKE = 0.5*(usq_eddy_int+vsq_eddy_int);
-% Hocean = sum(DRF.*hFacC,3);
-% EKE = EKE./Hocean;
-% 
-% %%% Load pre-computed Filchner Trough transport
-% outfname = [expname,'_FTtrans_',densvar];
-% outfname = [outfname,'.mat'];
-% load(fullfile('products',outfname));
-% times_tmp = [366*86400 times];
-% times = 0.5*(times_tmp(1:end-1)+times_tmp(2:end));
-% 
-% %%% Index of density level corresponding to max transport
-% didx = find(dens_levs>=27.81,1);
-% 
-% %%% Load pre-computed SSH variance
-% ncfname = fullfile('products',[expname,'_SSHvar.nc']);
-% ssh_var_runmean = ncread(ncfname,'ssh_var_runmean');
-% ssh_runmean = ncread(ncfname,'ssh_runmean');
-% 
-% %%% Load monthly-mean SSH variance
-% ncfname = fullfile('products',[expname,'_SSHmonVar.nc']);
-% ssh_mon_mean = ncread(ncfname,'ssh_mon_mean');
-% ssh_mon_var = ncread(ncfname,'ssh_mon_var');
-% ssh_mon_var(ssh_mon_var<0) = 0; %%% Sometimes <0 to machine precision
-% ssh_mon_std = sqrt(ssh_mon_var);
-% ssh_mon_test = ssh_mon_var.^(2/3);
-% 
-% %%% Compute correlation maps
-% corr_mean = zeros(Nx,Ny);
-% corr_var = zeros(Nx,Ny);
-% corr_std = zeros(Nx,Ny);
-% corr_EKE = zeros(Nx,Ny);
-% corr_EKEprod = zeros(Nx,Ny);
-% corr_EKE_surf = zeros(Nx,Ny);
-% corr_EKE_50m = zeros(Nx,Ny);
-% corr_test = zeros(Nx,Ny);
-% for i=1:Nx
-%   for j=1:Ny
-%     corr_mean(i,j) = corr(squeeze(ssh_mon_mean(i,j,startidx_ssh:end)),T_ft(didx,:)');
-%     corr_var(i,j) = corr(squeeze(ssh_mon_var(i,j,startidx_ssh:end)),T_ft(didx,:)');
-%     corr_std(i,j) = corr(squeeze(ssh_mon_std(i,j,startidx_ssh:end)),T_ft(didx,:)');
-%     corr_test(i,j) = corr(squeeze(ssh_mon_test(i,j,startidx_ssh:end)),T_ft(didx,:)');
-%     corr_EKE(i,j) = corr(squeeze(EKE(i,j,startidx_ssh:end)),T_ft(didx,:)');
-%     corr_EKEprod(i,j) = corr(squeeze(EKE(i,j,startidx_ssh:end)),T_ft(didx,:)');
-%     corr_EKE_surf(i,j) = corr(squeeze(EKE_surf(i,j,startidx_ssh:end)),T_ft(didx,:)');    
-%     corr_EKE_50m(i,j) = corr(squeeze(EKE_50m(i,j,startidx_ssh:end)),T_ft(didx,:)');
-%   end
-% end
+%%%
+%%% plotFilchnerSSH.m
+%%%
+%%% Plots variations of Filchner overflow transport and SSH variance.
+%%%
+
+%%% TODO are the relationships reasonable? E.g. is SSH variance consistent
+%%% with EKE? What time scale of EKE damping implied by EKE prod<->EKE
+%%% relationship?
+
+
+%%% Options
+expdir = '../experiments';
+expname = 'hires_nest_onethirtieth_notides_RTOPO2';
+tmin = 1.01;
+tmax = 7.01;
+
+%%% Load experiment
+loadexp;
+
+%%% Select density variable in which to compute isopycnal fluxes
+densvar = 'PD0';
+% densvar = 'ND1';
+% densvar = 'ND2';
+% densvar = 'PT';
+
+%%% Month index to start reading SSH data (first year is skipped in DSW
+%%% flux)
+startidx_ssh = 13;
+
+outfname = [expname,'_ShelfHeatBudget.mat'];
+load(fullfile('products',outfname),'usq_eddy_int','vsq_eddy_int');
+EKE = 0.5*(usq_eddy_int+vsq_eddy_int);
+Hocean = sum(DRF.*hFacC,3);
+EKE = EKE./Hocean;
+
+%%% Load pre-computed Filchner Trough transport
+outfname = [expname,'_FTtrans_',densvar];
+outfname = [outfname,'.mat'];
+load(fullfile('products',outfname));
+times_tmp = [366*86400 times];
+times = 0.5*(times_tmp(1:end-1)+times_tmp(2:end));
+
+%%% Index of density level corresponding to max transport
+didx = find(dens_levs>=27.81,1);
+
+%%% Load pre-computed SSH variance
+ncfname = fullfile('products',[expname,'_SSHvar.nc']);
+ssh_var_runmean = ncread(ncfname,'ssh_var_runmean');
+ssh_runmean = ncread(ncfname,'ssh_runmean');
+
+%%% Load monthly-mean SSH variance
+ncfname = fullfile('products',[expname,'_SSHmonVar.nc']);
+ssh_mon_mean = ncread(ncfname,'ssh_mon_mean');
+ssh_mon_var = ncread(ncfname,'ssh_mon_var');
+ssh_mon_var(ssh_mon_var<0) = 0; %%% Sometimes <0 to machine precision
+ssh_mon_std = sqrt(ssh_mon_var);
+ssh_mon_test = ssh_mon_var.^(2/3);
+
+%%% Compute correlation maps
+corr_mean = zeros(Nx,Ny);
+corr_var = zeros(Nx,Ny);
+corr_std = zeros(Nx,Ny);
+corr_EKE = zeros(Nx,Ny);
+corr_EKEprod = zeros(Nx,Ny);
+corr_EKE_surf = zeros(Nx,Ny);
+corr_EKE_50m = zeros(Nx,Ny);
+corr_test = zeros(Nx,Ny);
+for i=1:Nx
+  for j=1:Ny
+    corr_mean(i,j) = corr(squeeze(ssh_mon_mean(i,j,startidx_ssh:end)),T_ft(didx,:)');
+    corr_var(i,j) = corr(squeeze(ssh_mon_var(i,j,startidx_ssh:end)),T_ft(didx,:)');
+    corr_std(i,j) = corr(squeeze(ssh_mon_std(i,j,startidx_ssh:end)),T_ft(didx,:)');
+    corr_test(i,j) = corr(squeeze(ssh_mon_test(i,j,startidx_ssh:end)),T_ft(didx,:)');
+    corr_EKE(i,j) = corr(squeeze(EKE(i,j,startidx_ssh:end)),T_ft(didx,:)');
+    corr_EKEprod(i,j) = corr(squeeze(EKE(i,j,startidx_ssh:end)),T_ft(didx,:)');
+    corr_EKE_surf(i,j) = corr(squeeze(EKE_surf(i,j,startidx_ssh:end)),T_ft(didx,:)');    
+    corr_EKE_50m(i,j) = corr(squeeze(EKE_50m(i,j,startidx_ssh:end)),T_ft(didx,:)');
+  end
+end
 
 %%% Average SSH and its variance and EKE over high-SSH-variance region
 % xmin_avg = -35.75;
@@ -231,20 +235,20 @@ axis([0 0.02 0 2]);
 
 print('-dpng','-r150','Figures/Filchner/EKEvsDSWflux_scatter.png');
 
-fignum = fignum + 1;
-figure(fignum);
-clf;
-set(gcf,'Position',framepos);
-scatter(ssh_mon_std_avg,eke_mon_avg);
-% hold on;
-% plot(eke_mon_avg_sort,(Toff_eke_avg+rfac_eke_avg*eke_mon_avg_sort)/1e6,'k--');
-% hold off;
-ylabel('Volume-averaged monthly EKE (m^2/s^2)');
-xlabel('Area-averaged monthly SSH std. (m)');
-set(gca,'FontSize',fontsize);
-% axis([0 6e-3 0 0.2]);
-axis([0 0.08 0 0.035]);
-print('-dpng','-r150','Figures/Filchner/EKEvsDSWflux_scatter.png');
+% fignum = fignum + 1;
+% figure(fignum);
+% clf;
+% set(gcf,'Position',framepos);
+% scatter(ssh_mon_std_avg,eke_mon_avg);
+% % hold on;
+% % plot(eke_mon_avg_sort,(Toff_eke_avg+rfac_eke_avg*eke_mon_avg_sort)/1e6,'k--');
+% % hold off;
+% ylabel('Volume-averaged monthly EKE (m^2/s^2)');
+% xlabel('Area-averaged monthly SSH std. (m)');
+% set(gca,'FontSize',fontsize);
+% % axis([0 6e-3 0 0.2]);
+% axis([0 0.08 0 0.035]);
+% print('-dpng','-r150','Figures/Filchner/EKEvsDSWflux_scatter.png');
 
 
 %%% Smoothed correlations
@@ -494,7 +498,26 @@ fignum = fignum + 1;
 figure(fignum);
 clf;
 set(gcf,'Position',framepos);
-pcolor(XC,YC,log10(mean(EKE,3)));
+pcolor(XC,YC,(mean(EKE,3)));
+% pcolor(XC,YC,log10(mean(EKE,3)));
+shading flat;
+colorbar;
+hold on;
+contour(XC,YC,bathy,[-300 -2000 -1000 -500],'EdgeColor','k');
+plot([xmin_avg xmax_avg xmax_avg xmin_avg xmin_avg],[ymin_avg ymin_avg ymax_avg ymax_avg ymin_avg],'k--','LineWidth',1.5);
+hold off;
+caxis([0 1]*3.5e-2);
+% caxis([-4 -1]);
+colormap(cmocean('amp',100));
+title('Depth-averaged EKE (m^2/s^2)')
+title('Depth-averaged EKE (log_1_0 m^2/s^2)')
+print('-dpng','-r150','Figures/Filchner/EKE.png');
+
+fignum = fignum + 1;
+figure(fignum);
+clf;
+set(gcf,'Position',framepos);
+pcolor(XC,YC,(mean(PEtoEKE_zavg,3)));
 shading flat;
 colorbar;
 hold on;
@@ -502,10 +525,10 @@ contour(XC,YC,bathy,[-300 -2000 -1000 -500],'EdgeColor','k');
 plot([xmin_avg xmax_avg xmax_avg xmin_avg xmin_avg],[ymin_avg ymin_avg ymax_avg ymax_avg ymin_avg],'k--','LineWidth',1.5);
 hold off;
 % caxis([0 1]*3.5e-2);
-caxis([-4 -1]);
-colormap(cmocean('amp',100));
-title('Depth-averaged EKE (log_1_0 m^2/s^2)')
-print('-dpng','-r150','Figures/Filchner/EKE.png');
+caxis([-1 1]*5e-7);
+colormap(cmocean('balance',100));
+title('Depth-averaged PE->EKE (m^2/s^2)')
+print('-dpng','-r150','Figures/Filchner/PEtoEKE.png');
 
 fignum = fignum + 1;
 figure(fignum);

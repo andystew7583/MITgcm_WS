@@ -11,13 +11,14 @@
 mac_plots = false;
 
 %%% Read experiment data
-loadexp;
+% loadexp;
 
 %%% Select diagnostic variable to animate
 % diagnum = 66;
 % diagnum = 46;
-diagnum = 3;
+diagnum = 4;
 outfname =diag_fileNames{1,diagnum};
+% outfname = 'THETA_12hourly';
 % outfname = 'Eta';
 
 %%% Data index in the output data files
@@ -28,11 +29,11 @@ outfidx = 1;
 xyplot = 1;
 
 %%% Vertical layer index to use for top-down plots
-xylayer = 25;
+xylayer = 20;
 
 %%% Set true to plot the field in the lowest active cell at each horizontal
 %%% location
-botplot = 0;
+botplot = 1;
 
 %%% Set true to plot the field in the topmost wet cell at each horizontal
 %%% location
@@ -48,7 +49,7 @@ yzavg = 0;
 %%% Layer to plot in the y/z plane
 %%%for 1/3 DEGREE yzlayer = 126; 1/6 = 404;
 % yzlayer = 246;
-yzlayer = 215;
+yzlayer = 141;
 % yzlayer = Nx-10;
 % yzlayer = 1;
 
@@ -62,10 +63,10 @@ yzlayer = 215;
 set_crange = 1;
 
 
-% crange = [-2.2 -1]; %/%% Filchner temp
-% crange = [-2 2]; %/%%temp
-% crange = [34.2 34.8]; %%% salinity
-% crange = [34.2 34.5]; %%% salinity
+crange = [-2.5 1]; %/%% Filchner temp
+% crange = [-3 3]; %%%temp
+% % crange = [33.4 34.65]; %%% salinity
+% crange = [34.1 34.8]; %%% salinity
 % crange = [0 10]; %%%% for KPP hbl
 % crange = [0 1]; %%% For sea ice area
 % crange = [-.6 .6]; %%% For velocities or stresses
@@ -73,7 +74,7 @@ set_crange = 1;
 % crange =[-100 100]; %%% Qnet
 % crange = [-300 300]; %%% swnet
 % crange =[-.1 .1]; %%% SFLUX
-crange =[-1 1]*1e-3; %%% WVEL
+% crange =[-1 1]*1e-3; %%% WVEL
 % % crange = [0 3];
 % crange = [-0.5 0.5];
 % crange = [0.3 1]; %% SSH
@@ -85,9 +86,9 @@ crange =[-1 1]*1e-3; %%% WVEL
 % cmap = cmocean('ice',100);
 % cmap = haxby(56);
 % cmap = jet(200);
-cmap = redblue(100);
+cmap = redblue(20);
 % cmap = cmocean('amp',100);
-% 
+% %
 % titlestr = 'Salinity (g/kg)';
 % titlestr = 'Surface salinity (g/kg)';
 % titlestr = 'Temperature ($^\circ$C)';
@@ -107,7 +108,7 @@ years = 2007:1:2015;
 % nIter0 = 587520;
 % nIter0 = 394509; 
 
-%%% For 1/24 run with tides
+%%% Default
 dumpFreq = abs(diag_frequency(diagnum));
 nDumps = round(endTime/dumpFreq);
 dumpIters = round((1:nDumps)*dumpFreq/deltaT);
@@ -213,18 +214,19 @@ Amean = [];
 Amax = [];
 
 % for n = 15*12:length(dumpIters)
-for n = 730:length(dumpIters)
+% for n = 1500:length(dumpIters)
+% for n = 107
 % for n = 3*730+565;
 % for n=5*12
 % for n=7*12:8*12
 % for n = 34a
-% for n=48:length(dumpIters)
+for n=24:length(dumpIters) 
 % for n=2:length(dumpIters)
 % for n =1:length(dumpIters)
   dumpIters(n);
     
   t = dumpIters(n)*deltaT/t1year;
-  
+  n
   
   tyears(n) = t;
   tdays(n) = dumpIters(n)*deltaT/t1day;
@@ -357,7 +359,7 @@ for n = 730:length(dumpIters)
   %%% y/z zonally-averaged plot
  
  else
-    
+    yzlayer
     clf;
 %     if (yzavg)
       Ayz = ((squeeze(A(yzlayer,:,:))));    

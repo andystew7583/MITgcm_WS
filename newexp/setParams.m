@@ -15,13 +15,15 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   
   %%% Some commonly varied parameters
   
-  %   nIter0 = 0; %%% Initial iteration for brand new runs
-  nIter0 = 1; %%% Initial iteration for pickup runs
+  nIter0 = 0; %%% Initial iteration for brand new runs
+  % nIter0 = 1; %%% Initial iteration for pickup runs
 %   nIter0 = 1183320;
 %   nIter0 = 1774980;
   use_extended_diags = true;  
   use_layers = true;
-  use_tides = false;
+  use_tides = true;
+  useRBCS = false; %%% For restoring cavity properties
+  
   
   
   
@@ -1465,9 +1467,7 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %%%%% RBCS %%%%%
   %%%%%%%%%%%%%%%%
   %%%%%%%%%%%%%%%%
-  
-  useRBCS = false;
-  
+
     
   %%%%%%%%%%%%%%%%%%%%%%%
   %%%%% RBCS SET-UP %%%%%
@@ -1506,8 +1506,8 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%      
 
     %%% Restore salinity everywhere under ice shelves to ISW salinity
-    salt_ISW = 34.5;
-  %   salt_ISW = 34;
+    % salt_ISW = 34.5;
+    salt_ISW = 34;
     salt_relax = salt_ISW*ones(Nx,Ny,Nr);
 
     %%% Restore temperature to local freezing point under ice shelves
@@ -1676,37 +1676,37 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   
   diag_fields_avg = ...
   { ...
-%     'UVEL','VVEL','WVEL'...      
-%     'THETA' ... 
-%     'SALT','ETAN' ... 
-%     'SIheff','SIarea','SIhsnow','SItices','SIhsalt' ... %%ice diagnostics
-%     'SIuice','SIvice' ...
-%     'oceFWflx','oceSflux','oceQnet','oceTAUX','oceTAUY','TFLUX','SFLUX',...
-%     'EXFtaux','EXFtauy','EXFlwnet','EXFswnet','EXFlwdn','EXFswdn','EXFqnet','EXFhs','EXFhl','EXFevap','EXFpreci','EXFatemp' ...
-%     'SIqnet','SIqsw','SIatmQnt','SItflux','SIaaflux','SIhl','SIqneto','SIqneti','SIempmr','SIatmFW','SIsnPrcp','SIactLHF','SIacSubl'
+    'UVEL','VVEL','WVEL'...      
+    'THETA' ... 
+    'SALT','ETAN' ... 
+    'SIheff','SIarea','SIhsnow','SItices','SIhsalt' ... %%ice diagnostics
+    'SIuice','SIvice' ...
+    'oceFWflx','oceSflux','oceQnet','oceTAUX','oceTAUY','TFLUX','SFLUX',...
+    'EXFtaux','EXFtauy','EXFlwnet','EXFswnet','EXFlwdn','EXFswdn','EXFqnet','EXFhs','EXFhl','EXFevap','EXFpreci','EXFatemp' ...
+    'SIqnet','SIqsw','SIatmQnt','SItflux','SIaaflux','SIhl','SIqneto','SIqneti','SIempmr','SIatmFW','SIsnPrcp','SIactLHF','SIacSubl'
   };
 
   if (use_shelfice)
     diag_fields_avg = {diag_fields_avg{:}, ...
     ...
-%       'SHIfwFlx','SHIhtFlx','SHIUDrag','SHIVDrag' ...
+      'SHIfwFlx','SHIhtFlx','SHIUDrag','SHIVDrag' ...
     };
   end
     
   if (use_extended_diags)
     diag_fields_avg = {diag_fields_avg{:}, ...
-%       'UVELSLT','VVELSLT','WVELSLT', ... %%% Salt fluxes
-%       'UVELTH','VVELTH','WVELTH', ... %%% Temperature fluxes  
-%       'UVELSQ','VVELSQ','WVELSQ', ... %%% For Kinetic Energy
-%       'UV_VEL_Z','WU_VEL','WV_VEL', ... %%% Momentum fluxes
-%       'SALTSQ','THETASQ','THSLT' %%% Thermodynamic variances
+      'UVELSLT','VVELSLT','WVELSLT', ... %%% Salt fluxes
+      'UVELTH','VVELTH','WVELTH', ... %%% Temperature fluxes  
+      'UVELSQ','VVELSQ','WVELSQ', ... %%% For Kinetic Energy
+      'UV_VEL_Z','WU_VEL','WV_VEL', ... %%% Momentum fluxes
+      'SALTSQ','THETASQ','THSLT' %%% Thermodynamic variances
     };
   end     
   
   if (use_layers)
     diag_fields_avg = {diag_fields_avg{:}, ...
-%       'LaUH1RHO', 'LaVH1RHO', ... %%% LAYERS fluxes
-%       'LaHw1RHO', 'LaHs1RHO' ... %%% LAYERS thicknesses
+      'LaUH1RHO', 'LaVH1RHO', ... %%% LAYERS fluxes
+      'LaHw1RHO', 'LaHs1RHO' ... %%% LAYERS thicknesses
     };
   end  
   
@@ -1748,15 +1748,15 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
 
   diag_fields_inst = ...
   { ...
-    'UVEL','VVEL','WVEL'...      
-    'THETA' ... 
-    'SALT','ETAN' ... 
-    'SIheff','SIarea','SIhsnow','SItices','SIhsalt' ... %%ice diagnostics
-    'SIuice','SIvice' ...
-    'oceFWflx','oceSflux','oceQnet','oceTAUX','oceTAUY','TFLUX','SFLUX',...
-    'EXFtaux','EXFtauy','EXFlwnet','EXFswnet','EXFlwdn','EXFswdn','EXFqnet','EXFhs','EXFhl','EXFevap','EXFpreci','EXFatemp' ...
-    'SIqnet','SIqsw','SIatmQnt','SItflux','SIaaflux','SIhl','SIqneto','SIqneti','SIempmr','SIatmFW','SIsnPrcp','SIactLHF','SIacSubl', ...    
-    'SHIfwFlx','SHIhtFlx','SHIUDrag','SHIVDrag' ...    
+    % 'UVEL','VVEL','WVEL'...      
+    % 'THETA' ... 
+    % 'SALT','ETAN' ... 
+    % 'SIheff','SIarea','SIhsnow','SItices','SIhsalt' ... %%ice diagnostics
+    % 'SIuice','SIvice' ...
+    % 'oceFWflx','oceSflux','oceQnet','oceTAUX','oceTAUY','TFLUX','SFLUX',...
+    % 'EXFtaux','EXFtauy','EXFlwnet','EXFswnet','EXFlwdn','EXFswdn','EXFqnet','EXFhs','EXFhl','EXFevap','EXFpreci','EXFatemp' ...
+    % 'SIqnet','SIqsw','SIatmQnt','SItflux','SIaaflux','SIhl','SIqneto','SIqneti','SIempmr','SIatmFW','SIsnPrcp','SIactLHF','SIacSubl', ...    
+    % 'SHIfwFlx','SHIhtFlx','SHIUDrag','SHIVDrag' ...    
   };
   
   numdiags_inst = length(diag_fields_inst);    
@@ -1819,7 +1819,7 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   packages.addParm('useDiagnostics',true,PARM_BOOL);    
   packages.addParm('useKPP',true,PARM_BOOL);
   packages.addParm('useOBCS',true,PARM_BOOL);  
-  packages.addParm('useRBCS',false,PARM_BOOL);  
+  packages.addParm('useRBCS',useRBCS,PARM_BOOL);  
   packages.addParm('useEXF',true,PARM_BOOL);        
   packages.addParm('useCAL',true,PARM_BOOL);         
   packages.addParm('useSEAICE',true,PARM_BOOL);      

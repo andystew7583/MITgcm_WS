@@ -44,12 +44,16 @@ expdir = basedir;
 % expname = 'hires_seq_onesixth_RTOPO2';
 % expname = 'hires_seq_onetwelfth_notides_RTOPO2';
 % % expname = 'hires_seq_onetwentyfourth_RTOPO2';
-% expname = 'hires_seq_onetwentyfourth_no/tides_RTOPO2';
+% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
 % expname = 'hires_seq_onetwentyfourth_notides_RTOPO2_SSH';
 
 % expname = 'hires_nest_onethirtieth_notides_RTOPO2';
 
-expname = 'hires_nest_onethirtysecond_notides_RTOPO2';
+% expname = 'hires_nest_onethirtysecond_notides_RTOPO2';
+% 
+% expname = 'WC_seq_onethird_notides_RTOPO2';
+
+expname = 'WC_seq_onethird_notides_RTOPO2_restore_unmodBC';
 
 
 %%% Julia's control experiments

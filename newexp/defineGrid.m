@@ -5,7 +5,7 @@
 %%%
 
 %%% Choose resolution
-res_fac = 32;
+res_fac = 3;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% MPI parameters %%%%%
@@ -19,7 +19,7 @@ switch (res_fac)
   case 3
     nPx_max = 16; %%% max. no. of processors in x-direction
     nPy_max = 8; %%% max. no. of processors in y-direction
-    nPx = 16; %%% no. of processors in x-direction
+    nPx = 8; %%% no. of processors in x-direction
     nPy = 8; %%% no. of processors in y-direction
   case 6
     nPx_max = 36; %%% max. no. of processors in x-direction
@@ -77,7 +77,7 @@ months = 12;
 FinerVerticalGrid = 0;
 
 %%%% which directory to use
-gendir = '/data3';
+gendir = '/data/data3';
 
 %%% Set true for open southern/western boundaries
 use_OB_SW = false;

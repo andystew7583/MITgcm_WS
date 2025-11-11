@@ -61,7 +61,8 @@ ff = 2*Omega*sind(YG);
 % for n=88:length(dumpIters)
 % for n = 1:88
 % for n = 730:length(dumpIters)
-for n = 1143:length(dumpIters)
+% for n = 1:1526
+for n = 2120:length(dumpIters)
 % for n=250:300
  
   tt(n) =  dumpIters(n)*deltaT/86400;
@@ -76,6 +77,7 @@ for n = 1143:length(dumpIters)
 %   vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_daily'),dumpIters(n)); 
   uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_inst'),dumpIters(n));      
   vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_inst'),dumpIters(n)); 
+  salt = rdmdsWrapper(fullfile(exppath,'/results/SALT_inst'),dumpIters(n));   
   SHIfwFlx = rdmdsWrapper(fullfile(exppath,'/results/SHIfwFlx_inst'),dumpIters(n)); 
 %   uvel = rdmdsWrapper(fullfile(exppath,'/results/U'),dumpIters(n)) ;      
 %   vvel = rdmdsWrapper(fullfile(exppath,'/results/V'),dumpIters(n)); 
@@ -88,8 +90,8 @@ for n = 1143:length(dumpIters)
 
   %%% Vorticity on a z-level
   vort = zeros(Nx,Ny);
-  zlev = 1;
-  % zlev = 25;
+  zlev = 1; %%% Surface
+  % zlev = 39; %%% 500m
 %   zlev = 44;
   uvel = uvel(:,:,zlev);
   vvel = vvel(:,:,zlev);
@@ -99,12 +101,12 @@ for n = 1143:length(dumpIters)
   vort(2:Nx,:) = vort(2:Nx,:) + (vvel(2:Nx,:)-vvel(1:Nx-1,:))./DXC(2:Nx,:);
   
   %%% Divergence on a z-level
-%   vort = zeros(Nx,Ny);
-%   zlev = 44;
-%   uvel(hFacW==0) = NaN;
-%   vvel(hFacS==0) = NaN;
-%   vort(:,1:Ny-1) = (vvel(:,2:Ny,zlev)-vvel(:,1:Ny-1,zlev))./DYG(:,1:Ny-1);
-%   vort(1:Nx-1,:) = vort(2:Nx,:) + (uvel(2:Nx,:,zlev)-uvel(1:Nx-1,:,zlev))./DXG(1:Nx-1,:);
+  % vort = zeros(Nx,Ny);
+  % zlev = 39; %%% 500m
+  % uvel(hFacW==0) = NaN;
+  % vvel(hFacS==0) = NaN;
+  % vort(:,1:Ny-1) = (vvel(:,2:Ny,zlev)-vvel(:,1:Ny-1,zlev))./DYG(:,1:Ny-1);
+  % vort(1:Nx-1,:) = vort(2:Nx,:) + (uvel(2:Nx,:,zlev)-uvel(1:Nx-1,:,zlev))./DXG(1:Nx-1,:);
 
   %%% Barotropic vorticity
 %   vort = zeros(Nx,Ny);
@@ -131,100 +133,246 @@ for n = 1143:length(dumpIters)
   lonMin = XC(spongethickness+1,1);
 %   lonMin = -62;
   lonMax = XC(end-spongethickness,1);
+
+  % lonMin = -24;
+  % lonMax = -20;
+  % latMin = -74;
+  % latMax = -72;
   
   clf;    
   set(gcf,'color','w');
+  meltlim = [-10 10];
+  % meltlim = [-40 40];
   
   
   %%%%% Plot vorticity %%%%%
-  
+
+  %%% Plotting options
+  % clim = [-.4 .4];
+  clim = [-1 1];
+  bathycntrs = [0 250 500 1000 2000 3000 4000 5000];
+  axpos = [0.02 0 0.45 0.9];
+
+  %%% Set up map plot
+  subplot('Position',axpos);
   axesm('eqaconicstd',...
-  'fontsize',13,...
-  'Grid','on', ...    
-  'Frame','off', ...
-  'MapLatLimit',[latMin latMax], ...
-  'MapLonLimit',[lonMin lonMax], ... 
-  'MapParallels',[-85 -65], ...
-  'PLineLocation', 1, ...
-  'MLineLocation', 2,...
-  'MeridianLabel', 'on', ...
-  'ParallelLabel', 'on');    %, ...
+    'fontsize',13,...
+    'Grid','on', ...    
+    'Frame','off', ...
+    'MapLatLimit',[latMin latMax], ...
+    'MapLonLimit',[lonMin lonMax], ... 
+    'MapParallels',[-85 -65], ...
+    'PLineLocation', 1, ...
+    'MLineLocation', 2,...
+    'MeridianLabel', 'on', ...
+    'ParallelLabel', 'on');    %, ...
   %           'origin',[yc(round(size(yc,1)/2),round(size(yc,2)/2)),xc(round(size(xc,1)/2),round(size(xc,2)/2))])
   axis off;
   setm(gca,'MLabelParallel',-20)
+  
+  %%% Plot vorticity in color contours
   pcolorm(YG,XG,vort./abs(ff));
+  shading flat
   shading interp
-  colormap(cmocean('balance'));
-
-  hold on;
-  [cs,C]=contourm(YC,XC,SHELFICEtopo-bathy,[100 500 1000 2000 3000 4000],'EdgeColor','k');
-  chandle = clabelm(cs,C);
-  set(chandle,'fontsize',12,'Color','k','BackgroundColor','none','Edgecolor','none') 
-  hold off;
+  colormap(gca,cmocean('delta',40));
+  caxis(clim);
+  
+  
+  tightmap;
 
   %%% Add colorbar and title
-  h = colorbar;  
-  set(h,'Position',[0.48 0.33 0.005 .26])  
-  caxis([-1 1]);
+  h = colorbar;
+  set(h,'FontSize',12);
+  set(h,'Position',[0.02 0.43 0.01 .12]);
+  title(h,'$\zeta/|f|$','Fontsize',14,'interpreter','latex');
+
+  %%% Add bathymetry contours
+  hold on;
+  thick_plot = SHELFICEtopo-bathy;
+  [cs,C] = contourm(YC,XC,thick_plot,bathycntrs,'EdgeColor',[.25 .25 .25]); 
+  hh = clabelm(cs,C);
+  set(hh,'fontsize',8,'Color',[.25 .25 .25],'BackgroundColor','none','Edgecolor','none')     
+  hold off;
   
-  set(gca,'FontSize',16);  
-  thedate = datenum('2008-01-00')+floor(tt(n));
-  h = title(['\zeta/|f| on ',datestr(thedate)]);
-%   h = title(['\zeta/|f| at t= ',num2str(round(tt(n)),'%3d'),' days']);
-%   h = title(['\delta/|f| at t= ',num2str(round(tt(n)),'%3d'),' days']);
-  %  h = title(['\zeta/f at t= ',num2str(tt(n)/365,'%.1f'),' years']);  
-  set(gca,'Position',[0.02 0 0.45 0.9])
+  hold on;
+  Nlon = 101;
+  dLon = (lonMax-lonMin)/(Nlon-1);
+  plotm([latMin*ones(1,Nlon) latMax*ones(1,Nlon) latMin],[lonMin:dLon:lonMax lonMax:-dLon:lonMin lonMin],'k-','LineWidth',1);
+  hold off
+          
+  %%% Add axis labels
+  xlabel('Longitude','interpreter','latex');
+  ylabel('Latitude','interpreter','latex');
+  set(gca,'Position',axpos);
+  ax = gca;
+  
+
+
+
+
+
+
+
+
+  %%% Add plot of ice shelf melt rate
+  subplot('Position',[0 0 0.01 0.01])
+  ax2 = axesm('eqaconicstd',...
+    'fontsize',13,...
+    'Grid','on', ...    
+    'Frame','off', ...
+    'MapLatLimit',[latMin latMax], ...
+    'MapLonLimit',[lonMin lonMax], ... 
+    'MapParallels',[-85 -65], ...
+    'PLineLocation', 0, ...
+    'MLineLocation', 0,...
+    'MeridianLabel', 'on', ...
+    'ParallelLabel', 'on');   
+  axis off;
+  setm(ax2,'MLabelParallel',-20)
+
+  meltrate(meltrate==0) = NaN;
+  pcolorm(YC,XC,meltrate);
+  shading flat
+  colormap(ax2,cmocean('balance'));
+
   tightmap;
+
+   %%% Add colorbar and title
+  h = colorbar;
+  set(h,'FontSize',12);
+  set(h,'Position',[0.48 0.43 0.01 .12]);
+  title(h,'Melt rate (m/yr)','Fontsize',14,'interpreter','latex');
+
+  hold on;
+  Nlon = 101;
+  dLon = (lonMax-lonMin)/(Nlon-1);
+  plotm([latMin*ones(1,Nlon) latMax*ones(1,Nlon) latMin],[lonMin:dLon:lonMax lonMax:-dLon:lonMin lonMin],'k-','LineWidth',1);
+  hold off
+
   drawnow;
-  set(h,'Position',get(h,'Position')+[0 +0.0075 0])
+  set(ax2,'Position',get(ax,'Position'));
+  caxis(meltlim);
+  drawnow;
+
+
+
+
+
+
+
+
+
+
+
+ %%
   
+  %%%%% Plot subsurface salinity %%%%%
   
-  
-  
-  
-  
-  %%%%% Plot melt %%%%%
-  axes('Position',[0.52 0 0.45 0.9])
+  salt_plot = sum(salt(:,:,1:21).*hFacC(:,:,1:21).*DRF(:,:,1:21),3)./sum(hFacC(:,:,1:21).*DRF(:,:,1:21),3);
+  salt_plot(hFacC(:,:,1)==0) = NaN;
+
+
+  %%% Plotting options
+  clim = [33.4 34.65];
+  bathycntrs = [0 250 500 1000 2000 3000 4000 5000];
+  axpos = [0.52 0 0.45 0.9];
+
+  %%% Set up map plot
+  subplot('Position',axpos);
   axesm('eqaconicstd',...
-  'fontsize',13,...
-  'Grid','on', ...    
-  'Frame','off', ...
-  'MapLatLimit',[latMin latMax], ...
-  'MapLonLimit',[lonMin lonMax], ... 
-  'MapParallels',[-85 -65], ...
-  'PLineLocation', 1, ...
-  'MLineLocation', 2,...
-  'MeridianLabel', 'on', ...
-  'ParallelLabel', 'on');    %, ...
+    'fontsize',13,...
+    'Grid','on', ...    
+    'Frame','off', ...
+    'MapLatLimit',[latMin latMax], ...
+    'MapLonLimit',[lonMin lonMax], ... 
+    'MapParallels',[-85 -65], ...
+    'PLineLocation', 1, ...
+    'MLineLocation', 2,...
+    'MeridianLabel', 'on', ...
+    'ParallelLabel', 'on');    %, ...
   %           'origin',[yc(round(size(yc,1)/2),round(size(yc,2)/2)),xc(round(size(xc,1)/2),round(size(xc,2)/2))])
   axis off;
   setm(gca,'MLabelParallel',-20)
-  pcolorm(YC,XC,meltrate); %%% Convert to m/yr
+  
+  %%% Plot vorticity in color contours
+  pcolorm(YG,XG,salt_plot);
   shading interp
-  colormap(cmocean('balance'));
-
-  hold on;
-  [cs,C]=contourm(YC,XC,SHELFICEtopo-bathy,[100 500 1000 2000 3000 4000],'EdgeColor','k');
-  chandle = clabelm(cs,C);
-  set(chandle,'fontsize',12,'Color','k','BackgroundColor','none','Edgecolor','none') 
-  hold off;
+  colormap(gca,cmocean('haline',40));
+  caxis(clim);
+  
+  
+  tightmap;
 
   %%% Add colorbar and title
-  h = colorbar;  
-  set(h,'Position',[0.96 0.33 0.005 .26])  
-  caxis([-10 10]);
+  h = colorbar;
+  set(h,'FontSize',12);
+  set(h,'Position',[0.95 0.43 0.01 .12]);
+  title(h,'$S$ (g/kg)','Fontsize',14,'interpreter','latex');
+
+  %%% Add bathymetry contours
+  hold on;
+  thick_plot = SHELFICEtopo-bathy;
+  [cs,C] = contourm(YC,XC,thick_plot,bathycntrs,'EdgeColor',[.25 .25 .25]); 
+  hh = clabelm(cs,C);
+  set(hh,'fontsize',8,'Color',[.25 .25 .25],'BackgroundColor','none','Edgecolor','none')     
+  hold off;
   
-  set(gca,'FontSize',16);  
-  thedate = datenum('2008-01-00')+floor(tt(n));
-  h = title(['Melt rate (m/yr) on ',datestr(thedate)]);
-%   h = title(['\zeta/|f| at t= ',num2str(round(tt(n)),'%3d'),' days']);
-%   h = title(['\delta/|f| at t= ',num2str(round(tt(n)),'%3d'),' days']);
-  %  h = title(['\zeta/f at t= ',num2str(tt(n)/365,'%.1f'),' years']);  
-  set(gca,'Position',[0.52 0 0.45 0.9])
+  hold on;
+  Nlon = 101;
+  dLon = (lonMax-lonMin)/(Nlon-1);
+  plotm([latMin*ones(1,Nlon) latMax*ones(1,Nlon) latMin],[lonMin:dLon:lonMax lonMax:-dLon:lonMin lonMin],'k-','LineWidth',1);
+  hold off
+          
+  %%% Add axis labels
+  xlabel('Longitude','interpreter','latex');
+  ylabel('Latitude','interpreter','latex');
+  set(gca,'Position',axpos);
+  ax = gca;
+  
+
+
+
+
+
+
+
+
+  %%% Add plot of ice shelf melt rate
+  subplot('Position',[0 0 0.01 0.01])
+  ax2 = axesm('eqaconicstd',...
+    'fontsize',13,...
+    'Grid','on', ...    
+    'Frame','off', ...
+    'MapLatLimit',[latMin latMax], ...
+    'MapLonLimit',[lonMin lonMax], ... 
+    'MapParallels',[-85 -65], ...
+    'PLineLocation', 0, ...
+    'MLineLocation', 0,...
+    'MeridianLabel', 'on', ...
+    'ParallelLabel', 'on');   
+  axis off;
+  setm(ax2,'MLabelParallel',-20)
+
+  meltrate(meltrate==0) = NaN;
+  pcolorm(YC,XC,meltrate);
+  shading flat
+  colormap(ax2,cmocean('balance'));
+
   tightmap;
+
+  hold on;
+  Nlon = 101;
+  dLon = (lonMax-lonMin)/(Nlon-1);
+  plotm([latMin*ones(1,Nlon) latMax*ones(1,Nlon) latMin],[lonMin:dLon:lonMax lonMax:-dLon:lonMin lonMin],'k-','LineWidth',1);
+  hold off
+
   drawnow;
-  set(h,'Position',get(h,'Position')+[0 +0.0075 0])
-  
+  set(ax2,'Position',get(ax,'Position'));
+  caxis(meltlim);
+  drawnow;
+
+  thedate = datenum('2008-01-00')+floor(tt(n));
+  annotation('TextBox',[0.46 0.93 0.2 0.05],'EdgeColor','None','String',datestr(thedate),'interpreter','latex','FontSize',16);
 
 
   M(n) = getframe(gcf);  

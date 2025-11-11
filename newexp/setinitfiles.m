@@ -20,7 +20,7 @@ defineGrid
 load sosegrid.mat;
 
 %%% name of SOSE data file
-datadir = '/data3/MITgcm_WS/data/SOSEdata/08-10';
+datadir = '/data/data3/MITgcm_WS/data/SOSEdata/08-10';
 
 %%% Matlab utilities 
 addpath ../newexp_utils

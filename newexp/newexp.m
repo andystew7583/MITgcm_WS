@@ -30,7 +30,7 @@ function newexp (batch_name,exp_name)
   
   
   %%% Local directory in which to create experiments
-  runsdir = '/data3/MITgcm_WS/experiments';
+  runsdir = '/data/data3/MITgcm_WS/experiments';
   
   %%% Experiment subdirectories 
   builddir = 'build';

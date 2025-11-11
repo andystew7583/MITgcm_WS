@@ -14,14 +14,15 @@ mac_plots = false;
 loadexp;
 
 %%% Vertical level to which potential density should be referenced
-k_pot_dens = 94;
+% k_pot_dens = 94;
+k_pot_dens = 1;
 
 %%% Data index in the output data files
 outfidx = 1;
 
 %%% If set true, plots a top-down view of the field in a given layer.
 %%% Otherwise plots a side-on view of the zonally-averaged field.
-xyplot = 1;
+xyplot = 0;
 
 %%% Vertical layer index to use for top-down plots
 xylayer = 1;
@@ -43,7 +44,7 @@ yzavg = 0;
 
 %%% Layer to plot in the y/z plane
 %%%for 1/3 DEGREE yzlayer = 126; 1/6 = 404;
-yzlayer = 322;
+yzlayer = 141;
 
 % load ../newexp/ELEV.mat
 % 
@@ -53,7 +54,8 @@ yzlayer = 322;
 
 %%% Specify color range
 set_crange = 1;
-crange = [36.9 37.6];
+% crange = [36.9 37.6];
+crange = [27.7 27.85];
 cmap = cmocean('dense',20);
 
 % titlestr = 'Salinity (g/kg)';
@@ -75,17 +77,17 @@ years = 2007:1:2015;
 % nIter0 = 394509; 
 
 %%% For 1/24 run with tides
-% dumpFreq = abs(diag_frequency(diagnum));
-% nDumps = round(endTime/dumpFreq);
-% dumpIters = round((1:nDumps)*dumpFreq/deltaT);
-% dumpIters = dumpIters(dumpIters > nIter0);
+dumpFreq = abs(diag_frequency(diagnum));
+nDumps = round(endTime/dumpFreq);
+dumpIters = round((1:nDumps)*dumpFreq/deltaT);
+dumpIters = dumpIters(dumpIters > nIter0);
 
 %%% For daily/12-hourly outputs
-dumpStart = 1578240;
-% dumpStart = 1945440;
-dumpStep = 86400/2/60;
-nDumps = 731;
-dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
+% dumpStart = 1578240;
+% % dumpStart = 1945440;
+% dumpStep = 86400/2/60;
+% nDumps = 731;
+% dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
 
 %%% Mesh grids for plotting
 if (botplot || topplot || midplot || ~xyplot)
@@ -197,7 +199,8 @@ for n =1:length(dumpIters)
   tyears(n) = t;
   tdays(n) = dumpIters(n)*deltaT/t1day;
   
-  suff = '_12hourly';
+  % suff = '_12hourly';
+  suff = '';
   T = rdmdsWrapper(fullfile(exppath,'results',['THETA',suff]),dumpIters(n));          
   S = rdmdsWrapper(fullfile(exppath,'results',['SALT',suff]),dumpIters(n));          
   if (isempty(S) || isempty(T))

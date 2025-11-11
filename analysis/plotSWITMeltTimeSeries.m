@@ -77,7 +77,7 @@ Omega = 2*pi*366/365/86400;
 ff = 2*Omega*sind(YG);  
   
 %%% Loop through iterations
-for n = 1:1202
+for n = 1:1526
  
   tt(n) =  dumpIters(n)*deltaT;
   tt(n)/t1day
@@ -189,6 +189,8 @@ plot(datevec,RL_melt/1e12*t1year);
 hold off;
 datetick('x');
 grid on;
+ylabel('Melt rate(Gt/yr)');
+legend('SWIT','RLIS');
 
 figure(11);
 plot(datevec,SWIT_KE);

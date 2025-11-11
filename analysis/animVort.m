@@ -15,8 +15,8 @@ DZ = repmat(reshape(delR,[1 1 Nr]),[Nx Ny 1]);
 
 %%% Diagnostic indix corresponding to instantaneous velocity
 diagnum = length(diag_frequency);
-diagnum = 1;
-% diagnum = 69;
+% diagnum = 1;
+diagnum = 69;
 
 %%% This needs to be set to ensure we are using the correct output
 %%% frequency

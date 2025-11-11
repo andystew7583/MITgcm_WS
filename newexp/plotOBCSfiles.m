@@ -11,7 +11,7 @@ defineGrid
 
 %%%%% Input file path for OBCS SOSE generated files
 
-input = '/data3/MITgcm_WS/newexp/differentResolutions/a_minboundary';
+input = '/data/data3/MITgcm_WS/newexp/differentResolutions/one_third';
 
 %%%%%meshgrid for Northern Boundary
 run ../analysis/setExpname

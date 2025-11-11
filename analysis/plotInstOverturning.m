@@ -123,7 +123,7 @@ Tdsw = -squeeze(mean(psi(eidx1:eidx2,didx,:),1))/1e6;
 Tdsw_smooth = 0*Tdsw;
 T_ft_smooth = 0*T_ft;
 smooth_len = 10;
-lagidx = 6;
+lagidx = 0;
 Nt = length(Tdsw_smooth);
 for m=1:Nt
   Tdsw_smooth(m) = mean(Tdsw(max(m-smooth_len,1):min(m+smooth_len,Nt)));
@@ -132,8 +132,14 @@ end
 
 
 %%% Average SSH and its variance over high-SSH region
-xidx = find(XC(:,1)>-36.4 & XC(:,1)<-33.1);
-yidx = find(YC(1,:)>-74.5 & YC(1,:)<-74.2);
+xmin_avg = -37;
+xmax_avg = -34;
+ymin_avg = -74.75;
+ymax_avg = -74.05;
+xidx = find(XC(:,1)>xmin_avg & XC(:,1)<xmax_avg);
+yidx = find(YC(1,:)>ymin_avg & YC(1,:)<ymax_avg);
+% xidx = find(XC(:,1)>-36.4 & XC(:,1)<-33.1);
+% yidx = find(YC(1,:)>-74.5 & YC(1,:)<-74.2);
 % xidx = find(XC(:,1)>-36.4 & XC(:,1)<-33.1);
 % yidx = find(YC(1,:)>-74.6 & YC(1,:)<-74.1);
 % xidx = find(XC(:,1)>-40 & XC(:,1)<-30);
@@ -173,8 +179,9 @@ ylabel(ax2,'10-day SSH variance (m^2)');
 
 
 figure(13);
-scatter(T_ft_smooth(didx,1:end-lagidx),ssh_var_runmean_avg(1+lagidx:end));
-scatter(T_ft_smooth(didx,1:end-2),sqrt(ssh_var_runmean_avg(1+2:end)));
+scatter(ssh_var_runmean_avg(1+lagidx:end),T_ft_smooth(didx,1:end-lagidx)/1e6);
+axis([0 8e-3 0 2.5]);
+% scatter(T_ft_smooth(didx,1:end-2),sqrt(ssh_var_runmean_avg(1+2:end)));
 
 
 % [r,lags] = xcorr(Tdsw_10day,ssh_var_runmean_avg)
@@ -218,8 +225,8 @@ box off;
 text(ax,10,2,['r=',num2str(corr(T_ft_smooth(didx,1:end-lagidx)',ssh_var_runmean_avg(1+lagidx:end)))],'FontSize',fontsize);
 set(ax,'FontSize',fontsize);
 set(ax2,'FontSize',fontsize);
-set(ax,'YLim',[0.3 2.5]);
-set(ax2,'YLim',[0 70]);
+set(ax,'YLim',[0 2.5]);
+set(ax2,'YLim',[0 50]);
 xlabel(ax,'2011 yearday');
 ylabel(ax,'DSW transport, 10-day mean (Sv)');
 ylabel(ax2,'10-day SSH variance (cm^2)');

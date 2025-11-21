@@ -51,9 +51,13 @@ expdir = basedir;
 
 % expname = 'hires_nest_onethirtysecond_notides_RTOPO2';
 % 
-% expname = 'WC_seq_onethird_notides_RTOPO2';
+expname = 'WC_seq_onethird_notides_RTOPO2';
 
-expname = 'WC_seq_onethird_notides_RTOPO2_restore_unmodBC';
+% expname = 'WC_seq_onethird_RTOPO2_unmodEB_linHtFlx';
+% expname = 'WC_seq_onethird_RTOPO2_unmodEB_alphaV0.5';
+% expname = 'WC_seq_onethird_RTOPO2_unmodEB';
+
+% expname = 'WC_seq_onethird_RTOPO2_unmodEB_alphaV0.5_restore34.7';
 
 
 %%% Julia's control experiments

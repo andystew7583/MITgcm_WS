@@ -62,7 +62,7 @@ ff = 2*Omega*sind(YG);
 % for n = 1:88
 % for n = 730:length(dumpIters)
 % for n = 1:1526
-for n = 2120:length(dumpIters)
+for n = 2267:length(dumpIters)
 % for n=250:300
  
   tt(n) =  dumpIters(n)*deltaT/86400;

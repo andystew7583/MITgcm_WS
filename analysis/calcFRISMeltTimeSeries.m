@@ -5,7 +5,7 @@
 %%% experiments.
 %%%
 
-function [tt,SHImelt,SHImelt_mean,XC,YC,bathy,SHELFICEtopo,SHImelt_eff,SHImelt_tend,SHImelt_diff,SHImelt_tflux,SHImelt_conv] = calcFRISMeltTimeSeries (expdir,expname,compute_eff_melt) 
+function [tt,SHImelt,SIprod,SHImelt_mean,XC,YC,bathy,SHELFICEtopo,SHImelt_eff,SHImelt_tend,SHImelt_diff,SHImelt_tflux,SHImelt_conv] = calcFRISMeltTimeSeries (expdir,expname,compute_eff_melt) 
 
   %%% This needs to be set to ensure we are using the correct output
   %%% frequency
@@ -15,6 +15,7 @@ function [tt,SHImelt,SHImelt_mean,XC,YC,bathy,SHELFICEtopo,SHImelt_eff,SHImelt_t
 
   Cp = 3.994e3; % J/kg/K
   Lf = 3.34e5; % J/kg;
+  Sref = 34.5; % g/kg
 
   %%% Frequency of diagnostic output
   diagnum = 1; %%% Should be arbitrary because all output is provided at the same frequency
@@ -26,6 +27,7 @@ function [tt,SHImelt,SHImelt_mean,XC,YC,bathy,SHELFICEtopo,SHImelt_eff,SHImelt_t
   %%% To store the result
   tt = zeros(1,nDumps);
   SHImelt = NaN*ones(1,nDumps);
+  SIprod = NaN*ones(1,nDumps);
   SHImelt_eff = NaN*ones(1,nDumps);
   SHImelt_conv = NaN*ones(1,nDumps);
   SHImelt_tend = NaN*ones(1,nDumps);
@@ -42,6 +44,10 @@ function [tt,SHImelt,SHImelt_mean,XC,YC,bathy,SHELFICEtopo,SHImelt_eff,SHImelt_t
   xidx = find(XC(:,1)<-29.9);
   yidx = find(YC(1,:)<-74.5);
 
+  %%% Mask for calculating sea ice production
+  ETA = defineMOCgrid(XC,YC,[],[],false,false);
+  msk_SIprod = (ETA < 3.5) & (hFacC(:,:,1)>0);
+
   %%% TODO need to fix this
   for n=1:length(dumpIters)
 
@@ -50,6 +56,9 @@ function [tt,SHImelt,SHImelt_mean,XC,YC,bathy,SHELFICEtopo,SHImelt_eff,SHImelt_t
 
     %%% Attempt to load melt ave per month
     SHIfwFlx=rdmdsWrapper(fullfile(exppath,'/results/SHIfwFlx'),dumpIters(n));  
+    SHIhtFlx=rdmdsWrapper(fullfile(exppath,'/results/SHIhtFlx'),dumpIters(n));  
+    SFLUX=rdmdsWrapper(fullfile(exppath,'/results/SFLUX'),dumpIters(n));  
+    TFLUX=rdmdsWrapper(fullfile(exppath,'/results/TFLUX'),dumpIters(n));  
 
 
     if (isempty(SHIfwFlx))
@@ -69,9 +78,11 @@ function [tt,SHImelt,SHImelt_mean,XC,YC,bathy,SHELFICEtopo,SHImelt_eff,SHImelt_t
     
 n
 
-    %%% Compute area-integrated freshwater flux
-    SHIfwFlx = SHIfwFlx .* RAC;
-    SHImelt(n) =  sum(sum(SHIfwFlx(xidx,yidx)));
+    %%% Compute area-integrated freshwater flux due to melt
+    SHImelt(n) =  sum(sum(SHIfwFlx(xidx,yidx).*RAC(xidx,yidx)));
+
+    %%% Compute total sea ice production equivalent
+    SIprod(n) = sum(sum(msk_SIprod.*SFLUX/Sref*rhoConst/rhoShelf.*RAC));
 
     if (compute_eff_melt)
 

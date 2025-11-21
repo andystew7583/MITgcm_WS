@@ -23,7 +23,7 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   use_layers = true;
   use_tides = true;
   useRBCS = false; %%% For restoring cavity properties
-  
+  use_quad_heat_transfer = true; %%% Set true for velocity-dependent turbulent heat transfer to ice shelf bases
   
   
   
@@ -493,12 +493,16 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
  
   SHELFICEloadAnomalyFile = 'SHELFICEloadAnomalyFile.bin';
   SHELFICEtopoFile = 'SHELFICEtopoFile.bin';
-  SHELFICEuseGammaFrict = true;
   SHELFICEboundaryLayer = false;
   SHELFICEconserve = false;
-%   SHELFICEheatTransCoeff = .0005;
-%   SHELFICEheatTransCoeff = .0001;
-  SHELFICEheatTransCoeff = 0;
+  if (use_quad_heat_transfer)
+    SHELFICEheatTransCoeff = 0;
+    SHELFICEuseGammaFrict = true;
+  else
+    SHELFICEuseGammaFrict = false;
+    SHELFICEheatTransCoeff = .0005;
+  end
+  % SHELFICEheatTransCoeff = .0001;
 
   
   
@@ -1506,8 +1510,8 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%      
 
     %%% Restore salinity everywhere under ice shelves to ISW salinity
-    % salt_ISW = 34.5;
-    salt_ISW = 34;
+    salt_ISW = 34.7;
+    % salt_ISW = 34;
     salt_relax = salt_ISW*ones(Nx,Ny,Nr);
 
     %%% Restore temperature to local freezing point under ice shelves

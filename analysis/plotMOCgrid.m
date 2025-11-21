@@ -5,7 +5,7 @@
 %%%
 
 %%% Load experiment
-% loadexp;
+loadexp;
 
 ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,false,true);
 

@@ -44,8 +44,13 @@ datadir = fullfile(gendir,'/MITgcm_WS/data/PolarWrf');
 
 %%% Surface air temperature perturbation
 
-deltaT = 0;
+deltaTemp = 0;
 
+
+%%% Surface wind perturbations (N.B. THIS APPLIES PERTURBATIONS EVERYWHERE
+%%% - USE PerturbWindForcing FOR TARGETED PERTURBATIONS)
+alpha_u = 1;
+alpha_v = 1;
 
 
 %%% Max componentwise wind speed
@@ -53,7 +58,7 @@ wind_max = 30;
 
 
 %%%%%% Calculating dpm for each month, using leap year condiitonal
-dpm = zeros(EXF_Nyears,EXF_Nmon);
+dpm = zeros(EXF_Nyears,Nmon);
 for i=1:EXF_Nyears
   dpm(i,1) = 31;
   if (is_leap_year(i))
@@ -119,7 +124,7 @@ days_cntr = 1;
 
  for i=1:EXF_Nyears
     
-    for j= 1:EXF_Nmon
+    for j= 1:Nmon
         
         for days = 1:dpm(i,j)
           
@@ -161,6 +166,16 @@ days_cntr = 1;
               %%% Calculate next zonal wind daily average                       
               [Vwindinterpolated,F_V] = WRFdailyAvgwinds(years(i),months(j),days,datadirv,varname_v,ncname_v,F_V,ERR_V,EXF_XMC,EXF_YMC);
               Vwindinterpolated(isnan(Vwindinterpolated)) = 0;
+
+
+              %%% Apply perturbations
+              Uwindinterpolated = Uwindinterpolated*alpha_u;
+              Vwindinterpolated = Vwindinterpolated*alpha_v;
+
+
+
+
+
               
               %%% Limit wind magnitudes
               Uwindinterpolated(Uwindinterpolated>wind_max) = wind_max;

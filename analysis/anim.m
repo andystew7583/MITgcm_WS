@@ -11,12 +11,12 @@
 mac_plots = false;
 
 %%% Read experiment data
-% loadexp;
+loadexp;
 
 %%% Select diagnostic variable to animate
 % diagnum = 66;
 % diagnum = 46;
-diagnum = 4;
+diagnum = 8;
 outfname =diag_fileNames{1,diagnum};
 % outfname = 'THETA_12hourly';
 % outfname = 'Eta';
@@ -29,11 +29,11 @@ outfidx = 1;
 xyplot = 1;
 
 %%% Vertical layer index to use for top-down plots
-xylayer = 20;
+xylayer = 1;
 
 %%% Set true to plot the field in the lowest active cell at each horizontal
 %%% location
-botplot = 1;
+botplot = 0;
 
 %%% Set true to plot the field in the topmost wet cell at each horizontal
 %%% location
@@ -49,8 +49,9 @@ yzavg = 0;
 %%% Layer to plot in the y/z plane
 %%%for 1/3 DEGREE yzlayer = 126; 1/6 = 404;
 % yzlayer = 246;
-yzlayer = 141;
-% yzlayer = Nx-10;
+% yzlayer = 141; %%% Filchner trough at 1/3 grid
+% yzlayer = 194; %%% Kap Norvegia at 1/3 grid 
+yzlayer = Nx-spongethickness;
 % yzlayer = 1;
 
 % load ../newexp/ELEV.mat
@@ -63,12 +64,12 @@ yzlayer = 141;
 set_crange = 1;
 
 
-crange = [-2.5 1]; %/%% Filchner temp
+% crange = [-2.5 1]; %/%% Filchner temp
 % crange = [-3 3]; %%%temp
-% % crange = [33.4 34.65]; %%% salinity
+% crange = [33.6 34.65]; %%% salinity
 % crange = [34.1 34.8]; %%% salinity
 % crange = [0 10]; %%%% for KPP hbl
-% crange = [0 1]; %%% For sea ice area
+crange = [0 1]; %%% For sea ice area
 % crange = [-.6 .6]; %%% For velocities or stresses
 % crange = [-1 1]*1e-4; %%% For freshwater fluxes
 % crange =[-100 100]; %%% Qnet
@@ -79,14 +80,15 @@ crange = [-2.5 1]; %/%% Filchner temp
 % crange = [-0.5 0.5];
 % crange = [0.3 1]; %% SSH
 % crange = [-0.3 0.3]; %%% Melt rate 
+% crange = [-.05 .05]; %%% Surface stress
 
 % cmap = pmkmp(100,'Swtth');
-% cmap = cmocean('haline',100);
+% cmap = cmocean('haline',20);
 % cmap = cmocean('thermal',20);
-% cmap = cmocean('ice',100);
+cmap = cmocean('ice',100);
 % cmap = haxby(56);
 % cmap = jet(200);
-cmap = redblue(20);
+% cmap = redblue(20);
 % cmap = cmocean('amp',100);
 % %
 % titlestr = 'Salinity (g/kg)';
@@ -200,7 +202,7 @@ if (mac_plots)
   plotloc = [0.17 0.3 0.62 0.7];
 else
 %   plotloc = [0.0855    0.0888    0.7916    0.8624];  
-  plotloc = [0.04  0.02   0.84  0.9];
+  plotloc = [0.07  0.07   0.84  0.9];
 %   framepos = [100   306   936   676];
   framepos = [100   462   810   520];
 end
@@ -389,7 +391,9 @@ for n=24:length(dumpIters)
     xlabel('Offshore $y$ (latitude)','interpreter','latex','fontsize',15);
     ylabel('Height $z$ (km)','interpreter','latex','fontsize',15);
     set(gca,'YLim',[-1.3 0]);
-    set(gca,'XLim',[YC(1,1) YC(1,end)]);    
+    % set(gca,'XLim',[YC(1,1) YC(1,end)]);    
+    set(gca,'XLim',[-71 -67]);
+    % set(gca,'XLim',[-74 -70]);
     handle=colorbar;
     set(handle,'FontSize',fontsize);
 

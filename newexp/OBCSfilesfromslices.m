@@ -15,20 +15,26 @@ defineGrid
 
 addpath ../newexp_utils
 addpath ../utils/matlab
+addpath ../analysis/
+
+%%% Physical parameters
+gravity = 9.81;
+rho0 = 1027;
+beta = (densjmd95(35,-1.5,1)-densjmd95(34,-1.5,1)) / rho0; %%% Reference haline contraction coefficient
 
 
 %%%% Setting min salinity at eastern boundary
 min_salt_EB = false; %%% Originally set true
 min_salt_NB = false; %%% Originally set true
 % min_salt = 34;
-min_salt = 34.15; %%% Originally 34.15
+min_salt = 33; %%% Originally 34.15
 
 %%% Eastern boundary continental shelf properties
 set_shelf_properties = true; %%% Originally set true
 % shelf_salt = 34;
 shelf_salt = 34.15; %%% Originally set to 34.15
 bathy_max = -400; %%% Limits of bathymetry at eastern boundary over which
-bathy_min = -600; %%% to feather modification of shelf temperature, originally -400 to -600
+bathy_min = -800; %%% to feather modification of shelf temperature, originally -400 to -600
 % bathy_max = -600; %%% Limits of bathymetry at eastern boundary over which
 % bathy_min = -1200; %%% to feather modification of shelf temperature
 
@@ -38,10 +44,12 @@ mod_bdry_icethic = false;
 mod_bdry_iceconc = false;
 
 %%% Shifting pycnocline at eastern boundary
-shift_pyc = false; %%% Originally set true
-shift_lat_min = -70; %%% Original value -70
+shift_pyc = true; %%% Originally set true
+shift_lat_min = -71; %%% Original value -70
+shift_lat_ref = -70; %%% 11/2025 ALS: Added to extend pyc shift into cavity
 shift_lat_max = -68.5; %%% Original value -68.5
-shift_depth_max = 200; %%% Original value 200
+shift_depth_max = 100; %%% Original value 200
+shift_N2 = 1e-7; %%% Stratification above the shifted pycnocline
 
 
 
@@ -192,29 +200,7 @@ OBNsn = interpBdyData1(squeeze(SIHsnow_obcs_north),SOSElonC,xmc,landidx);
 
 
 
-%%% Modify eastern boundary stratification to set properties on continental
-%%% shelf
-if (set_shelf_properties)
-  for i = 1:size(OBEt,3)
 
-    for j=1:Ny
-      for k = 1:Nr
-        Pressure = -rho0*g*zz(1);
-        Tf = freezingTemp(OBEs(j,k,i),Pressure);
-
-        if (bathy_east(j) >= bathy_max)      
-          OBEt(j,k,i) = Tf;
-          OBEs(j,k,i) = shelf_salt;
-        else
-          if (bathy_east(j) >= bathy_min)
-            OBEt(j,k,i) = ( Tf * (bathy_east(j)-bathy_min) + OBEt(j,k,i) * (bathy_max-bathy_east(j)) ) / (bathy_max - bathy_min);
-            OBEs(j,k,i) = ( shelf_salt * (bathy_east(j)-bathy_min) + OBEs(j,k,i) * (bathy_max-bathy_east(j)) ) / (bathy_max - bathy_min);       
-          end
-        end
-      end
-    end    
-  end
-end
 
 %%% Set minimum salinity and accompanying freezing temperature at eastern boundary
 if (min_salt_EB)
@@ -222,10 +208,10 @@ if (min_salt_EB)
   OBEt(OBEs==min_salt) = freezingTemp(min_salt,0);
 end
 
-%%% Set minimum salinity and accompanying freezing temperature at eastern boundary
+%%% Set minimum salinity and accompanying freezing temperature at northern boundary
 if (min_salt_NB)
   OBNs(OBNs<min_salt) = min_salt;
-  OBNt(OBNs==min_salt) = freezingTemp(min_salt,0);
+  OBNt(OBNs==min_salt) = freezingTemp(min_salt,0); 
 end
 
 
@@ -241,21 +227,33 @@ if (shift_pyc)
     for j = 1:Ny    
       
       %%% Change in depth varies with latitude
-      shift_depth = (shift_lat_max - ymc(j)) / (shift_lat_max - shift_lat_min) * shift_depth_max;
+      shift_depth = (shift_lat_max - ymc(j)) / (shift_lat_max - shift_lat_ref) * shift_depth_max;
       shift_depth = max(min(shift_depth,shift_depth_max),0);
       
-      %%% Find index of first gridpoint below the shift depth; everything
-      %%% above this gridpoint is simply replaced with the surface T/S
+      %%% Find index of first gridpoint below the shift depth;
       kmin = find(zz<-(shift_depth+dz(1)/2),1,'first');
       OBEs_tmp = OBEs(j,:,n);
       OBEt_tmp = OBEt(j,:,n);
-      OBEs_tmp(1:kmin-1) = OBEs(j,1,n);
-      OBEt_tmp(1:kmin-1) = OBEt(j,1,n);
-      
+
       %%% Everything below the shift depth is linearly interpolated from
       %%% the water column properties above
       OBEs_tmp(kmin:end) = interp1(zz,OBEs(j,:,n),zz(kmin:end)+shift_depth,'linear');
       OBEt_tmp(kmin:end) = interp1(zz,OBEt(j,:,n),zz(kmin:end)+shift_depth,'linear');
+
+      %%% If there is unstable stratification, adjust kmin downward (at
+      %%% most 10 times, arbitrarily)
+      for ktmp = 1:10
+        if (densjmd95(OBEs_tmp(kmin),OBEt_tmp(kmin),-zzf(kmin+1)) > densjmd95(OBEs_tmp(kmin+1),OBEt_tmp(kmin+1),-zzf(kmin+1)))
+          kmin = kmin + 1;
+        else
+          break;
+        end
+      end
+
+      %%% Everything above this gridpoint is simply replaced a linear
+      %%% salinity stratification and uniform temperature
+      OBEs_tmp(1:kmin-1) = OBEs_tmp(kmin) - shift_N2/(gravity*beta)*(zz(1:kmin-1)-zz(kmin));
+      OBEt_tmp(1:kmin-1) = OBEt_tmp(kmin);     
       
       %%% Replace OB properties
       OBEs(j,:,n) = OBEs_tmp;
@@ -286,6 +284,51 @@ if (shift_pyc)
     end
   end
   
+end
+
+
+%%% Modify eastern boundary stratification to set properties on continental
+%%% shelf
+%%% 11/2025 ALS: Moved to after shift_pyc code so cavity properties derive
+%%% from shifted pycnocline
+if (set_shelf_properties)
+  % for i = 1:size(OBEt,3)
+
+    % for j=1:Ny
+    %   for k = 1:Nr
+      %   Pressure = -rho0*g*zz(1);
+      %   Tf = freezingTemp(OBEs(j,k,i),Pressure);
+      % 
+      %   if (bathy_east(j) >= bathy_max)      
+      %     OBEt(j,k,i) = Tf;
+      %     OBEs(j,k,i) = shelf_salt;
+      %   else
+      %     if (bathy_east(j) >= bathy_min)
+      %       OBEt(j,k,i) = ( Tf * (bathy_east(j)-bathy_min) + OBEt(j,k,i) * (bathy_max-bathy_east(j)) ) / (bathy_max - bathy_min);
+      %       OBEs(j,k,i) = ( shelf_salt * (bathy_east(j)-bathy_min) + OBEs(j,k,i) * (bathy_max-bathy_east(j)) ) / (bathy_max - bathy_min);       
+      %     end
+      %   end
+      % end
+      
+    %   end
+    % end    
+  % end
+
+  %%% Uniform extrapolation into the cavity for depths greater than
+  %%% bathy_min
+  jshelf = find((icedraft_east>bathy_east) & (bathy_east>=bathy_min),1,'last');
+  OBEt(1:jshelf,:,:) = repmat(OBEt(jshelf+1,:,:),[length(1:jshelf) 1 1]);
+  OBEs(1:jshelf,:,:) = repmat(OBEs(jshelf+1,:,:),[length(1:jshelf) 1 1]);
+
+  %%% Replace any salinities lower than the lowest salinities outside the
+  %%% cavity with the lowest salinity outside the cavity. This avoids very
+  %%% low salinities appearing in the cavity
+  jicefront = find(icedraft_east<0,1,'last')+1;
+  for i=1:size(OBEt,3)
+    OBEs_tmp = OBEs(:,:,i);
+    OBEs_tmp(OBEs_tmp<OBEs_tmp(jicefront,1)) = OBEs_tmp(jicefront,1);
+    OBEs(:,:,i) = OBEs_tmp;
+  end
 end
 
 
@@ -446,8 +489,33 @@ writeDataset(data,fullfile(inputconfigdir,OBEetaFile),ieee,prec);
 clear data
 
 
+%%% Sample plots
 
 
+[ZZe,YYe]=meshgrid(zz,ymc);
+monidx = 9;
+
+ % OBEs_plot = mean(OBEs(:,:,1:end),3);
+ OBEs_plot = OBEs(:,:,monidx);
+OBEs_plot(squeeze(hFacC(end,:,:))==0) = NaN;
+figure(9);pcolor(YYe,ZZe,OBEs_plot);shading interp; axis([-71 -67 -1000 0]);colorbar
+
+% OBEt_plot = mean(OBEt(:,:,1:end),3);
+OBEt_plot = OBEt(:,:,monidx);
+OBEt_plot(squeeze(hFacC(end,:,:))==0) = NaN;
+figure(8);pcolor(YYe,ZZe,OBEt_plot);shading interp; axis([-71 -67 -1000 0])
+
+drhodz = zeros(Ny,Nr);
+for k = 1:Nr
+  DENS = densjmd95(OBEs_plot(:,k),OBEt_plot(:,k),-zzf(k+1));
+  DENS(squeeze(hFacC(end,:,k))==0) = NaN;
+  if (k < Nr)     
+    DENS_below = densjmd95(OBEs_plot(:,k+1),OBEt_plot(:,k+1),-zzf(k+1));       
+    DENS_below(squeeze(hFacC(end,:,k+1))==0) = NaN;
+    drhodz(:,k) = (DENS - DENS_below) / (zz(k) - zz(k+1));
+  end      
+end
+figure(10);pcolor(YYe,ZZe,-gravity*drhodz/rho0);shading interp; axis([-71 -67 -1000 0]); colorbar; caxis([-1 1]*1e-5); colormap redblue;
 
 
 
@@ -499,11 +567,11 @@ function data_interp = interpBdyData2 (data,XD,ZD,XI,ZI)
   
   %%% To store interpolated data
   data_interp = zeros(size(XI,2),size(XI,1),Nt);
-  
+
   
   for n = 1:Nt
     data_interp(:,:,n) = interp2(XD,ZD,data(:,:,n)',XI,ZI,'linear')';
-    data_interp(:,:,n) = inpaint_nans(data_interp(:,:,n),4); %%% Crude extrapolation
+    data_interp(:,:,n) = inpaint_nans(data_interp(:,:,n),0); %%% Crude extrapolation %%% 11/2025 ALS: Changed from method 4 to method 0
   end
 
 end
@@ -546,3 +614,4 @@ function Tfreeze = freezingTemp (salt,pressure)
   Tfreeze = .0901 - .0575*salt - (7.61e-4 *(pressure/Pa1dbar));                
   
 end
+

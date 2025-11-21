@@ -23,9 +23,9 @@ addpath ../newexp_utils
 
 % days = 26292;
 days = EXF_Ndays;
-gendir = '/data3';
+gendir = '/data/data3';
 
-inputfr = '/data3/MITgcm_WS/newexp/DEFAULTS/input/';
+inputfr = '/data/data3/MITgcm_WS/newexp/DEFAULTS/input/';
 
 
 

@@ -16,7 +16,7 @@ loadexp;
 %%% Select diagnostic variable to animate
 % diagnum = 66;
 % diagnum = 46;
-diagnum = 8;
+diagnum = 5;
 outfname =diag_fileNames{1,diagnum};
 % outfname = 'THETA_12hourly';
 % outfname = 'Eta';
@@ -29,7 +29,7 @@ outfidx = 1;
 xyplot = 1;
 
 %%% Vertical layer index to use for top-down plots
-xylayer = 1;
+xylayer = 15;
 
 %%% Set true to plot the field in the lowest active cell at each horizontal
 %%% location
@@ -50,8 +50,8 @@ yzavg = 0;
 %%%for 1/3 DEGREE yzlayer = 126; 1/6 = 404;
 % yzlayer = 246;
 % yzlayer = 141; %%% Filchner trough at 1/3 grid
-% yzlayer = 194; %%% Kap Norvegia at 1/3 grid 
-yzlayer = Nx-spongethickness;
+yzlayer = 194; %%% Kap Norvegia at 1/3 grid 
+% yzlayer = Nx-spongethickness;
 % yzlayer = 1;
 
 % load ../newexp/ELEV.mat
@@ -67,25 +67,25 @@ set_crange = 1;
 % crange = [-2.5 1]; %/%% Filchner temp
 % crange = [-3 3]; %%%temp
 % crange = [33.6 34.65]; %%% salinity
-% crange = [34.1 34.8]; %%% salinity
+crange = [33.6 34.65]; %%% salinity
 % crange = [0 10]; %%%% for KPP hbl
-crange = [0 1]; %%% For sea ice area
+% crange = [0 1]; %%% For sea ice area
 % crange = [-.6 .6]; %%% For velocities or stresses
 % crange = [-1 1]*1e-4; %%% For freshwater fluxes
 % crange =[-100 100]; %%% Qnet
 % crange = [-300 300]; %%% swnet
 % crange =[-.1 .1]; %%% SFLUX
 % crange =[-1 1]*1e-3; %%% WVEL
-% % crange = [0 3];
+% crange = [0 3];
 % crange = [-0.5 0.5];
 % crange = [0.3 1]; %% SSH
 % crange = [-0.3 0.3]; %%% Melt rate 
 % crange = [-.05 .05]; %%% Surface stress
 
 % cmap = pmkmp(100,'Swtth');
-% cmap = cmocean('haline',20);
+cmap = cmocean('haline',20);
 % cmap = cmocean('thermal',20);
-cmap = cmocean('ice',100);
+% cmap = cmocean('ice',100);
 % cmap = haxby(56);
 % cmap = jet(200);
 % cmap = redblue(20);
@@ -222,8 +222,8 @@ Amax = [];
 % for n=5*12
 % for n=7*12:8*12
 % for n = 34a
-for n=24:length(dumpIters) 
-% for n=2:length(dumpIters)
+for n=26:26
+  % for n=2:length(dumpIters)
 % for n =1:length(dumpIters)
   dumpIters(n);
     

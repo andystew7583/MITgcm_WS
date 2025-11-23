@@ -5,7 +5,7 @@
 %%% experiments.
 %%%
 
-function [tt,SHImelt,SIprod,SHImelt_mean,XC,YC,bathy,SHELFICEtopo,SHImelt_eff,SHImelt_tend,SHImelt_diff,SHImelt_tflux,SHImelt_conv] = calcFRISMeltTimeSeries (expdir,expname,compute_eff_melt) 
+function [tt,SHImelt,SIprod,SHImelt_mean,SIprod_mean,XC,YC,bathy,SHELFICEtopo,SHImelt_eff,SHImelt_tend,SHImelt_diff,SHImelt_tflux,SHImelt_conv] = calcFRISMeltTimeSeries (expdir,expname,compute_eff_melt) 
 
   %%% This needs to be set to ensure we are using the correct output
   %%% frequency
@@ -35,10 +35,12 @@ function [tt,SHImelt,SIprod,SHImelt_mean,XC,YC,bathy,SHELFICEtopo,SHImelt_eff,SH
   SHImelt_tflux = NaN*ones(1,nDumps);
   heat_tot = NaN*ones(1,nDumps);
   SHImelt_mean = zeros(Nx,Ny);
+  SIprod_mean = zeros(Nx,Ny);
   tlen = 0;
   
-  endTime = dumpIters(end)*deltaT
-  avg_len = 1*t1year
+  % endTime = dumpIters(end)*deltaT
+  endTime = 2*t1year;
+  avg_len = 1*t1year;
 
   %%% Indices over which to integrate, i.e. defining the FRIS
   xidx = find(XC(:,1)<-29.9);
@@ -70,6 +72,9 @@ function [tt,SHImelt,SIprod,SHImelt_mean,XC,YC,bathy,SHELFICEtopo,SHImelt_eff,SH
     if (tt(n) > endTime-avg_len)
       
       SHImelt_mean = SHImelt_mean + SHIfwFlx;
+
+
+      SIprod_mean = SIprod_mean + (hFacC(:,:,1)>0).*SFLUX/Sref*rhoConst/rhoShelf;
 
       %%% Increment counter
       tlen = tlen + 1;
@@ -135,6 +140,7 @@ n
   end
 
   SHImelt_mean = SHImelt_mean / tlen;
+  SIprod_mean = SIprod_mean / tlen;
 
   if (compute_eff_melt)    
     SHImelt_tend(2:end-1) = (heat_tot(3:end) - heat_tot(1:end-2)) / (2*t1month) / Lf;

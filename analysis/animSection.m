@@ -190,7 +190,7 @@ M = moviein(length(dumpIters));
 % for n=5*12
 % for n=7*12:8*12
 % for n = 34a
-for n=1:length(dumpIters) 
+for n=8*12:length(dumpIters) 
 % for n=2:length(dumpIters)
 % for n =1:length(dumpIters)
   dumpIters(n);

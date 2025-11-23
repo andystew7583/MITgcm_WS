@@ -24,17 +24,29 @@ beta = (densjmd95(35,-1.5,1)-densjmd95(34,-1.5,1)) / rho0; %%% Reference haline 
 
 
 %%%% Setting min salinity at eastern boundary
-min_salt_EB = false; %%% Originally set true
-min_salt_NB = false; %%% Originally set true
+min_salt_EB = true; %%% Originally set true
+min_salt_NB = true; %%% Originally set true
 % min_salt = 34;
-min_salt = 33; %%% Originally 34.15
+min_salt = 34.15*ones(1,12); %%% Originally 34.15
+% min_salt = [33.9200, 33.5328, 33.5238, 33.7174, 34.0604, 34.0973, 34.0736 34.0862, 34.0818, 34.0774, 34.0728, 34.0680]; %%% Min. salinities from Kapp Norvegia dataset (Hattermann 2018 JPO)
+% min_salt = min_salt + 0.2;
+
+%%% Set true to reset temperature to freezing for fresh waters in a way that
+%%% depends piecewise-linearly on salinity, approximately consistent
+%%% with Kapp Norvegia dataset
+reset_temp_linearly_EB = true;
+salt_freeze = 34.2;
+salt_max = 34.7;
+temp_max = 1.5;
+temp_freeze = -1.8;
+  
 
 %%% Eastern boundary continental shelf properties
 set_shelf_properties = true; %%% Originally set true
 % shelf_salt = 34;
-shelf_salt = 34.15; %%% Originally set to 34.15
-bathy_max = -400; %%% Limits of bathymetry at eastern boundary over which
-bathy_min = -800; %%% to feather modification of shelf temperature, originally -400 to -600
+% shelf_salt = 34.15; %%% Originally set to 34.15, no longer used
+% bathy_max = -400; %%% Limits of bathymetry at eastern boundary over which
+bathy_min = -800; %%% to feather modification of shelf temperature, originally -400 to -600. Bathy_max no longer used.
 % bathy_max = -600; %%% Limits of bathymetry at eastern boundary over which
 % bathy_min = -1200; %%% to feather modification of shelf temperature
 
@@ -48,7 +60,7 @@ shift_pyc = true; %%% Originally set true
 shift_lat_min = -71; %%% Original value -70
 shift_lat_ref = -70; %%% 11/2025 ALS: Added to extend pyc shift into cavity
 shift_lat_max = -68.5; %%% Original value -68.5
-shift_depth_max = 100; %%% Original value 200
+shift_depth_max = 200; %%% Original value 200
 shift_N2 = 1e-7; %%% Stratification above the shifted pycnocline
 
 
@@ -200,19 +212,33 @@ OBNsn = interpBdyData1(squeeze(SIHsnow_obcs_north),SOSElonC,xmc,landidx);
 
 
 
-
-
 %%% Set minimum salinity and accompanying freezing temperature at eastern boundary
 if (min_salt_EB)
-  OBEs(OBEs<min_salt) = min_salt;
-  OBEt(OBEs==min_salt) = freezingTemp(min_salt,0);
+
+  for i=1:size(OBEs,3)
+    OBEs_tmp = OBEs(:,:,i);
+    OBEs_tmp(OBEs_tmp<min_salt(i)) = min_salt(i);
+    OBEs(:,:,i) = OBEs_tmp;
+  end
+
+  %%% Confines the temperature below a line in T/S space, inspired by the
+  %%% Kapp Norvegia water masses from Hattermann 2018 JPO
+  if (reset_temp_linearly_EB)
+    OBEt(OBEs <= salt_freeze) = temp_freeze;
+    saltcond = (OBEs > salt_freeze) & (OBEs < salt_max); 
+    temp_limit = temp_freeze + (temp_max-temp_freeze)*(OBEs - salt_freeze)/(salt_max-salt_freeze);
+    OBEt(saltcond & (OBEt > temp_limit)) = temp_limit(saltcond & (OBEt > temp_limit));
+  else
+    % for i=1:size(OBEt,3)
+    %   OBEt_tmp = OBEt(:,:,i);
+    %   OBEs_tmp = OBEs(:,:,i);
+    %   OBEt_tmp(OBEs_tmp==min_salt(i)) = freezingTemp(min_salt(i),0);
+    %   OBEt(:,:,i) = OBEt_tmp;
+    % end
+  end
+
 end
 
-%%% Set minimum salinity and accompanying freezing temperature at northern boundary
-if (min_salt_NB)
-  OBNs(OBNs<min_salt) = min_salt;
-  OBNt(OBNs==min_salt) = freezingTemp(min_salt,0); 
-end
 
 
 %%% Shift the stratification at the eastern boundary to deepen the
@@ -243,7 +269,8 @@ if (shift_pyc)
       %%% If there is unstable stratification, adjust kmin downward (at
       %%% most 10 times, arbitrarily)
       for ktmp = 1:10
-        if (densjmd95(OBEs_tmp(kmin),OBEt_tmp(kmin),-zzf(kmin+1)) > densjmd95(OBEs_tmp(kmin+1),OBEt_tmp(kmin+1),-zzf(kmin+1)))
+        N2loc = -(g/rho0)*(densjmd95(OBEs_tmp(kmin),OBEt_tmp(kmin),-zzf(kmin+1)) - densjmd95(OBEs_tmp(kmin+1),OBEt_tmp(kmin+1),-zzf(kmin+1)))/(zz(kmin)-zz(kmin+1));
+        if (N2loc < shift_N2)
           kmin = kmin + 1;
         else
           break;
@@ -330,6 +357,26 @@ if (set_shelf_properties)
     OBEs(:,:,i) = OBEs_tmp;
   end
 end
+
+
+
+
+
+
+%%% Set minimum salinity and accompanying freezing temperature at northern boundary
+if (min_salt_NB)
+
+   for i=1:size(OBNs,3)
+    OBNt_tmp = OBNt(:,:,i);
+    OBNs_tmp = OBNs(:,:,i);
+    OBNs_tmp(OBNs_tmp<min_salt(i)) = min_salt(i);   
+    OBNt_tmp(OBNs_tmp==min_salt(i)) = freezingTemp(min_salt(i),0);
+    OBNs(:,:,i) = OBNs_tmp;
+    OBNt(:,:,i) = OBNt_tmp;
+   end
+
+end
+
 
 
 
@@ -489,33 +536,153 @@ writeDataset(data,fullfile(inputconfigdir,OBEetaFile),ieee,prec);
 clear data
 
 
-%%% Sample plots
 
 
-[ZZe,YYe]=meshgrid(zz,ymc);
-monidx = 9;
 
- % OBEs_plot = mean(OBEs(:,:,1:end),3);
- OBEs_plot = OBEs(:,:,monidx);
-OBEs_plot(squeeze(hFacC(end,:,:))==0) = NaN;
-figure(9);pcolor(YYe,ZZe,OBEs_plot);shading interp; axis([-71 -67 -1000 0]);colorbar
 
-% OBEt_plot = mean(OBEt(:,:,1:end),3);
-OBEt_plot = OBEt(:,:,monidx);
-OBEt_plot(squeeze(hFacC(end,:,:))==0) = NaN;
-figure(8);pcolor(YYe,ZZe,OBEt_plot);shading interp; axis([-71 -67 -1000 0])
 
-drhodz = zeros(Ny,Nr);
-for k = 1:Nr
-  DENS = densjmd95(OBEs_plot(:,k),OBEt_plot(:,k),-zzf(k+1));
-  DENS(squeeze(hFacC(end,:,k))==0) = NaN;
-  if (k < Nr)     
-    DENS_below = densjmd95(OBEs_plot(:,k+1),OBEt_plot(:,k+1),-zzf(k+1));       
-    DENS_below(squeeze(hFacC(end,:,k+1))==0) = NaN;
-    drhodz(:,k) = (DENS - DENS_below) / (zz(k) - zz(k+1));
-  end      
+
+
+
+
+
+
+%%% Plotting options
+framepos = [1000         142        1018        1072];
+fontsize = 13;
+[ZZ,YY] = meshgrid(zz,ymc);
+
+%%% Generate model plots
+for m = 1:size(OBEt,3)
+
+  OBEs_plot = OBEs(:,:,m);
+  OBEs_plot(squeeze(hFacC(end,:,:))==0) = NaN;
+
+  %%% Plot salinity section
+  figure(11);
+  if (m == 1)
+    clf;
+    set(gcf,'Position',framepos);
+    drawnow;
+  end
+  subplot(4,3,m);
+  pcolor(YY(:,:),-ZZ(:,:)/1000,OBEs_plot);
+  shading interp;
+
+  set(gca,'YDir','reverse');
+  caxis([33.6 34.7]);
+  if (m >= 10)
+    xlabel('Latitude','interpreter','latex','fontsize',fontsize);
+  end
+  if (mod(m-1,3)==0)
+    ylabel('Depth (km)','interpreter','latex','fontsize',fontsize);
+  end
+  set(gca,'YLim',[0 1]);
+  set(gca,'XLim',[-71 -67]);
+  if (m == 12)
+    handle=colorbar;
+    set(handle,'FontSize',fontsize);
+    colormap(cmocean('haline',20));
+    set(handle,'Position',[.93 .05 .01 .9]);
+  end
+  
+
+
+  OBEt_plot = OBEt(:,:,m);
+  OBEt_plot(squeeze(hFacC(end,:,:))==0) = NaN;
+
+  %%% Plot temperature section
+  figure(12);
+  if (m == 1)
+    clf;
+    set(gcf,'Position',framepos);
+    drawnow;
+  end
+  subplot(4,3,m);
+  pcolor(YY(:,:),-ZZ(:,:)/1000,OBEt_plot(:,:));
+  shading interp;
+  set(gca,'YDir','reverse');
+  caxis([-2.2 1.2])
+  if (m >= 10)
+    xlabel('Latitude','interpreter','latex','fontsize',fontsize);
+  end
+  if (mod(m-1,3)==0)
+    ylabel('Depth (km)','interpreter','latex','fontsize',fontsize);
+  end
+  set(gca,'YLim',[0 1]);
+  set(gca,'XLim',[-71 -67]);
+  if (m == 12)
+    handle=colorbar;
+    set(handle,'FontSize',fontsize);
+    colormap(cmocean('thermal',20));
+    set(handle,'Position',[.93 .05 .01 .9]);
+  end
+
+  %%% Compute density gradient
+  drhodz = zeros(Ny,Nr);
+  for k = 1:Nr
+    DENS = densjmd95(OBEs_plot(:,k),OBEt_plot(:,k),-zzf(k+1));
+    DENS(squeeze(hFacC(end,:,k))==0) = NaN;
+    if (k < Nr)     
+      DENS_below = densjmd95(OBEs_plot(:,k+1),OBEt_plot(:,k+1),-zzf(k+1));       
+      DENS_below(squeeze(hFacC(end,:,k+1))==0) = NaN;
+      drhodz(:,k) = (DENS - DENS_below) / (zz(k) - zz(k+1));
+    end      
+  end
+
+  %%% Plot buoyancy frequency
+  figure(13);
+  if (m == 1)
+    clf;
+    set(gcf,'Position',framepos);
+    drawnow;
+  end
+  subplot(4,3,m);
+  pcolor(YY(:,:),-ZZ(:,:)/1000,-gravity*drhodz/rho0);
+  shading interp;
+  set(gca,'YDir','reverse');
+  caxis([-1 1]*1e-5)
+  if (m >= 10)
+    xlabel('Latitude','interpreter','latex','fontsize',fontsize);
+  end
+  if (mod(m-1,3)==0)
+    ylabel('Depth (km)','interpreter','latex','fontsize',fontsize);
+  end
+  set(gca,'YLim',[0 1]);
+  set(gca,'XLim',[-71 -67]);
+  if (m == 12)
+    handle=colorbar;
+    set(handle,'FontSize',fontsize);
+    colormap(redblue(20));
+    set(handle,'Position',[.93 .05 .01 .9]);
+  end
+
+
+
+
+  jrange = 1:find(ymc>-68.5,1);
+  krange = 1:find(zz<-1000,1);
+
+  %%% T/S diagram
+  figure(14);
+  if (m == 1)
+    clf;
+    set(gcf,'Position',framepos);
+    drawnow;
+  end
+  subplot(4,3,m);
+  scatter(reshape(OBEs_plot(jrange,krange),1,[]),reshape(OBEt_plot(jrange,krange),1,[])); 
+  if (m >= 10)
+    xlabel('Salinity (g/kg)','interpreter','latex','fontsize',fontsize);
+  end
+  if (mod(m-1,3)==0)
+    ylabel('Temperature ($^\circ$C)','interpreter','latex','fontsize',fontsize);
+  end
+  axis([33 35 -2.2 1.2]);
+
 end
-figure(10);pcolor(YYe,ZZe,-gravity*drhodz/rho0);shading interp; axis([-71 -67 -1000 0]); colorbar; caxis([-1 1]*1e-5); colormap redblue;
+
+
 
 
 

@@ -11,10 +11,10 @@ loadexp;
 compute_eff_melt = false;
 
 %%% Melt time series
-[tt,SHImelt,SIprod,SHImelt_mean,XC,YC,bathy,SHELFICEtopo,SHImelt_eff,SHImelt_tend,SHImelt_diff,SHImelt_tflux] = calcFRISMeltTimeSeries (expdir,expname,compute_eff_melt); 
+[tt,SHImelt,SIprod,SHImelt_mean,SIprod_mean,XC,YC,bathy,SHELFICEtopo,SHImelt_eff,SHImelt_tend,SHImelt_diff,SHImelt_tflux] = calcFRISMeltTimeSeries (expdir,expname,compute_eff_melt); 
 
 %%% Plot the time series
-figure(10);
+figure(20);
 plot(tt/86400/365,SHImelt/1e12*86400*365);
 if (compute_eff_melt)
   hold on;
@@ -25,7 +25,7 @@ end
 xlabel('Time (years)');cd .
 ylabel('FRIS melt rate (Gt/yr)');
 
-figure(11);
+figure(21);
 plot(tt/86400/365,SHImelt/1e12*86400*365);
 hold on;
 plot(tt/86400/365,SIprod/1e12*86400*365);
@@ -35,9 +35,16 @@ legend('FRIS melt','Sea ice production','Net freshwater flux');
 xlabel('Time (years)');cd .
 ylabel('FRIS melt rate (Gt/yr)');
 
-figure(12);
+figure(22);
 pcolor(XC,YC,-SHImelt_mean/920*86400*365);
 shading interp;
 colorbar;
-caxis([-5 5]);
+caxis([-20 20]);
+colormap redblue;
+
+figure(33);
+pcolor(XC,YC,-SIprod_mean/920*86400*365);
+shading interp;
+colorbar;
+caxis([-20 20]);
 colormap redblue;

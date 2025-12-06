@@ -25,8 +25,8 @@ loadexp;
 % secLons = startLon:dLon:endLon;
 
 %%% Define grid to extract data sections - front of RL and SWIT
-stat_lat = [-83.35, -81.83, -81.38, -81.06, -80.38, -78.77, -77.24, -75.45, -74.28];
-stat_lon = [-60.25, -57.17, -51.36, -43.83, -41.43, -39.07, -37.33, -33.22, -32.20];
+stat_lat = [-83.35, -81.83, -81.38, -81.06, -80.38, -78.77, -77.24, -75.45, -74.28 -73.00];
+stat_lon = [-60.25, -57.17, -51.36, -43.83, -41.43, -39.07, -37.33, -33.22, -32.20 -31.80];
 Nsec = 401;
 dLon = (stat_lon(end)-stat_lon(1))/(Nsec-1);
 secLons = stat_lon(1):dLon:stat_lon(end);
@@ -51,7 +51,7 @@ set_crange = 1;
 crange = [-2.5 1]; %/%% Filchner temp
 % crange = [-3 3]; %%%temp
 % crange = [33.4 34.65]; %%% salinity
-% crange = [34.1 34.8]; %%% salinity
+% crange = [33.8 34.8]; %%% salinity
 % crange = [0 10]; %%%% for KPP hbl
 % crange = [0 1]; %%% For sea ice area
 % crange = [-.6 .6]; %%% For velocities or stresses
@@ -218,8 +218,8 @@ for n=8*12:length(dumpIters)
 
   %%% Extract data along defined sections 
   A(hFacC==0) = NaN;
-  for n=1:Nsec
-    secA(n,:) = squeeze(A(xidx(n),yidx(n),:));        
+  for m=1:Nsec
+    secA(m,:) = squeeze(A(xidx(m),yidx(m),:));        
   end
   
   

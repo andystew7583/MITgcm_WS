@@ -60,7 +60,21 @@ expdir = basedir;
 % expname = 'WC_seq_onethird_RTOPO2_unmodEB_alphaV0.5';
 
 % expname = 'WC_seq_onethird_RTOPO2_dpyc200_alphaV0.5';
-expname = 'WC_seq_onethird_RTOPO2_dpyc200';
+% expname = 'WC_seq_onethird_RTOPO2_dpyc200_SconstBCs2';
+
+% expname = 'WC_seq_onethird_RTOPO2_dpyc100';
+% expname = 'WC_seq_onethird_RTOPO2_dpyc100_alphaV0.5';
+% expname = 'WC_seq_onethird_RTOPO2_dpyc100_alphaV0.25';
+% % expname = 'WC_seq_onethird_RTOPO2_dpyc100_strat2e-5';
+% expname = 'WC_seq_onethird_RTOPO2_dpyc100_Smin34';
+% expname = 'WC_seq_onethird_RTOPO2_dpyc100_strat4e-5';
+% expname = 'WC_seq_onethird_RTOPO2_dpyc100_gAlphaU0.5_gAlphaV0.5';
+% expname = 'WC_seq_onethird_RTOPO2_dpyc100_offshorestrat2e-5';
+% expname = 'WC_seq_onethird_RTOPO2_dpyc100_strat2e-5_alphaV0.5';
+% expname = 'WC_seq_onethird_RTOPO2_dpyc0_alphaU0.25_alphaV0.25';
+% expname = 'WC_seq_onethird_RTOPO2_dpyc100_alphaU0.25_alphaV0.25';
+% expname = 'WC_seq_onethird_RTOPO2_dpyc100_Sf34.3_offshorestrat4e-6';
+expname = 'WC_seq_onethird_RTOPO2_dpyc100_Smin34_Sf34.3';
 % 
 
 %%% Julia's control experiments

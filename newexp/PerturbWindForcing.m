@@ -22,22 +22,28 @@ ETA = defineMOCgrid (EXF_XMC',EXF_YMC',[],[],false,false);
 % alpha_lat = -74.5;
 
 %%% Parameters defining forcing perturbations
+local_perturb = true;
 alpha_eta_max = 4;
 alpha_eta_min = 3;
-alpha_u = 1;
-alpha_v = 0.5;
+alpha_u = 0.25;
+alpha_v = 0.25;
 
-%%% Matrices for applying forcing perturbations: linear variation from
-%%% modified winds for eta < alpha_eta_min to unmodified winds for eta >
-%%% alpha_eta_max
-idx_trans = find((ETA >= alpha_eta_min) & (ETA <= alpha_eta_max)); %%% Transition indices
-alpha_u_mat = ones(EXF_Nx,EXF_Ny);
-alpha_u_mat(ETA <= alpha_eta_min) = alpha_u;
-alpha_u_mat(idx_trans) = alpha_u + (1-alpha_u)*(ETA(idx_trans)-alpha_eta_min)/(alpha_eta_max-alpha_eta_min);
-alpha_v_mat = ones(EXF_Nx,EXF_Ny);
-alpha_v_mat(ETA <= alpha_eta_min) = alpha_v;
-alpha_v_mat(idx_trans) = alpha_v + (1-alpha_v)*(ETA(idx_trans)-alpha_eta_min)/(alpha_eta_max-alpha_eta_min);
-
+%%% Matrices for applying forcing perturbations
+if (local_perturb)
+  %%% Linear variation from modified winds for eta < alpha_eta_min 
+  %%% to unmodified winds for eta > alpha_eta_max
+  idx_trans = find((ETA >= alpha_eta_min) & (ETA <= alpha_eta_max)); %%% Transition indices
+  alpha_u_mat = ones(EXF_Nx,EXF_Ny);
+  alpha_u_mat(ETA <= alpha_eta_min) = alpha_u;
+  alpha_u_mat(idx_trans) = alpha_u + (1-alpha_u)*(ETA(idx_trans)-alpha_eta_min)/(alpha_eta_max-alpha_eta_min);
+  alpha_v_mat = ones(EXF_Nx,EXF_Ny);
+  alpha_v_mat(ETA <= alpha_eta_min) = alpha_v;
+  alpha_v_mat(idx_trans) = alpha_v + (1-alpha_v)*(ETA(idx_trans)-alpha_eta_min)/(alpha_eta_max-alpha_eta_min);
+else
+  %%% Global perturbations
+  alpha_u_mat = alpha_u * ones(EXF_Nx,EXF_Ny);
+  alpha_v_mat = alpha_v * ones(EXF_Nx,EXF_Ny);
+end
 
 %%% Max componentwise wind speed
 wind_max = 30;

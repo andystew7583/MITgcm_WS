@@ -22,7 +22,7 @@ outfidx = 1;
 
 %%% If set true, plots a top-down view of the field in a given layer.
 %%% Otherwise plots a side-on view of the zonally-averaged field.
-xyplot = 0;
+xyplot = 1;
 
 %%% Vertical layer index to use for top-down plots
 xylayer = 1;
@@ -55,7 +55,7 @@ yzlayer = 141;
 %%% Specify color range
 set_crange = 1;
 % crange = [36.9 37.6];
-crange = [27.7 27.85];
+crange = [27.5 27.85];
 cmap = cmocean('dense',20);
 
 % titlestr = 'Salinity (g/kg)';
@@ -190,7 +190,7 @@ Amax = [];
 % for n = 34a
 % for n=48:length(dumpIters)
 % for n=2:length(dumpIters)
-for n =1:length(dumpIters)
+for n =60:length(dumpIters)
   dumpIters(n);
     
   t = dumpIters(n)*deltaT/t1year;

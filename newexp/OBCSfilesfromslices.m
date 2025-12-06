@@ -26,7 +26,7 @@ beta = (densjmd95(35,-1.5,1)-densjmd95(34,-1.5,1)) / rho0; %%% Reference haline 
 %%%% Setting min salinity at eastern boundary
 min_salt_EB = true; %%% Originally set true
 min_salt_NB = true; %%% Originally set true
-% min_salt = 34;
+% min_salt = 34*ones(1,12);
 min_salt = 34.15*ones(1,12); %%% Originally 34.15
 % min_salt = [33.9200, 33.5328, 33.5238, 33.7174, 34.0604, 34.0973, 34.0736 34.0862, 34.0818, 34.0774, 34.0728, 34.0680]; %%% Min. salinities from Kapp Norvegia dataset (Hattermann 2018 JPO)
 % min_salt = min_salt + 0.2;
@@ -35,7 +35,7 @@ min_salt = 34.15*ones(1,12); %%% Originally 34.15
 %%% depends piecewise-linearly on salinity, approximately consistent
 %%% with Kapp Norvegia dataset
 reset_temp_linearly_EB = true;
-salt_freeze = 34.2;
+salt_freeze = 34.3;
 salt_max = 34.7;
 temp_max = 1.5;
 temp_freeze = -1.8;
@@ -60,10 +60,17 @@ shift_pyc = true; %%% Originally set true
 shift_lat_min = -71; %%% Original value -70
 shift_lat_ref = -70; %%% 11/2025 ALS: Added to extend pyc shift into cavity
 shift_lat_max = -68.5; %%% Original value -68.5
-shift_depth_max = 200; %%% Original value 200
-shift_N2 = 1e-7; %%% Stratification above the shifted pycnocline
-
-
+shift_depth_max = 100; %%% Original value 200, new reference value 100
+shift_N2 = 4e-6; %%% Stratification above the shifted pycnocline - reference 1e-7
+% shift_N2 = 2e-5; %%% Stratification above the shifted pycnocline - reference 1e-7
+shift_N2_pyc = 1e-5; %%% Stratification threshold used to identify the pycnocline (OMG so much engineering). Default 1e-5
+pyc_search_min = 200; %%% Controls how far down to search for weak 
+                      %%% stratification above the pycnocline. Basically 
+                      %%% setting this to 0 means the upper ocean
+                      %%% stratification north of the slope front is 
+                      %%% unchanged. Setting it to e.g. 100 replaces weak 
+                      %%% stratification above the pycnocline north of the 
+                      %%% ASF with shift_N2.
 
 
 
@@ -225,9 +232,13 @@ if (min_salt_EB)
   %%% Kapp Norvegia water masses from Hattermann 2018 JPO
   if (reset_temp_linearly_EB)
     OBEt(OBEs <= salt_freeze) = temp_freeze;
+    % OBEt(OBEs <= 34) = temp_freeze;
     saltcond = (OBEs > salt_freeze) & (OBEs < salt_max); 
+    % saltcond = (OBEs < salt_max) & (OBEt > temp_freeze);
     temp_limit = temp_freeze + (temp_max-temp_freeze)*(OBEs - salt_freeze)/(salt_max-salt_freeze);
+    % salt_limit = salt_freeze + (salt_max-salt_freeze)*(OBEt-temp_freeze)/(temp_max-temp_freeze);
     OBEt(saltcond & (OBEt > temp_limit)) = temp_limit(saltcond & (OBEt > temp_limit));
+    % OBEs(saltcond & (OBEs < salt_limit)) = salt_limit(saltcond & (OBEs < salt_limit));
   else
     % for i=1:size(OBEt,3)
     %   OBEt_tmp = OBEt(:,:,i);
@@ -268,19 +279,23 @@ if (shift_pyc)
 
       %%% If there is unstable stratification, adjust kmin downward (at
       %%% most 10 times, arbitrarily)
-      for ktmp = 1:10
-        N2loc = -(g/rho0)*(densjmd95(OBEs_tmp(kmin),OBEt_tmp(kmin),-zzf(kmin+1)) - densjmd95(OBEs_tmp(kmin+1),OBEt_tmp(kmin+1),-zzf(kmin+1)))/(zz(kmin)-zz(kmin+1));
-        if (N2loc < shift_N2)
-          kmin = kmin + 1;
-        else
-          break;
-        end
+      kmin0 = kmin;      
+      kmin = kmin - 1;
+      N2loc = 0;
+      pyc_search_depth = pyc_search_min;
+      if (ymc(j) < shift_lat_max)
+        pyc_search_depth = pyc_search_depth + 450*(shift_lat_max - ymc(j)) / (shift_lat_max - shift_lat_ref) + shift_depth;
+      end
+      while (((zz(kmin0) - zz(kmin+1)) < pyc_search_depth) && (N2loc <= min(shift_N2,shift_N2_pyc)))
+        kmin = kmin + 1;
+        N2loc = -(g/rho0)*(densjmd95(OBEs_tmp(kmin),OBEt_tmp(kmin),-zzf(kmin+1)) - densjmd95(OBEs_tmp(kmin+1),OBEt_tmp(kmin+1),-zzf(kmin+1)))/(zz(kmin)-zz(kmin+1));               
       end
 
       %%% Everything above this gridpoint is simply replaced a linear
       %%% salinity stratification and uniform temperature
       OBEs_tmp(1:kmin-1) = OBEs_tmp(kmin) - shift_N2/(gravity*beta)*(zz(1:kmin-1)-zz(kmin));
-      OBEt_tmp(1:kmin-1) = OBEt_tmp(kmin);     
+      OBEt_tmp(1:kmin-1) = OBEt_tmp(kmin) + (temp_freeze-OBEt_tmp(kmin))*(zz(1:kmin-1)-zz(kmin))/(zz(1)-zz(kmin));     
+      % OBEt_tmp(1:kmin-1) = temp_freeze;     
       
       %%% Replace OB properties
       OBEs(j,:,n) = OBEs_tmp;

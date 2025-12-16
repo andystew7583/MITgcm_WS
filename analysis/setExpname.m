@@ -74,7 +74,15 @@ expdir = basedir;
 % expname = 'WC_seq_onethird_RTOPO2_dpyc0_alphaU0.25_alphaV0.25';
 % expname = 'WC_seq_onethird_RTOPO2_dpyc100_alphaU0.25_alphaV0.25';
 % expname = 'WC_seq_onethird_RTOPO2_dpyc100_Sf34.3_offshorestrat4e-6';
-expname = 'WC_seq_onethird_RTOPO2_dpyc100_Smin34_Sf34.3';
+% expname = 'WC_seq_onethird_RTOPO2_dpyc100_Smin34_Sf34.3';
+% expname = 'WC_seq_onethird_RTOPO2_dpyc0_Sf34.3_offshorestrat6e-6';
+% expname = 'WC_seq_onethird_RTOPO2_dpyc100_Sf34.3_offshorestrat5e-6';
+% expname = 'WC_seq_onethird_RTOPO2_dpyc200_Sf34.3_offshorestrat4e-6';
+
+% expname = 'WC_onethird_ref';
+% expname = 'WC_onethird_dpyc-150_strat1e-4';
+expname = 'WC_onethird_dpyc-150_strat3e-4';
+% expname = 'WC_onethird_strat2e-5';
 % 
 
 %%% Julia's control experiments

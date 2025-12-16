@@ -47,9 +47,38 @@ expdir = '../experiments';
 % expname = 'WC_seq_onethird_RTOPO2_dpyc100_Smin34_Sf34.3';
 % tmin = 6.05;
 % tmax = 9.05;
-expname = 'WC_seq_onethird_RTOPO2_dpyc100_Sf34.3_offshorestrat7e-6';
-tmin = 6.05;
-tmax = 9.05;
+% expname = 'WC_seq_onethird_RTOPO2_dpyc100_Sf34.3_offshorestrat7e-6';
+% tmin = 6.05;
+% tmax = 9.05;
+% expname = 'WC_seq_onethird_RTOPO2_dpyc200_Sf34.3_offshorestrat4e-6';
+% tmin = 6.05;
+% tmax = 9.05;
+% expname = 'WC_seq_onethird_RTOPO2_dpyc0_Sf34.3_offshorestrat6e-6';
+% tmin = 6.05;
+% tmax = 9.05;
+% expname = 'WC_seq_onethird_RTOPO2_dpyc100_Sf34.3_offshorestrat7.5e-6';
+% tmin = 5.05;
+% tmax = 6.05;
+% expname = 'WC_seq_onethird_RTOPO2_dpyc100_Sf34.3_offshorestrat5e-6_bmin1200';
+% tmin = 4.05;
+% tmax = 5.05;
+% expname = 'WC_seq_onethird_RTOPO2_dpyc100_Sf34.3_offshorestrat2.5e-6';
+% tmin = 6.05;
+% tmax = 8.05;
+
+
+% expname = 'WC_onethird_ref';
+% tmin = 15.05;
+% tmax = 18.05;
+% expname = 'WC_onethird_strat2e-5';
+% tmin = 6.05;
+% tmax = 9.05;
+% expname = 'WC_onethird_dpyc-150_strat3e-4';
+% tmin = 3.05;
+% tmax = 4.05;
+expname = 'WC_onethird_dpyc-150_strat1e-4';
+tmin = 3.05;
+tmax = 4.05;
 
 %%% To store diagnostic figures
 figdir = fullfile('KN_evaluation',expname);
@@ -80,6 +109,7 @@ krange_TS = 1:find(squeeze(RC)<-1000,1);
 %%% To store monthly climatologies of T and S
 theta = zeros(Ny,Nr,12);
 salt = zeros(Ny,Nr,12);
+uvel = zeros(Ny,Nr,12);
 navg = zeros(1,12);
 
 %%% Time-averaging loop
@@ -92,25 +122,29 @@ for n=1:length(dumpIters)
     %%% Read monthly-mean data
     T = rdmdsWrapper(fullfile(exppath,'results','THETA'),dumpIters(n));
     S = rdmdsWrapper(fullfile(exppath,'results','SALT'),dumpIters(n));
+    U = rdmdsWrapper(fullfile(exppath,'results','UVEL'),dumpIters(n));
 
     %%% Ignore missing data
-    if (isempty(T) || isempty (S))
+    if (isempty(T) || isempty (S) || isempty(U))
       continue;
     end
 
     %%% Remove dry points
     T(hFacC==0) = NaN;
     S(hFacC==0) = NaN;
+    U(hFacW==0) = NaN;
 
     %%% Restrict to KN section
     T = squeeze(T(xidx,:,:));
     S = squeeze(S(xidx,:,:));
+    U = squeeze(U(xidx,:,:));
    
     %%% Add to average for corresponding month (N.B. this assumes that all
     %%% simulations start in January)
     monidx = mod((n - 1),12) + 1;
     theta(:,:,monidx) = theta(:,:,monidx) + T;
     salt(:,:,monidx) = salt(:,:,monidx) + S;
+    uvel(:,:,monidx) = uvel(:,:,monidx) + U;
     navg(monidx) = navg(monidx) + 1;
 
   end
@@ -121,27 +155,54 @@ end
 for m=1:length(navg)
   theta(:,:,m) = theta(:,:,m) / navg(m);
   salt(:,:,m) = salt(:,:,m) / navg(m);
+  uvel(:,:,m) = uvel(:,:,m) / navg(m);
 end
 
 
 
 
-%%% Compute thermocline depth
-pyc_depth = zeros(Ny,12);
+%%% Compute thermocline depth in the model
+pyc_depth_model = zeros(Ny,12);
 for m = 1:12
   dz_pyc = squeeze(DRC(2:Nr))';
   zz_pyc = squeeze(RF(2:Nr))';
   dTdz = - (theta(:,1:Nr-1,m) - theta(:,2:Nr,m)) ./ dz_pyc;
+  Smid = 0.5*(salt(:,1:Nr-1,m) + salt(:,2:Nr,m));
   dTdz(dTdz<0) = 0;
   for j=1:Ny
-    pyc_depth_idx = find((zz_pyc>-1000) & (zz_pyc<-50) & ~isnan(dTdz(j,:)));
-    pyc_depth(j,m) = sum(dTdz(j,pyc_depth_idx).*zz_pyc(pyc_depth_idx).*dz_pyc(pyc_depth_idx),2) ./ sum(dTdz(j,pyc_depth_idx).*dz_pyc(pyc_depth_idx),2);
+    pyc_depth_idx = find((zz_pyc>-1500) & (Smid(j,:)>34) & ~isnan(dTdz(j,:)));
+    pyc_depth_model(j,m) = sum(dTdz(j,pyc_depth_idx).*zz_pyc(pyc_depth_idx).*dz_pyc(pyc_depth_idx),2) ./ sum(dTdz(j,pyc_depth_idx).*dz_pyc(pyc_depth_idx),2);
   end
 end
 
 
+%%% Compute thermocline depth in the Kapp Norvegia data
+pyc_depth_KN = zeros(length(KN_section.distance),12);
+for m = 1:12 
+  dz_pyc = KN_section.pressure(2:end) - KN_section.pressure(1:end-1);
+  zz_pyc = -0.5*(KN_section.pressure(1:end-1)+KN_section.pressure(2:end));
+  dTdz = - (KN_section.temperature(1:end-1,:,m) - KN_section.temperature(2:end,:,m))' ./ dz_pyc;
+  Smid = 0.5*(KN_section.salt(1:end-1,:,m) + KN_section.salt(2:end,:,m))';
+  dTdz(dTdz<0) = 0;
+  for j=1:length(KN_section.distance)
+    pyc_depth_idx = find((zz_pyc>-1500) & (Smid(j,:)>34) & ~isnan(dTdz(j,:)));
+    pyc_depth_KN(j,m) = sum(dTdz(j,pyc_depth_idx).*zz_pyc(pyc_depth_idx).*dz_pyc(pyc_depth_idx),2) ./ sum(dTdz(j,pyc_depth_idx).*dz_pyc(pyc_depth_idx),2);
+  end
+end
 
-
+%%% Interpolate to compute RMSD
+jidx_model = find((YC(xidx,:)>lat_icefront) & (bathy(xidx,:)>-4750)); 
+jidx_KN = find(KN_section.bottom_depth > 250);
+depth_grid_model = -bathy(xidx,jidx_model);
+depth_grid_KN = KN_section.bottom_depth(jidx_KN);
+depth_grid = 1000:100:4000;
+pyc_depth_model_cg = zeros(length(depth_grid),12);
+pyc_depth_KN_cg = zeros(length(depth_grid),12);
+for m = 1:12
+  pyc_depth_model_cg(:,m) = interp1(depth_grid_model,pyc_depth_model(jidx_model,m),depth_grid,'cubic');
+  pyc_depth_KN_cg(:,m) = interp1(depth_grid_KN,pyc_depth_KN(jidx_KN,m),depth_grid,'cubic');
+end
+pyc_depth_RMSD = sqrt(mean((pyc_depth_model_cg-pyc_depth_KN_cg).^2,2));
 
 
 %%% Plotting options
@@ -204,7 +265,7 @@ for m = 1:length(navg)
   hold on;
     h = plot(yy,-SHELFICEtopo(xidx,:)/1000,'k','LineWidth',3);  
     h = plot(yy,-bathy(xidx,:)/1000,'k','LineWidth',3);  
-    plot(yy,-pyc_depth(:,m)/1000,'-','Color',[.3 .3 .3]);
+    plot(yy,-pyc_depth_model(:,m)/1000,'-','Color',[.3 .3 .3]);
   hold off;
   caxis([-2.2 1.2])
   if (m >= 10)
@@ -268,7 +329,7 @@ for m = 1:length(navg)
   shading interp;
   set(gca,'YDir','reverse');  
   hold on;
-  plot(YB(:,1),-pyc_depth(jidx,m)/1000,'-','Color',[.3 .3 .3])
+  plot(YB(:,1),-pyc_depth_model(jidx,m)/1000,'-','Color',[.3 .3 .3])
   hold off;
   caxis([-2.2 1.2])
   if (m >= 10)
@@ -309,6 +370,27 @@ for m = 1:length(navg)
     print('-dpng','-r150',fullfile(figdir,'TS.png'));
   end
 
+  figure(10);
+  if (m == 1)
+    clf;
+    set(gcf,'Position',framepos);
+    drawnow;
+  end
+  subplot(4,3,m);  
+  plot(YB(:,1)/1000,-pyc_depth_model(jidx,m)/1000,'-');
+  set(gca,'YDir','reverse');
+  if (m >= 10)
+    xlabel('Bathymetric depth (km)','interpreter','latex','fontsize',fontsize);
+  end
+  if (mod(m-1,3)==0)
+    ylabel('Depth (km)','interpreter','latex','fontsize',fontsize);
+  end
+  axis([.5 4 0 1])
+  if ((m == 12) && ~plot_KN_data)
+    title(['Years ',num2str(ceil(tmin)),'-',num2str(floor(tmax))],'FontSize',fontsize);
+    print('-dpng','-r150',fullfile(figdir,'PycDepth.png'));
+  end
+
 end
 
 
@@ -322,7 +404,9 @@ if (plot_KN_data)
     
     m_KN = mod(m + 5,12)+1;
 
+    %%% Meshgrids for lat/depth and bathy/depth plots
     [ZZ,YY] = meshgrid(KN_section.pressure,KN_section.distance);
+    [ZB,YB] = meshgrid(KN_section.pressure,KN_section.bottom_depth);
   
     if (plot_KN_hyd)
       
@@ -363,8 +447,11 @@ if (plot_KN_data)
         drawnow;
       end
       subplot(4,3,m);
-      pcolor(YY(:,:)/1000,ZZ(:,:)/1000,KN_section.temperature(:,:,m_KN)');
+      pcolor(YY(:,:)/1000,ZZ(:,:)/1000,KN_section.temperature(:,:,m_KN)');      
       shading interp;
+      hold on;
+      plot(KN_section.distance/1000,-pyc_depth_KN(:,m_KN)/1000,'-','Color',[.3 .3 .3]);
+      hold off;
       set(gca,'YDir','reverse');
       caxis([-2.2 1.2])
       if (m >= 10)
@@ -384,7 +471,6 @@ if (plot_KN_data)
       end
 
 
-      [ZB,YB] = meshgrid(KN_section.pressure,KN_section.bottom_depth);
 
       %%% Plot salinity in bottom depth/depth space
       figure(7);
@@ -423,6 +509,9 @@ if (plot_KN_data)
       end
       subplot(4,3,m);
       pcolor(YB(:,:)/1000,ZB(:,:)/1000,KN_section.temperature(:,:,m_KN)');
+      hold on;
+      plot(YB(:,1)/1000,-pyc_depth_KN(:,m_KN)/1000,'-','Color',[.3 .3 .3])
+      hold off;
       shading interp;
       set(gca,'YDir','reverse');
       caxis([-2.2 1.2]);
@@ -470,6 +559,55 @@ if (plot_KN_data)
       print('-dpng','-r150',fullfile(figdir,'TS.png'));
     end
 
+    figure(10);
+    subplot(4,3,m);  
+    hold on;
+    plot(YB(:,1)/1000,-pyc_depth_KN(:,m_KN)/1000,'-')
+    hold off;
+    if (m == 12)
+      title(['Years ',num2str(ceil(tmin)),'-',num2str(floor(tmax))],'FontSize',fontsize);
+      print('-dpng','-r150',fullfile(figdir,'PycDepth.png'));
+    end
+
   end
 
+  figure(101);
+  clf;
+  plot(depth_grid/1000,pyc_depth_RMSD,'o-');
+  xlabel('Bathymetric depth (km)','interpreter','latex','fontsize',fontsize);
+  ylabel('Pycnocline depth RMSD (m)','interpreter','latex','fontsize',fontsize);
+  set(gca,'FontSize',fontsize);
+  title(['Years ',num2str(ceil(tmin)),'-',num2str(floor(tmax))],'FontSize',fontsize);
+  print('-dpng','-r150',fullfile(figdir,'PycDepthRMSD.png'));
+
 end
+
+
+%%% Code to compute transport-weighted salinity at the northern boundary -
+%%% not currently used
+Sref = 34.68; %%% Approximately minimizes freshwater fluxes below the pycnocline, empirically
+rhofresh = 1000;
+jmax_fwflx = find(bathy(xidx,:)<-4750,1);
+fwflx = zeros(1,12);
+for m = 1:12
+  phi = (Sref-salt(:,:,m))/Sref;
+  uvelphi = uvel(:,:,m).*phi;
+  uvelphi(isnan(uvelphi)) = 0;
+  fwflx(m) = -sum(sum(uvelphi(1:jmax_fwflx,:).*repmat(DYG(xidx,1:jmax_fwflx)',[1 Nr]).*squeeze(hFacC(xidx,1:jmax_fwflx,:)).*repmat(squeeze(DRF)',[jmax_fwflx 1])))*rhofresh*t1year/1e12;
+end
+
+
+%%% Plot FW flux
+monthlabels = {'J','F','M','A','M','J','J','A','S','O','N','D'};
+figure(102);
+clf;
+plot(1:12,fwflx,'o-');
+grid on;
+set(gca,'Xlim',[0.5 12.5]);
+set(gca,'YLim',[0 1.1*max(fwflx)]);
+set(gca,'Fontsize',fontsize);
+set(gca,'XTick',1:12);
+set(gca,'XTickLabel',monthlabels);
+xlabel('Latitude','interpreter','latex','fontsize',fontsize);
+ylabel('Freshwater flux (Gt/yr)','interpreter','latex','fontsize',fontsize);
+print('-dpng','-r150',fullfile(figdir,'FWflux.png'));

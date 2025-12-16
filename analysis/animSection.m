@@ -36,7 +36,7 @@ endLat = secLats(end);
 
 %%% Select diagnostic variable to animate
 
-diagnum = 4;
+diagnum = 5;
 outfname =diag_fileNames{1,diagnum};
 % outfname = 'THETA_12hourly';
 % outfname = 'Eta';
@@ -48,10 +48,10 @@ outfidx = 1;
 set_crange = 1;
 
 
-crange = [-2.5 1]; %/%% Filchner temp
+% crange = [-2.5 1]; %/%% Filchner temp
 % crange = [-3 3]; %%%temp
 % crange = [33.4 34.65]; %%% salinity
-% crange = [33.8 34.8]; %%% salinity
+crange = [32 34.8]; %%% salinity
 % crange = [0 10]; %%%% for KPP hbl
 % crange = [0 1]; %%% For sea ice area
 % crange = [-.6 .6]; %%% For velocities or stresses
@@ -66,8 +66,8 @@ crange = [-2.5 1]; %/%% Filchner temp
 % crange = [-0.3 0.3]; %%% Melt rate 
 
 % cmap = pmkmp(100,'Swtth');
-% cmap = cmocean('haline',30);
-cmap = cmocean('thermal',20);
+cmap = cmocean('haline',30);
+% cmap = cmocean('thermal',20);
 % cmap = cmocean('ice',100);
 % cmap = haxby(56);
 % cmap = jet(200);
@@ -190,7 +190,7 @@ M = moviein(length(dumpIters));
 % for n=5*12
 % for n=7*12:8*12
 % for n = 34a
-for n=8*12:length(dumpIters) 
+for n=4*12:length(dumpIters) 
 % for n=2:length(dumpIters)
 % for n =1:length(dumpIters)
   dumpIters(n);

@@ -55,7 +55,7 @@ yzlayer = 141;
 %%% Specify color range
 set_crange = 1;
 % crange = [36.9 37.6];
-crange = [27.5 27.85];
+crange = [27.5 28.2];
 cmap = cmocean('dense',20);
 
 % titlestr = 'Salinity (g/kg)';
@@ -190,7 +190,7 @@ Amax = [];
 % for n = 34a
 % for n=48:length(dumpIters)
 % for n=2:length(dumpIters)
-for n =60:length(dumpIters)
+for n =8*12:length(dumpIters)
   dumpIters(n);
     
   t = dumpIters(n)*deltaT/t1year;

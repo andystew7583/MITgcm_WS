@@ -16,7 +16,7 @@ loadexp;
 %%% Select diagnostic variable to animate
 % diagnum = 66;
 % diagnum = 46;
-diagnum = 4;
+diagnum = 5;
 outfname =diag_fileNames{1,diagnum};
 % outfname = 'THETA_12hourly';
 % outfname = 'Eta';
@@ -29,11 +29,11 @@ outfidx = 1;
 xyplot = 1;
 
 %%% Vertical layer index to use for top-down plots
-xylayer = 1;
+xylayer = 15;
 
 %%% Set true to plot the field in the lowest active cell at each horizontal
 %%% location
-botplot = 1;
+botplot = 0;
 
 %%% Set true to plot the field in the topmost wet cell at each horizontal
 %%% location
@@ -64,10 +64,10 @@ yzlayer = 194; %%% Kap Norvegia at 1/3 grid
 set_crange = 1;
 
 
-crange = [-2.5 1]; %/%% Filchner temp
+% crange = [-2.5 1]; %/%% Filchner temp
 % crange = [-3 3]; %%%temp
 % crange = [33.6 34.65]; %%% salinity
-% crange = [33.6 34.9]; %%% salinity
+crange = [33.6 34.9]; %%% salinity
 % crange = [0 10]; %%%% for KPP hbl
 % crange = [0 1]; %%% For sea ice area
 % crange = [-.6 .6]; %%% For velocities or stresses
@@ -83,8 +83,8 @@ crange = [-2.5 1]; %/%% Filchner temp
 % crange = [-.05 .05]; %%% Surface stress
 
 % cmap = pmkmp(100,'Swtth');
-% cmap = cmocean('haline',20);
-cmap = cmocean('thermal',20);
+cmap = cmocean('haline',20);
+% cmap = cmocean('thermal',20);
 % cmap = cmocean('ice',100);
 % cmap = haxby(56);
 % cmap = jet(200);
@@ -224,7 +224,7 @@ Amax = [];
 % for n = 34a
 % for n=1:26
   % for n=2:length(dumpIters)
-for n =8*12:length(dumpIters)
+for n =4*12:length(dumpIters)
   dumpIters(n);
     
   t = dumpIters(n)*deltaT/t1year;

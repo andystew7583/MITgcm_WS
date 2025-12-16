@@ -271,10 +271,10 @@ EXF_Ly = EXF_ymax-EXF_ymin;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 dmxg = Lx/Nx*ones(Nx,1);
-xmc = xmin+dmxg/2:dmxg:xmax-dmxg/2; 
+xmc = xmin+dmxg(1)/2:dmxg(1):xmax-dmxg(1)/2; 
 xmc = xmc';
 xvmg = xmc;
-xumg = xmin:dmxg:xmax-dmxg;
+xumg = xmin:dmxg(1):xmax-dmxg(1);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -380,10 +380,10 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 EXF_dmxg = EXF_Lx/EXF_Nx*ones(EXF_Nx,1);
-EXF_xmc = EXF_xmin+EXF_dmxg/2:EXF_dmxg:EXF_xmax-EXF_dmxg/2; 
+EXF_xmc = EXF_xmin+EXF_dmxg(1)/2:EXF_dmxg(1):EXF_xmax-EXF_dmxg(1)/2; 
 EXF_xmc = EXF_xmc';
 EXF_xvmg = EXF_xmc;
-EXF_xumg = EXF_xmin:EXF_dmxg:EXF_xmax-EXF_dmxg;
+EXF_xumg = EXF_xmin:EXF_dmxg(1):EXF_xmax-EXF_dmxg(1);
 
 
 

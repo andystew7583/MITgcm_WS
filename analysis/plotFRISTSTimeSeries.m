@@ -56,12 +56,12 @@ end
 
 %%% Plot the time series
 
-figure(11);
+figure(31);
 plot(tt(1:tlen)/86400/365,theta_avg(1:tlen))
 xlabel('Time (years)')
 ylabel('Mean cavity potential temperature (^oC)');
 
-figure(12);
+figure(32);
 plot(tt(1:tlen)/86400/365,salt_avg(1:tlen));
 xlabel('Time (years)')
 ylabel('Mean cavity salinity (g/kg)');

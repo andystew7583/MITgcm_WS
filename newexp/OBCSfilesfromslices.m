@@ -59,12 +59,17 @@ mod_bdry_iceconc = false;
 shift_pyc = true; %%% Originally set true
 shift_lat_min = -71; %%% Original value -70
 shift_lat_ref = -70; %%% 11/2025 ALS: Added to extend pyc shift into cavity
+% shift_lat_ref = -69.5; %%% 11/2025 ALS: Added to extend pyc shift into cavity
 shift_lat_max = -68.5; %%% Original value -68.5
 shift_depth_max = 100; %%% Original value 200, new reference value 100
-shift_N2 = 4e-6; %%% Stratification above the shifted pycnocline - reference 1e-7
-% shift_N2 = 2e-5; %%% Stratification above the shifted pycnocline - reference 1e-7
-shift_N2_pyc = 1e-5; %%% Stratification threshold used to identify the pycnocline (OMG so much engineering). Default 1e-5
-pyc_search_min = 200; %%% Controls how far down to search for weak 
+% shift_N2 = 5e-6; %%% Stratification above the shifted pycnocline - reference 5e-6
+shift_N2 = 4e-5; %%% Stratification above the shifted pycnocline - reference 5e-6
+if (shift_depth_max > 0)
+  shift_N2_pyc = 1e-5; %%% Stratification threshold used to identify the pycnocline 
+else
+  shift_N2_pyc = .5e-5; %%% Stratification threshold used to identify the pycnocline 
+end
+pyc_search_min = 0; %%% Controls how far down to search for weak 
                       %%% stratification above the pycnocline. Basically 
                       %%% setting this to 0 means the upper ocean
                       %%% stratification north of the slope front is 
@@ -258,37 +263,71 @@ if (shift_pyc)
   
   %%% Look over monthly climatologies
   for n = 1:size(OBEs,3)
+  % for n = 10
    
     
     %%% Loop through latitudinal indices
     for j = 1:Ny    
-      
+
+      if (ymc(j) < shift_lat_min)
+        continue;
+      end
+
       %%% Change in depth varies with latitude
       shift_depth = (shift_lat_max - ymc(j)) / (shift_lat_max - shift_lat_ref) * shift_depth_max;
-      shift_depth = max(min(shift_depth,shift_depth_max),0);
-      
-      %%% Find index of first gridpoint below the shift depth;
-      kmin = find(zz<-(shift_depth+dz(1)/2),1,'first');
-      OBEs_tmp = OBEs(j,:,n);
-      OBEt_tmp = OBEt(j,:,n);
+    
+      if (shift_depth_max >= 0)
 
-      %%% Everything below the shift depth is linearly interpolated from
-      %%% the water column properties above
-      OBEs_tmp(kmin:end) = interp1(zz,OBEs(j,:,n),zz(kmin:end)+shift_depth,'linear');
-      OBEt_tmp(kmin:end) = interp1(zz,OBEt(j,:,n),zz(kmin:end)+shift_depth,'linear');
+        %%% Limit shift depth fo shift_depth-max
+        shift_depth = max(min(shift_depth,shift_depth_max),0);
+        
+        %%% Find index of first gridpoint below the shift depth;
+        kmin = find(zz<-(shift_depth+dz(1)/2),1,'first');
+        OBEs_tmp = OBEs(j,:,n);
+        OBEt_tmp = OBEt(j,:,n);
+  
+        %%% Everything below the shift depth is linearly interpolated from
+        %%% the water column properties above
+        OBEs_tmp(kmin:end) = interp1(zz,OBEs(j,:,n),zz(kmin:end)+shift_depth,'linear');
+        OBEt_tmp(kmin:end) = interp1(zz,OBEt(j,:,n),zz(kmin:end)+shift_depth,'linear');
 
-      %%% If there is unstable stratification, adjust kmin downward (at
-      %%% most 10 times, arbitrarily)
-      kmin0 = kmin;      
+      else
+
+        %%% Limit shift depth fo shift_depth-max
+        shift_depth = min(max(shift_depth,shift_depth_max),0);
+        
+        %%% Find index of first gridpoint below the shift depth;
+        kmin = find(zz<(shift_depth),1,'first');
+        OBEs_tmp = OBEs(j,:,n);
+        OBEt_tmp = OBEt(j,:,n);
+  
+        %%% Everything below the shift depth is linearly interpolated from
+        %%% the water column properties above
+        OBEs_tmp(:) = interp1(zz(kmin:end)-shift_depth,OBEs(j,kmin:end,n),zz,'linear','extrap'); %%% Extrap so we don't put NaNs at the bottom
+        OBEt_tmp(:) = interp1(zz(kmin:end)-shift_depth,OBEt(j,kmin:end,n),zz,'linear','extrap');
+
+      end
+
+
+      %%% If there is weak stratification, adjust kmin downward
+      if (shift_depth_max >= 0)
+        kmin0 = kmin;      
+      else
+        kmin0 = 1;
+      end
       kmin = kmin - 1;
       N2loc = 0;
       pyc_search_depth = pyc_search_min;
       if (ymc(j) < shift_lat_max)
         pyc_search_depth = pyc_search_depth + 450*(shift_lat_max - ymc(j)) / (shift_lat_max - shift_lat_ref) + shift_depth;
       end
-      while (((zz(kmin0) - zz(kmin+1)) < pyc_search_depth) && (N2loc <= min(shift_N2,shift_N2_pyc)))
+      N2_search = min(shift_N2,shift_N2_pyc);
+      while (((zz(kmin0) - zz(kmin+1)) < pyc_search_depth) && (N2loc <= N2_search))
         kmin = kmin + 1;
         N2loc = -(g/rho0)*(densjmd95(OBEs_tmp(kmin),OBEt_tmp(kmin),-zzf(kmin+1)) - densjmd95(OBEs_tmp(kmin+1),OBEt_tmp(kmin+1),-zzf(kmin+1)))/(zz(kmin)-zz(kmin+1));               
+      end
+      if (kmin == 0)
+        kmin = 1;
       end
 
       %%% Everything above this gridpoint is simply replaced a linear
@@ -317,6 +356,7 @@ if (shift_pyc)
         OBEu_tmp = OBEu(j,:,n);
         f0 = 2*Omega*sind(ymc(j));
         deltay = (ymc(j+1)-ymc(j-1))* 2*pi/360 * Rp;
+        OBEu_tmp(kbot) = min(OBEu_tmp(kbot),0); %%% Remove spurious eastward flows due to extrapolation (mainly in ice shelf cavity)
         for k = kbot-1:-1:1 %%% Preserve velocity in lowest grid cell
           OBEu_tmp(k) = OBEu_tmp(k+1) + (zz(k)-zz(k+1)) *  g/(rho0*f0) * (OBEd(j+1,k)-OBEd(j-1,k)) / deltay;
         end
@@ -574,7 +614,7 @@ for m = 1:size(OBEt,3)
   OBEs_plot(squeeze(hFacC(end,:,:))==0) = NaN;
 
   %%% Plot salinity section
-  figure(11);
+  figure(12);
   if (m == 1)
     clf;
     set(gcf,'Position',framepos);
@@ -599,7 +639,8 @@ for m = 1:size(OBEt,3)
     set(handle,'FontSize',fontsize);
     colormap(cmocean('haline',20));
     set(handle,'Position',[.93 .05 .01 .9]);
-  end
+    print('-dpng','-r150',fullfile(inputconfigdir,'OBEs.png'));
+  end  
   
 
 
@@ -607,7 +648,7 @@ for m = 1:size(OBEt,3)
   OBEt_plot(squeeze(hFacC(end,:,:))==0) = NaN;
 
   %%% Plot temperature section
-  figure(12);
+  figure(13);
   if (m == 1)
     clf;
     set(gcf,'Position',framepos);
@@ -631,7 +672,9 @@ for m = 1:size(OBEt,3)
     set(handle,'FontSize',fontsize);
     colormap(cmocean('thermal',20));
     set(handle,'Position',[.93 .05 .01 .9]);
+    print('-dpng','-r150',fullfile(inputconfigdir,'OBEt.png'));
   end
+  
 
   %%% Compute density gradient
   drhodz = zeros(Ny,Nr);
@@ -646,7 +689,7 @@ for m = 1:size(OBEt,3)
   end
 
   %%% Plot buoyancy frequency
-  figure(13);
+  figure(14);
   if (m == 1)
     clf;
     set(gcf,'Position',framepos);
@@ -670,16 +713,51 @@ for m = 1:size(OBEt,3)
     set(handle,'FontSize',fontsize);
     colormap(redblue(20));
     set(handle,'Position',[.93 .05 .01 .9]);
+    print('-dpng','-r150',fullfile(inputconfigdir,'OBEn2.png'));
   end
 
+  
 
+
+
+
+  OBEu_plot = OBEu(:,:,m);
+  OBEu_plot(squeeze(hFacC(end,:,:))==0) = NaN;
+
+  %%% Plot zonal velocity
+  figure(15);
+  if (m == 1)
+    clf;
+    set(gcf,'Position',framepos);
+    drawnow;
+  end
+  subplot(4,3,m);
+  pcolor(YY(:,:),-ZZ(:,:)/1000,OBEu_plot);
+  shading interp;
+  set(gca,'YDir','reverse');
+  caxis([-1 1]*0.3)
+  if (m >= 10)
+    xlabel('Latitude','interpreter','latex','fontsize',fontsize);
+  end
+  if (mod(m-1,3)==0)
+    ylabel('Depth (km)','interpreter','latex','fontsize',fontsize);
+  end
+  set(gca,'YLim',[0 1]);
+  set(gca,'XLim',[-71 -67]);
+  if (m == 12)
+    handle=colorbar;
+    set(handle,'FontSize',fontsize);
+    colormap(redblue(30));
+    set(handle,'Position',[.93 .05 .01 .9]);
+    print('-dpng','-r150',fullfile(inputconfigdir,'OBEu.png'));
+  end
 
 
   jrange = 1:find(ymc>-68.5,1);
   krange = 1:find(zz<-1000,1);
 
   %%% T/S diagram
-  figure(14);
+  figure(16);
   if (m == 1)
     clf;
     set(gcf,'Position',framepos);
@@ -694,8 +772,57 @@ for m = 1:size(OBEt,3)
     ylabel('Temperature ($^\circ$C)','interpreter','latex','fontsize',fontsize);
   end
   axis([33 35 -2.2 1.2]);
+  if (m == 12)
+    print('-dpng','-r150',fullfile(inputconfigdir,'OBEts.png'));
+  end
+
+
 
 end
+
+%%% Code to compute transport-weighted salinity at the northern boundary -
+%%% not currently used
+OBNvs = zeros(Nx,Nr,12);
+for m = 1:12
+  OBNvs_tmp = OBNv(:,:,m).*OBNs(:,:,m);
+  OBNvs_tmp(isnan(OBNvs)) = 0;
+  OBNvs(:,:,m) = OBNvs_tmp;
+end
+deltax = dmxg * 2*pi/360 * Rp .* cosd(ymc(end));
+sflxN = sum(sum(mean(OBNvs,3).*repmat(deltax,[1 Nr]).*squeeze(hFacC(:,end,:)).*repmat(dz,[Nx 1])));
+vflxN = sum(sum(mean(OBNv,3).*repmat(deltax,[1 Nr]).*squeeze(hFacC(:,end,:)).*repmat(dz,[Nx 1])));
+SrefN = sflxN ./ vflxN;
+
+
+%%% Compute freshwater flux into the domain
+Sref = 34.67;
+rhofresh = 1000;
+deltay = dmyg(end,:)' * 2*pi/360 * Rp;
+fwflx = zeros(1,12);
+for m = 1:12
+  OBEphi = (Sref-OBEs(:,:,m))/Sref;
+  OBEuphi = OBEu(:,:,m).*OBEphi;
+  OBEuphi(isnan(OBEuphi)) = 0;  
+  fwflx(m) = -sum(sum(OBEuphi.*repmat(deltay,[1 Nr]).*squeeze(hFacC(end,:,:)).*repmat(dz,[Ny 1])))*rhofresh*t1year/1e12;
+end
+
+
+%%% Plot FW flux
+monthlabels = {'J','F','M','A','M','J','J','A','S','O','N','D'};
+figure(17);
+clf;
+plot(1:12,fwflx);
+set(gca,'Fontsize',fontsize);
+set(gca,'XTick',1:12);
+set(gca,'XTickLabel',monthlabels);
+xlabel('Latitude','interpreter','latex','fontsize',fontsize);
+ylabel('Depth (km)','interpreter','latex','fontsize',fontsize);
+print('-dpng','-r150',fullfile(inputconfigdir,'OBEfw.png'));
+
+
+
+
+
 
 
 

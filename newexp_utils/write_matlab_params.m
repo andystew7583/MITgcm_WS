@@ -5,13 +5,12 @@
 %%% file, for ease of post-processing. PARM must be a cell array of
 %%% parmlist objects.
 %%%
-function write_matlab_params(dirname,PARM,realfmt)
+function write_matlab_params(dirname,fname,PARM,realfmt)
   
   %%% Get parameter type definitions
   paramTypes;
   
   %%% Open the file
-  fname = 'params.m';
   fpath = fullfile(dirname,fname);
   fid = fopen(fpath,'w');
   if (fid == -1)

@@ -81,8 +81,12 @@ expdir = basedir;
 
 % expname = 'WC_onethird_ref';
 % expname = 'WC_onethird_dpyc-150_strat1e-4';
-expname = 'WC_onethird_dpyc-150_strat3e-4';
-% expname = 'WC_onethird_strat2e-5';
+% expname = 'WC_onethird_dpyc-150_strat3e-4';
+% expname = 'WC_onethird_dpyc-100_strat2e-4';
+expname = 'WC_onethird_dpyc0_strat1e-4';
+% expname = 'WC_onethird_strat4e-5';
+% expname = 'WC_onethird_strat6e-5';
+% expname = 'WC_onethird_dpyc300_strat1e-5';
 % 
 
 %%% Julia's control experiments

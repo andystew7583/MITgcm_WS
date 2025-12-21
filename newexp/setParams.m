@@ -19,7 +19,8 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   % nIter0 = 1; %%% Initial iteration for pickup runs
 %   nIter0 = 1183320;
 %   nIter0 = 1774980;
-  use_extended_diags = false;  
+  use_flux_diags = false;
+  use_eddy_diags = false;  
   use_layers = false;
   use_tides = true;
   useRBCS = false; %%% For restoring cavity properties
@@ -1609,7 +1610,17 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   
   %%% Potential temperature bounds for layers  
   layers_bounds = [30.5:1:36.5 36.6:0.1:36.8 36.9:0.01:37.4 37.42:0.02:37.6] - 9.38; 
-  
+  layers_bounds = [21:1:24 ...
+                   24.5:25 ...
+                   25.1:.1:27 ...
+                   27.05:0.05:27.5 ...
+                   27.51:.01:27.75 ...
+                   27.755:0.005:27.83 ...
+                   27.8325:0.0025:27.9 ...
+                   27.9:0.01:28 ...
+                   28.02:0.02:28.2 ...
+                   28.25:0.05:28.4];
+
   %%% Reference level for calculation of potential density
   layers_krho = 1;    
   
@@ -1651,148 +1662,21 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %%%%%%%%%%%%%%%%%%%%%%%
   %%%%%%%%%%%%%%%%%%%%%%%
     
-  
-  
-  
-  
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  %%%%% DIAGNOSTICS SET-UP %%%%%
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  
-  
-  %%% To store parameter names and values
-  diag_parm01 = parmlist;
-  diag_parm02 = parmlist;
-  DIAG_PARM = {diag_parm01,diag_parm02};
-  diag_matlab_parm01 = parmlist;
-  DIAG_MATLAB_PARM = {diag_matlab_parm01}; %%% Matlab parameters need to be different
-  
-  
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  %%%%% DIAGNOSTICS PARAMETERS %%%%%
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  
-  
-  
-  %%% Stores total number of diagnostic quantities
-  ndiags = 0;
-  
-  
-  diag_fields_avg = ...
-  { ...
-    'UVEL','VVEL','WVEL','THETA','SALT',... %%% 3D fields
-    'ETAN', ... 
-    'SIheff','SIarea','SIhsnow','SItices','SIhsalt' ... %%ice diagnostics
-    'SIuice','SIvice' ...
-    'oceFWflx','oceSflux','oceQnet','oceTAUX','oceTAUY','TFLUX','SFLUX',...
-    'EXFtaux','EXFtauy','EXFlwnet','EXFswnet','EXFlwdn','EXFswdn','EXFqnet','EXFhs','EXFhl','EXFevap','EXFpreci','EXFatemp' ...
-    'SIqnet','SIqsw','SIatmQnt','SItflux','SIaaflux','SIhl','SIqneto','SIqneti','SIempmr','SIatmFW','SIsnPrcp','SIactLHF','SIacSubl'
-  };
-
-  if (use_shelfice)
-    diag_fields_avg = {diag_fields_avg{:}, ...
-    ...
-      'SHIfwFlx','SHIhtFlx','SHIForcS','SHIForcT' ...
-      % 'SHIUDrag','SHIVDrag'...
-    };
-  end
-    
-  if (use_extended_diags)
-    diag_fields_avg = {diag_fields_avg{:}, ...
-      'UVELSLT','VVELSLT','WVELSLT', ... %%% Salt fluxes
-      'UVELTH','VVELTH','WVELTH', ... %%% Temperature fluxes  
-      'UVELSQ','VVELSQ','WVELSQ', ... %%% For Kinetic Energy
-      'UV_VEL_Z','WU_VEL','WV_VEL', ... %%% Momentum fluxes
-      'SALTSQ','THETASQ','THSLT' %%% Thermodynamic variances
-    };
-  end     
-  
-  if (use_layers)
-    diag_fields_avg = {diag_fields_avg{:}, ...
-      'LaUH1RHO', 'LaVH1RHO', ... %%% LAYERS fluxes
-      'LaHw1RHO', 'LaHs1RHO' ... %%% LAYERS thicknesses
-    };
-  end  
-  
-  numdiags_avg = length(diag_fields_avg);  
-  diag_freq_avg = t1month; %%% Approximately monthly output
-%   diag_freq_avg = 10*deltaT;
-%   diag_freq_avg = 30*t1day;
-%   diag_freq_avg = .0417*t1day;
-%  diag_freq_avg = 5*t1year;
-  diag_phase_avg = 0;    
-     
-  diag_parm01.addParm('diag_mnc',true,PARM_BOOL);  
-  for n=1:numdiags_avg    
-    
-    ndiags = ndiags + 1;
-    
-    diag_parm01.addParm(['fields(1,',num2str(n),')'],diag_fields_avg{n},PARM_STR);  
-    diag_parm01.addParm(['fileName(',num2str(n),')'],diag_fields_avg{n},PARM_STR);  
-    diag_parm01.addParm(['frequency(',num2str(n),')'],diag_freq_avg,PARM_REAL);  
-    diag_parm01.addParm(['timePhase(',num2str(n),')'],diag_phase_avg,PARM_REAL); 
-    diag_matlab_parm01.addParm(['diag_fields{1,',num2str(n),'}'],diag_fields_avg{n},PARM_STR);  
-    diag_matlab_parm01.addParm(['diag_fileNames{',num2str(n),'}'],diag_fields_avg{n},PARM_STR);  
-    diag_matlab_parm01.addParm(['diag_frequency(',num2str(n),')'],diag_freq_avg,PARM_REAL);  
-    diag_matlab_parm01.addParm(['diag_timePhase(',num2str(n),')'],diag_phase_avg,PARM_REAL);  
-    
-  end
-  
-%   diag_fields_inst = ...
-%   {...      
-%     'ETAN', ...
-%     'SIheff','SIarea','SIhsnow', ... %%ice diagnostics
-% %     'UVEL','VVEL','WVEL'...      
-% %     'THETA' ... 
-% %     'SALT', ... 
-% %     'SIuice','SIvice' ...
-% %     'PHIBOT','oceFWflx','oceSflux','oceQnet'...
-% %     'SHIfwFlx','SHIhtFlx','SHIUDrag','SHIVDrag' ...
-%   }; 
-
-  diag_fields_inst = ...
-  { ...
-    % 'UVEL','VVEL','WVEL'...      
-    % 'THETA' ... 
-    % 'SALT','ETAN' ... 
-    % 'SIheff','SIarea','SIhsnow','SItices','SIhsalt' ... %%ice diagnostics
-    % 'SIuice','SIvice' ...
-    % 'oceFWflx','oceSflux','oceQnet','oceTAUX','oceTAUY','TFLUX','SFLUX',...
-    % 'EXFtaux','EXFtauy','EXFlwnet','EXFswnet','EXFlwdn','EXFswdn','EXFqnet','EXFhs','EXFhl','EXFevap','EXFpreci','EXFatemp' ...
-    % 'SIqnet','SIqsw','SIatmQnt','SItflux','SIaaflux','SIhl','SIqneto','SIqneti','SIempmr','SIatmFW','SIsnPrcp','SIactLHF','SIacSubl', ...    
-    % 'SHIfwFlx','SHIhtFlx','SHIUDrag','SHIVDrag' ...    
-  };
-  
-  numdiags_inst = length(diag_fields_inst);    
-%   diag_freq_inst = 0.1*t1year;
-%    diag_freq_inst = .0417*t1day;
-%   diag_freq_inst = 30*t1day;
-%   diag_freq_inst = 10*deltaT;
+  %%% Diagnostic output frequencies
+  diag_freq_avg = t1month;
   diag_freq_inst = t1day;
-%   diag_freq_inst = t1day/2;
-%   diag_freq_inst = t1day/24;
-  diag_phase_inst = 0;
-  
-  for n=1:numdiags_inst    
-    
-    ndiags = ndiags + 1;
-    
-    diag_parm01.addParm(['fields(1,',num2str(ndiags),')'],diag_fields_inst{n},PARM_STR);  
-    diag_parm01.addParm(['fileName(',num2str(ndiags),')'],[diag_fields_inst{n},'_inst'],PARM_STR);  
-    diag_parm01.addParm(['frequency(',num2str(ndiags),')'],-diag_freq_inst,PARM_REAL);  
-    diag_parm01.addParm(['timePhase(',num2str(ndiags),')'],diag_phase_inst,PARM_REAL); 
-    diag_matlab_parm01.addParm(['diag_fields(1,',num2str(ndiags),')'],diag_fields_inst{n},PARM_STR);  
-    diag_matlab_parm01.addParm(['diag_fileNames(',num2str(ndiags),')'],[diag_fields_inst{n},'_inst'],PARM_STR);  
-    diag_matlab_parm01.addParm(['diag_frequency(',num2str(ndiags),')'],-diag_freq_inst,PARM_REAL);  
-    diag_matlab_parm01.addParm(['diag_timePhase(',num2str(ndiags),')'],diag_phase_inst,PARM_REAL);  
-    
-  end
-  
+
+  %%% Configure diagnostic parameter choices
+  [DIAG_PARM,DIAG_MATLAB_PARM,ndiags] = setDiagParams(use_shelfice,use_flux_diags,use_eddy_diags,use_layers,diag_freq_avg,diag_freq_inst);
+
   %%% Create the data.diagnostics file
   write_data_diagnostics(inputpath,DIAG_PARM,listterm,realfmt);
   
   %%% Create the DIAGNOSTICS_SIZE.h file
   createDIAGSIZEh(codepath,ndiags,Nr);
+  
+  
+  
   
   
   
@@ -1859,8 +1743,9 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   
   
   %%% Creates a matlab file defining all input parameters
-%   write_matlab_params(inputpath,[PARM DIAG_MATLAB_PARM],realfmt);
-%   write_matlab_params(inputpath,[PARM SHELFICE_PARM EXF_PARM DIAG_MATLAB_PARM],realfmt);
-  write_matlab_params(inputpath,[PARM RBCS_PARM KPP_PARM OBCS_PARM SHELFICE_PARM SEAICE_PARM EXF_PARM CAL_PARM LAYERS_PARM DIAG_MATLAB_PARM PACKAGE_PARM],realfmt);
+  fname = 'params.m';
+%   write_matlab_params(inputpath,fname,[PARM DIAG_MATLAB_PARM],realfmt);
+%   write_matlab_params(inputpath,fname,[PARM SHELFICE_PARM EXF_PARM DIAG_MATLAB_PARM],realfmt);
+  write_matlab_params(inputpath,fname,[PARM RBCS_PARM KPP_PARM OBCS_PARM SHELFICE_PARM SEAICE_PARM EXF_PARM CAL_PARM LAYERS_PARM DIAG_MATLAB_PARM PACKAGE_PARM],realfmt);
   
 end

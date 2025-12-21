@@ -61,9 +61,9 @@ shift_lat_min = -71; %%% Original value -70
 shift_lat_ref = -70; %%% 11/2025 ALS: Added to extend pyc shift into cavity
 % shift_lat_ref = -69.5; %%% 11/2025 ALS: Added to extend pyc shift into cavity
 shift_lat_max = -68.5; %%% Original value -68.5
-shift_depth_max = 100; %%% Original value 200, new reference value 100
+shift_depth_max = 0; %%% Original value 200, new reference value 100
 % shift_N2 = 5e-6; %%% Stratification above the shifted pycnocline - reference 5e-6
-shift_N2 = 4e-5; %%% Stratification above the shifted pycnocline - reference 5e-6
+shift_N2 = 1e-4; %%% Stratification above the shifted pycnocline - reference 5e-6
 if (shift_depth_max > 0)
   shift_N2_pyc = 1e-5; %%% Stratification threshold used to identify the pycnocline 
 else

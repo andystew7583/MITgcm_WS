@@ -11,6 +11,8 @@ load ../data/KN_section/KN_section.mat;
 plot_KN_data = true;
 plot_KN_hyd = false;
 
+%%% Reference salinity for freshwater flux calculation
+Sref = 34.68; %%% Approximately minimizes freshwater fluxes below the pycnocline, empirically
 
 %%% Load experiment data
 expdir = '../experiments';
@@ -73,12 +75,27 @@ expdir = '../experiments';
 % expname = 'WC_onethird_strat2e-5';
 % tmin = 6.05;
 % tmax = 9.05;
+% expname = 'WC_onethird_strat4e-5';
+% tmin = 6.05;
+% tmax = 9.05;
+% expname = 'WC_onethird_strat6e-5';
+% tmin = 4.05;
+% tmax = 5.05;
 % expname = 'WC_onethird_dpyc-150_strat3e-4';
-% tmin = 3.05;
-% tmax = 4.05;
-expname = 'WC_onethird_dpyc-150_strat1e-4';
-tmin = 3.05;
-tmax = 4.05;
+% tmin = 6.05;
+% tmax = 9.05;
+% expname = 'WC_onethird_dpyc-150_strat1e-4';
+% tmin = 5.05;
+% tmax = 6.05;
+expname = 'WC_onethird_dpyc-100_strat2e-4';
+tmin = 6.05;
+tmax = 9.05;
+% expname = 'WC_onethird_dpyc0_strat1e-4';
+% tmin = 4.05;
+% tmax = 5.05;
+% expname = 'WC_onethird_dpyc300_strat1e-5';
+% tmin = 2.05;
+% tmax = 3.05;
 
 %%% To store diagnostic figures
 figdir = fullfile('KN_evaluation',expname);
@@ -585,7 +602,6 @@ end
 
 %%% Code to compute transport-weighted salinity at the northern boundary -
 %%% not currently used
-Sref = 34.68; %%% Approximately minimizes freshwater fluxes below the pycnocline, empirically
 rhofresh = 1000;
 jmax_fwflx = find(bathy(xidx,:)<-4750,1);
 fwflx = zeros(1,12);

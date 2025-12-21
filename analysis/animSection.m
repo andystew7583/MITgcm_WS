@@ -47,11 +47,24 @@ outfidx = 1;
 %%% Specify color range
 set_crange = 1;
 
+%%% Year to start animnation
+startyr = 4;
 
-% crange = [-2.5 1]; %/%% Filchner temp
+switch (diagnum)
+  
+  case 4   
+
+    crange = [-2.5 1]; %/%% Filchner temp
+    cmap = cmocean('thermal',20);
+
+  case 5
+
+    crange = [32 34.8]; %%% salinity    
+    cmap = cmocean('haline',30);
+
+end
 % crange = [-3 3]; %%%temp
 % crange = [33.4 34.65]; %%% salinity
-crange = [32 34.8]; %%% salinity
 % crange = [0 10]; %%%% for KPP hbl
 % crange = [0 1]; %%% For sea ice area
 % crange = [-.6 .6]; %%% For velocities or stresses
@@ -66,8 +79,6 @@ crange = [32 34.8]; %%% salinity
 % crange = [-0.3 0.3]; %%% Melt rate 
 
 % cmap = pmkmp(100,'Swtth');
-cmap = cmocean('haline',30);
-% cmap = cmocean('thermal',20);
 % cmap = cmocean('ice',100);
 % cmap = haxby(56);
 % cmap = jet(200);
@@ -183,16 +194,8 @@ handle = figure(22);
 set(handle,'Position',framepos);
 M = moviein(length(dumpIters));
 
-% for n = 15*12:length(dumpIters)
-% for n = 1500:length(dumpIters)
-% for n = 107
-% for n = 3*730+565;
-% for n=5*12
-% for n=7*12:8*12
-% for n = 34a
-for n=4*12:length(dumpIters) 
-% for n=2:length(dumpIters)
-% for n =1:length(dumpIters)
+for n=startyr*12:length(dumpIters) 
+
   dumpIters(n);
     
   t = dumpIters(n)*deltaT/t1year;

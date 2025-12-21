@@ -62,15 +62,12 @@ switch (res_fac)
 end
 
 
+%%% Define data format
+defineDataFormat;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%% Data format parameters %%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-ieee='b';
-prec='real*8';
-realdigits = 8;
-realfmt=['%.',num2str(realdigits),'e'];
+
+%%% Months per year
 months = 12; 
 
 %%%% Option for finer grid %%

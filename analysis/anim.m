@@ -16,20 +16,20 @@ loadexp;
 %%% Select diagnostic variable to animate
 % diagnum = 66;
 % diagnum = 46;
-diagnum = 5;
+diagnum = 4;
 outfname =diag_fileNames{1,diagnum};
 % outfname = 'THETA_12hourly';
 % outfname = 'Eta';
 
 %%% Starting year for animation
-startyr = 9;
+startyr = 18;
 
 %%% Data index in the output data files
 outfidx = 1;
 
 %%% If set true, plots a top-down view of the field in a given layer.
 %%% Otherwise plots a side-on view of the zonally-averaged field.
-xyplot = 1;
+xyplot = 0;
 
 %%% Vertical layer index to use for top-down plots
 xylayer = 15;
@@ -53,7 +53,8 @@ yzavg = 0;
 %%%for 1/3 DEGREE yzlayer = 126; 1/6 = 404;
 % yzlayer = 246;
 % yzlayer = 141; %%% Filchner trough at 1/3 grid
-yzlayer = 194; %%% Kap Norvegia at 1/3 grid 
+% yzlayer = 194; %%% Kap Norvegia at 1/3 grid 
+yzlayer = 97;
 % yzlayer = Nx-spongethickness;
 % yzlayer = 1;
 
@@ -401,10 +402,10 @@ for n =startyr*12:length(dumpIters)
     hold off;
     xlabel('Offshore $y$ (latitude)','interpreter','latex','fontsize',15);
     ylabel('Height $z$ (km)','interpreter','latex','fontsize',15);
-    set(gca,'YLim',[-1.3 0]);
+    set(gca,'YLim',[-2 0]);
     % set(gca,'XLim',[YC(1,1) YC(1,end)]);    
     % set(gca,'XLim',[-71 -67]);
-    set(gca,'XLim',[-74 -70]);
+    set(gca,'XLim',[-78 -70]);
     handle=colorbar;
     set(handle,'FontSize',fontsize);
 

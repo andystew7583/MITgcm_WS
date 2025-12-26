@@ -14,15 +14,17 @@ mac_plots = false;
 loadexp;
 
 %%% Vertical level to which potential density should be referenced
+k_pot_dens = 123;
 % k_pot_dens = 94;
-k_pot_dens = 1;
+% k_pot_dens = 61;
+% k_pot_dens = 1;
 
 %%% Data index in the output data files
 outfidx = 1;
 
 %%% If set true, plots a top-down view of the field in a given layer.
 %%% Otherwise plots a side-on view of the zonally-averaged field.
-xyplot = 1;
+xyplot = 0;
 
 %%% Vertical layer index to use for top-down plots
 xylayer = 1;
@@ -44,7 +46,7 @@ yzavg = 0;
 
 %%% Layer to plot in the y/z plane
 %%%for 1/3 DEGREE yzlayer = 126; 1/6 = 404;
-yzlayer = 141;
+yzlayer = 112;
 
 % load ../newexp/ELEV.mat
 % 
@@ -54,9 +56,11 @@ yzlayer = 141;
 
 %%% Specify color range
 set_crange = 1;
+crange = [45.5 46.5];
 % crange = [36.9 37.6];
-crange = [27.5 28.2];
-cmap = cmocean('dense',20);
+% crange = [32.0 33.0];
+% crange = [27.5 28.2];
+cmap = cmocean('dense',40);
 
 % titlestr = 'Salinity (g/kg)';
 % titlestr = 'Surface salinity (g/kg)';
@@ -77,7 +81,7 @@ years = 2007:1:2015;
 % nIter0 = 394509; 
 
 %%% For 1/24 run with tides
-dumpFreq = abs(diag_frequency(diagnum));
+dumpFreq = abs(diag_frequency(1));
 nDumps = round(endTime/dumpFreq);
 dumpIters = round((1:nDumps)*dumpFreq/deltaT);
 dumpIters = dumpIters(dumpIters > nIter0);
@@ -190,7 +194,7 @@ Amax = [];
 % for n = 34a
 % for n=48:length(dumpIters)
 % for n=2:length(dumpIters)
-for n =8*12:length(dumpIters)
+for n = 8*12:length(dumpIters)
   dumpIters(n);
     
   t = dumpIters(n)*deltaT/t1year;

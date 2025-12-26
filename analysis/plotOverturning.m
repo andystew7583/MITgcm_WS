@@ -8,20 +8,24 @@ addpath CDT/cdt;
 
 %%% Load experiment
 expdir = '../experiments';
+% expname = 'hires_seq_onethird_RTOPO2';
 % expname = 'hires_seq_onetwelfth_RTOPO2';
-expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+% expname = 'WC_onethird_ref';
+expname = 'WC_onethird_dpyc-150_strat3e-4';
 
 %%% Options (see calcOverturning)
 calc_psi_eddy = true;
 deform_cavity = false;
 use_PsiBT = false;
 use_layers = true;
+gl_coord = true;
 densvar = 'PD0';
 psimax = 4;
 % psistep = 0.5;
 % psimax = 2;
-psistep = 0.05;
-ylim = [27.3 28.2];
+psistep = 0.1;
+ylim = [25 28.2];
 % ylim = [27.3 29];
 
 %%% Construct output file name
@@ -41,6 +45,8 @@ if (use_PsiBT)
 else
   if (deform_cavity)
     outfname = [outfname,'_deform'];
+  elseif (gl_coord)
+    outfname = [outfname,'_GLcoord'];
   end
 end
 outfname = [outfname,'.mat'];
@@ -51,6 +57,8 @@ load(fullfile('products',outfname));
 
 psi_plot = mean(psi_mean+psi_eddy,3)/1e6;
 psi_plot = sign(psi_plot).*min(abs(psi_plot),psimax);
+psi_plot(91,:) = [];
+eta(91) = [];
 figure(1);
 clf;
 set(gcf,'Position',[325         460        1023         398]);
@@ -184,10 +192,7 @@ colorbar;
 xlabel('\eta');
 ylabel('Potential density (kg/m^3)');
 title('Overturning streamfunction (Sv)');
-set(gca,'Position',[0.0787    0.1300    0.8383    0.7950]);
-set(gca,'FontSize',12);
-
-psi_plot = eof_maps(:,:,end)*std(pc(end,:));
+psi_plot = eof_maps(:,:,1)*std(pc(1,:));
 % psi_plot = sign(psi_plot).*min(abs(psi_plot),psimax);
 figure(7);
 clf;
@@ -206,6 +211,9 @@ ylabel('Potential density (kg/m^3)');
 title('Overturning streamfunction (Sv)');
 set(gca,'Position',[0.0787    0.1300    0.8383    0.7950]);
 set(gca,'FontSize',12);
+set(gca,'Position',[0.0787    0.1300    0.8383    0.7950]);
+set(gca,'FontSize',12);
+
 
 figure(8);
-plot(times/t1year,pc(end,:)./std(pc(end,:)));
+plot(times/t1year,pc(1,:)./std(pc(1,:)));

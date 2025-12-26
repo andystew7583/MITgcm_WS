@@ -11,17 +11,17 @@
 %%% Load experiment data
 expdir = '../experiments';
 % expname = 'hires_seq_onethird_RTOPO2';
-expname = 'hires_seq_onesixth_notides_RTOPO2';
+% expname = 'hires_seq_onesixth_notides_RTOPO2';
 % expname = 'hires_seq_onetwelfth_notides_RTOPO2';
+expname = 'WC_onethird_strat6e-5';
 loadexp;
 
 % %%% Time frame over which to average thermodynamic variables to create
 % %%% climatology
 % % tmin = 18.05*86400*365;
 % % tmax = 27.05*86400*365;
-% tmin = 9.05*86400*365;
-% tmax = 18.05*86400*365;
-
+tmin = 6.05*t1year;
+tmax = 9.05*t1year;
 
 
 
@@ -42,7 +42,7 @@ NS = length(SS);
 NT = length(TT);
 
 %%% Quasi-latitude horizontal grid
-ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,false);
+ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,false,false);
 ETA = repmat(ETA,[1 1 Nr]);
 
 
@@ -51,25 +51,25 @@ ETA = repmat(ETA,[1 1 Nr]);
 %%%%% LOAD REFERENCE STATE %%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% %%% Frequency of diagnostic output - should match that specified in
-% %%% data.diagnostics.
-% dumpFreq = abs(diag_frequency(1));
-% nDumps = round(endTime/dumpFreq);
-% dumpIters = round((1:nDumps)*dumpFreq/deltaT);
-% dumpIters = dumpIters(dumpIters > nIter0);
-% nDumps = length(dumpIters);
-% 
-% %%% Time-average temperature and salinity
-% pt_ref = readIters(exppath,'THETA',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
-% ss_ref = readIters(exppath,'SALT',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
+%%% Frequency of diagnostic output - should match that specified in
+%%% data.diagnostics.
+dumpFreq = abs(diag_frequency(1));
+nDumps = round(endTime/dumpFreq);
+dumpIters = round((1:nDumps)*dumpFreq/deltaT);
+dumpIters = dumpIters(dumpIters > nIter0);
+nDumps = length(dumpIters);
+
+%%% Time-average temperature and salinity
+pt_ref = readIters(exppath,'THETA',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
+ss_ref = readIters(exppath,'SALT',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
 
 %%% Load data file
-outfname = [expname,'_TSfluxes'];
-outfname = [outfname,'.mat'];
-pt_ref = load(fullfile('products',outfname),'theta_tavg');
-pt_ref = pt_ref.theta_tavg;
-ss_ref = load(fullfile('products',outfname),'salt_tavg');
-ss_ref = ss_ref.salt_tavg;
+% outfname = [expname,'_TSfluxes'];
+% outfname = [outfname,'.mat'];
+% pt_ref = load(fullfile('products',outfname),'theta_tavg');
+% pt_ref = pt_ref.theta_tavg;
+% ss_ref = load(fullfile('products',outfname),'salt_tavg');
+% ss_ref = ss_ref.salt_tavg;
 
 %%% Pressure is just Boussinesq hydrostatic reference pressure
 pp_ref = -gravity*rhoConst*repmat(RC,[Nx Ny 1])/1e4;

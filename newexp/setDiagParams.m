@@ -54,8 +54,8 @@ function [DIAG_PARM,DIAG_MATLAB_PARM,ndiags] = setDiagParams(use_shelfice,use_fl
 
   if (use_flux_diags)
     diag_fields_avg = {diag_fields_avg{:}, ...
-      'ADVr_TH','ADVr_TH','ADVr_TH', ... %%% Advective heat fluxes
-      'ADVr_SLT','ADVr_SLT','ADVr_SLT', ... %%% Advective salt fluxes  
+      'ADVr_TH','ADVx_TH','ADVy_TH', ... %%% Advective heat fluxes
+      'ADVr_SLT','ADVx_SLT','ADVy_SLT', ... %%% Advective salt fluxes  
       'DFrI_TH','DFrE_TH', ... %%% Vertical diffusive fluxes of heat
       'DFrI_SLT','DFrE_SLT', ... %%% Vertical diffusive fluxes of salt      
     };

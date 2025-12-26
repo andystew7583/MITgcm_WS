@@ -25,12 +25,15 @@ function extendRun (expdir,expname,newEndTime,use_shelfice_diags,use_flux_diags,
   resultsdir = fullfile(expdir,expname,'results');
   codedir = fullfile(expdir,expname,'code');  
   datafile_path = fullfile(inputdir,'data');
+  pkgfile_path = fullfile(inputdir,'data.pkg');
   paramsfile = 'params.m';
   tmpparamsfile = 'tmp_params.m';
   diagparamsfile = 'diag_params.m';
+  layersparamsfile = 'layers_params.m';
   paramsfile_path = fullfile(inputdir,paramsfile);
   tmpparamsfile_path = fullfile(inputdir,tmpparamsfile);
   diagparamsfile_path = fullfile(inputdir,diagparamsfile);
+  layersparamsfile_path = fullfile(inputdir,layersparamsfile);
   
   %%% Find the last pickup file in the directory
   resultsFiles = dir(resultsdir);
@@ -71,6 +74,30 @@ function extendRun (expdir,expname,newEndTime,use_shelfice_diags,use_flux_diags,
   fid = fopen(datafile_path,'w');
   fprintf(fid,datastr);
   fclose(fid);
+
+  %%% Update useLayers flag in data.pkg
+  pfid = fopen(pkgfile_path,'r');
+  if (pfid == -1)
+    error(['Could not open ',pkgfile_path]);
+  end
+  pkgstr = '';
+  pline = fgetl(pfid);
+  while (ischar(pline))
+    if (~isempty(strfind(pline,'useLayers')))
+      if (use_layers_diags)
+        pkgstr = [pkgstr,' useLayers=.TRUE.,\n'];
+      else
+        pkgstr = [pkgstr,' useLayers=.FALSE.,\n'];
+      end
+    else
+      pkgstr = [pkgstr,pline,'\n'];
+    end      
+    pline = fgetl(pfid);
+  end
+  fclose(pfid);
+  pfid = fopen(pkgfile_path,'w');
+  fprintf(pfid,pkgstr);
+  fclose(pfid);
   
   %%% Update the simulation's params.m file to reflect the new simulation
   %%% end time and delete diagnostics parameters
@@ -84,15 +111,31 @@ function extendRun (expdir,expname,newEndTime,use_shelfice_diags,use_flux_diags,
   end
   tline = fgetl(fid);
   while (ischar(tline))
-    if (~isempty(strfind(tline,'endTime')))
-      paramsstr = ['endTime=',num2str(newEndTime),';'];
-    else
-      paramsstr = tline;
-    end
-    if (~startsWith(tline,'diag_'))
+
+    %%% Remove all diagnostic and LAYERS lines because we will regenerate them
+    %%% below
+    if (~startsWith(tline,'diag_') && ~startsWith(tline,'layers_'))
+
+      %%% Update simulation end time
+      if (~isempty(strfind(tline,'endTime')))
+        paramsstr = ['endTime=',num2str(newEndTime),';'];
+      else
+        paramsstr = tline;
+      end
+  
+      %%% Update flag from data.pkg corresponding to LAYERS package
+      if (~isempty(strfind(tline,'useLayers')))
+        paramsstr = ['useLayers=',num2str(use_layers_diags),';'];
+      end
+  
+      %%% Write the (possibly updated) line to the temporary Matlab params file
       fprintf(tfid,'%s\n',paramsstr);
+
     end
+
+    %%% Read next line and start again
     tline = fgetl(fid);
+
   end
   fclose(fid);
 
@@ -100,7 +143,45 @@ function extendRun (expdir,expname,newEndTime,use_shelfice_diags,use_flux_diags,
 
 
 
+  %%% Reset LAYERS parameters %%%
+
+  %%% Number of fields for which to calculate layer fluxes
+  layers_maxNum = 1;
+
+  %%% Set LAYERS parameters
+  [LAYERS_PARM,Nlayers] = setLayersParams ();
+
+  %%z% Create the data.layers file
+  write_data_layers(inputdir,LAYERS_PARM,listterm,realfmt);
+  
+  %%% Create the LAYERS_SIZE.h file
+  createLAYERSSIZEh(codedir,Nlayers,layers_maxNum); 
+
+  %%% Generate a new layers_params.m file that contains only the LAYERS
+  %%% parameters
+  write_matlab_params(inputdir,layersparamsfile,[LAYERS_PARM],realfmt);
+
+  %%% Append new diagnostics parametes to the end of the temp_params.m
+  %%% file
+  lfid = fopen(layersparamsfile_path,'r');
+  if (lfid == -1)
+    error(['Could not open ',diagparamsfile_path]);
+  end
+  fprintf(tfid,'\n');
+  lline = fgetl(lfid);
+  while (ischar(lline))  
+    if (~startsWith(lline,'%'))
+      fprintf(tfid,'%s\n',lline);    
+    end
+    lline = fgetl(lfid);
+  end
+  fclose(lfid);
+
+
+
+
   %%% Reset diagnostic parameters %%%
+
   diag_freq_avg = t1month;
   diag_freq_inst = t1day;
 
@@ -125,11 +206,17 @@ function extendRun (expdir,expname,newEndTime,use_shelfice_diags,use_flux_diags,
   end
   fprintf(tfid,'\n');
   dline = fgetl(dfid);
-  while (ischar(dline))   
-    fprintf(tfid,'%s\n',dline);    
-    dline = fgetl(fid);
+  while (ischar(dline))  
+    if (~startsWith(dline,'%'))
+      fprintf(tfid,'%s\n',dline);    
+    end
+    dline = fgetl(dfid);
   end
   fclose(dfid);
+
+
+
+  %%% Finished generating the temporary parameter file, so we can close it
   fclose(tfid);  
 
 
@@ -139,6 +226,7 @@ function extendRun (expdir,expname,newEndTime,use_shelfice_diags,use_flux_diags,
   copyfile(tmpparamsfile_path,paramsfile_path);
   delete(tmpparamsfile_path);
   delete(diagparamsfile_path);
+  delete(layersparamsfile_path);
 
     
 end

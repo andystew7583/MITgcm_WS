@@ -36,7 +36,7 @@ endLat = secLats(end);
 
 %%% Select diagnostic variable to animate
 
-diagnum = 5;
+diagnum = 4;
 outfname =diag_fileNames{1,diagnum};
 % outfname = 'THETA_12hourly';
 % outfname = 'Eta';
@@ -48,13 +48,17 @@ outfidx = 1;
 set_crange = 1;
 
 %%% Year to start animnation
-startyr = 4;
+startyr = 9;
 
 switch (diagnum)
-  
+   case 1   
+
+    crange = [-.2 .2]; %%% Zonal velocity
+    cmap = cmocean('balance',20);
+
   case 4   
 
-    crange = [-2.5 1]; %/%% Filchner temp
+    crange = [-2.5 1]; %%% Filchner temp
     cmap = cmocean('thermal',20);
 
   case 5

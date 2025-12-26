@@ -16,12 +16,15 @@ expdir = '../experiments';
 % expname = 'hires_seq_onetwelfth_RTOPO2';
 % tmin = 1.05;
 % tmax = 9.05;
-expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-tmin = 1.01;
-tmax = 7.01;
+% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+% tmin = 1.01;
+% tmax = 7.01;
 % expname = 'hires_seq_onetwentyfourth_notides_RTOPO2_SSH';
-% tmin = 0.01;
-% tmax = 1.01;
+% tmin = 0.05;
+% tmax = 1.05;
+expname = 'WC_onethird_dpyc-150_strat3e-4';
+tmin = 27.05;
+tmax = 34.05;
 
 %%% Load experiment
 loadexp;
@@ -39,6 +42,9 @@ use_PsiBT = false;
 %%% fluxes. N.B. if this option is selected then the density variable must
 %%% be 'PD0' (surface-referenced potential density)
 use_layers = true;
+
+%%% Set true to use a coordinate system that aligns with the ice front
+gl_coord = true;
 
 %%% Select density variable in which to compute isopycnal fluxes
 densvar = 'PD0';
@@ -90,7 +96,7 @@ if (use_PsiBT)
 
 else
 
-  ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity);
+  ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity,gl_coord);
   eta = -9:.1:11;
   Neta = length(eta);
 
@@ -579,6 +585,8 @@ if (use_PsiBT)
 else
   if (deform_cavity)
     outfname = [outfname,'_deform'];
+  elseif (gl_coord)
+    outfname = [outfname,'_GLcoord'];
   end
 end
 outfname = [outfname,'.mat'];
@@ -586,7 +594,7 @@ outfname = [outfname,'.mat'];
 %%% Store computed data for later
 save(fullfile('products',outfname),'-v7.3', ...
   'eta','ETA','dens_levs','times', ...
-  'psi_mean','psi_mean_stand','psi_mean_fluc', ...
+  'psi_tot','psi_mean','psi_mean_stand','psi_mean_fluc', ...
   'uvel_tavg','vvel_tavg','dens_tavg');
 
 if (calc_psi_eddy)

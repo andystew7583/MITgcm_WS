@@ -8,11 +8,12 @@ addpath CDT/cdt;
 
 %%% Load experiment
 expdir = '../experiments';
-expname = 'hires_seq_onethird_RTOPO2';
+% expname = 'hires_seq_onethird_RTOPO2';
+expname = 'WC_onethird_dpyc-150_strat3e-4';
 loadexp;
 
 %%% Set true to compute eddy-induced transports
-calc_psi_eddy = true; 
+calc_psi_eddy = false; 
 
 %%% Construct output file name
 outfname = [expname,'_MOC_TS'];

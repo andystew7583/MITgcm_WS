@@ -10,8 +10,8 @@ addpath CDT/cdt;
 expdir = '../experiments';
 % expname = 'hires_seq_onethird_notides_RTOPO2';
 % expname = 'hires_seq_onesixth_RTOPO2';
-% expname = 'hires_seq_onetwelfth_RTOPO2';
-expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+expname = 'hires_seq_onetwelfth_RTOPO2';
+% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
 % loadexp;
 
 %%% Set true to deform coordinates in the cavity
@@ -22,6 +22,9 @@ use_PsiBT = false;
 
 %%% Set true to decompose eddy fluxes
 calc_eddy_decomp = false;
+
+%%% set true to use grounding line coordinate
+gl_coord = true;
 
 %%% Define coordinate system for integrating to compute heatfunction
 if (use_PsiBT)
@@ -47,16 +50,16 @@ if (use_PsiBT)
 
 else
 
-  ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity);
+  ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity,gl_coord);
   eta = -9:.1:11;
   Neta = length(eta);
 
   %%% Bounds and horizontal mask for heat budget volume
-  eta_icefront = -1.1;
+  eta_icefront = 0;
   eta_shelfbreak = 3.5;  
   eidx_icefront = find(abs(eta-eta_icefront)==min(abs(eta-eta_icefront)));
   eidx_shelfbreak = find(abs(eta-eta_shelfbreak)==min(abs(eta-eta_shelfbreak)));
-  zidx_icefront = 25;     
+  zidx_icefront = 15;     
   msk = (ETA > eta_icefront) & (ETA < eta_shelfbreak);
   msk_slope = (ETA > eta_shelfbreak & ETA < 5); 
   msk_outershelf = (ETA > 1.5 & ETA < eta_shelfbreak); 
@@ -72,7 +75,7 @@ Cp = 4000;
 ylim = [0 2000];
 theta0 = -1.9;
 % salt0 = 34.72;
-salt0 = 34.6;
+salt0 = 34.73;
 fontsize = 14;
 
 %%% Load HeatFunction data file
@@ -82,6 +85,8 @@ if (use_PsiBT)
 else
   if (deform_cavity)
     outfname = [outfname,'_deform'];
+  elseif (gl_coord)
+    outfname = [outfname,'_GLcoord'];
   end
 end
 outfname = [outfname,'.mat'];
@@ -91,18 +96,6 @@ load(fullfile('products',outfname));
 if (strcmp(expname,'hires_seq_onetwentyfourth_notides_RTOPO2'))
 
   startyear = 2008;
-
-  %%% Load eddy-induced components of heatfunction/transport
-  outfname = [expname,'_HeatFunctionEddyDecomp'];
-  if (use_PsiBT)
-    outfname = [outfname,'_PsiBT'];
-  else
-    if (deform_cavity)
-      outfname = [outfname,'_deform'];
-    end
-  end
-  outfname = [outfname,'.mat'];
-  load(fullfile('products',outfname));
   
   %%% Load positive and negative heatfunction components
   outfname = [expname,'_PosNegHeatFunction'];
@@ -111,6 +104,8 @@ if (strcmp(expname,'hires_seq_onetwentyfourth_notides_RTOPO2'))
   else
     if (deform_cavity)
       outfname = [outfname,'_deform'];
+    elseif (gl_coord)
+      outfname = [outfname,'_GLcoord'];
     end
   end
   outfname = [outfname,'.mat'];
@@ -122,8 +117,26 @@ else
 
 end
 
+%%% Load eddy-induced components of heatfunction/transport
+outfname = [expname,'_HeatFunctionEddyDecomp'];
+if (use_PsiBT)
+  outfname = [outfname,'_PsiBT'];
+else
+  if (deform_cavity)
+    outfname = [outfname,'_deform'];
+  elseif (gl_coord)
+    outfname = [outfname,'_GLcoord'];
+  end
+end
+outfname = [outfname,'.mat'];
+load(fullfile('products',outfname));
+
 %%% Load shelf heat budget diagnostics
-outfname = [expname,'_ShelfHeatBudget.mat'];
+outfname = [expname,'_ShelfHeatBudget'];
+if (gl_coord)
+  outfname = [outfname,'_GLcoord'];
+end
+outfname = [outfname,'.mat'];
 load(fullfile('products',outfname));
 
 %%% Compute volume averages

@@ -55,9 +55,10 @@ expdir = basedir;
 
 % expname = 'WC_seq_onethird_RTOPO2_unmodEB_linHtFlx';
 % expname = 'WC_seq_onethird_RTOPO2_unmodEB_alphaV0.5';
-% expname = 'WC_seq_onethird_RTOPO2_unmodEB';
 
+% expname = 'WC_seq_onethird_RTOPO2_unmodEB';
 % expname = 'WC_seq_onethird_RTOPO2_unmodEB_alphaV0.5';
+% expname = 'WC_seq_onethird_RTOPO2_unmodEB_alphaV0.5_restore34.7';
 
 % expname = 'WC_seq_onethird_RTOPO2_dpyc200_alphaV0.5';
 % expname = 'WC_seq_onethird_RTOPO2_dpyc200_SconstBCs2';
@@ -81,14 +82,72 @@ expdir = basedir;
 
 % expname = 'WC_onethird_ref';
 % expname = 'WC_onethird_dpyc-150_strat1e-4';
-expname = 'WC_onethird_dpyc-150_strat2e-4';
+% expname = 'WC_onethird_dpyc-150_strat2e-4';
+% expname = 'WC_onethird_dpyc-150_strat2.25e-4';
+% expname = 'WC_onethird_dpyc-150_strat2.5e-4';;
+% expname = 'WC_onethird_dpyc-150_strat2.75e-4';
 % expname = 'WC_onethird_dpyc-150_strat3e-4';
-% expname = 'WC_onethird_dpyc-100_strat2e-4';
+% expname = 'WC_onethird_dpyc-150_strat4e-4';
+% expname = 'WC_onethird_dpyc-150_strat1e-4_ws';
+% expname = 'WC_onethird_dpyc-150_strat1e-4_aU0.5_aV0.5_ws';
+% expname = 'WC_onethird_dpyc-150_strat3e-4_aU0.5_aV0.5';
+% expname = 'WC_onethird_dpyc-150_strat3e-4_bU0.5_bV0.5';
+
+% expname = 'WC_onethird_dpyc-100_strat1e-4';
+% expname = 'WC_onethird_dpyc-100_strat1.5e-4';
+% expname = 'WC_onethird_dpyc-100_strat1.75e-4';
+% expname = 'WC_onethird_dpyc-100_strat1.875e-4';
+% expname = 'WC_onethird_dpyc-100_strat1.5e-4';
+% expname = 'WC_onethird_dpyc-100_strat2e-4'
+
+% expname = 'WC_onethird_dpyc-50_strat1e-4';
+% expname = 'WC_onethird_dpyc-50_strat1.25e-4';
+% expname = 'WC_onethird_dpyc-50_strat1.375e-4';
+% expname = 'WC_onethird_dpyc-50_strat1.5e-4';
+% expname = 'WC_onethird_dpyc-50_strat2e-4';
+
+% expname = 'WC_onethird_dpyc0_strat5e-5';
+% expname = 'WC_onethird_dpyc0_strat7.5e-5';
+% expname = 'WC_onethird_dpyc0_strat8.75e-5';
 % expname = 'WC_onethird_dpyc0_strat1e-4';
+% expname = 'WC_onethird_dpyc0_strat1.125e-4';
+% expname = 'WC_onethird_dpyc0_strat1.25e-4';
+% expname = 'WC_onethird_dpyc0_strat1.5e-4';
+
+
+expname = 'WC_onethird_dpyc50_strat8e-5';
+% expname = 'WC_onethird_dpyc50_strat1e-4';
+
+% expname = 'WC_onethird_dpyc-100_strat1e-4';
+
+% expname = 'WC_onethird_strat7e-5';
+% expname = 'WC_onethird_strat8e-5';
+% expname = 'WC_onethird_strat1e-4';
 % expname = 'WC_onethird_strat4e-5';
 % expname = 'WC_onethird_strat6e-5';
+% expname = 'WC_onethird_strat6e-5';
+
+% expname = 'WC_onethird_dpyc150_strat4e-5';
+% expname = 'WC_onethird_dpyc150_strat5e-5';
+% expname = 'WC_onethird_dpyc150_strat6e-5';
+
+% expname = 'WC_onethird_dpyc200_strat4e-5';
+% expname = 'WC_onethird_dpyc200_strat6e-5';
+
+
+
 % expname = 'WC_onethird_dpyc300_strat1e-5';
-% 
+
+% expname = 'WC_onethird_aU0.7_aV0.7_bU0.7_bV0.7_dT5_noA23';
+% expname = 'WC_onethird_dpyc-150_strat1.5e-4_aU0.7_aV0.7_bU0.7_bV0.7_dT5_noA23';
+% expname = 'WC_onethird_dpyc-150_strat1.75e-4_aU0.7_aV0.7_bU0.7_bV0.7_dT5_noA23';
+% expname = 'WC_onethird_dpyc-150_strat2e-4_aU0.7_aV0.7_bU0.7_bV0.7_dT5_noA23';
+% expname = 'WC_onethird_aU0.85_aV0.85_bU0.85_bV0.85_dT2.5_noA23';
+% expname = 'WC_onethird_dpyc-150_strat2e-4_aU0.85_aV0.85_bU0.85_bV0.85_dT2.5_noA23';
+% expname = 'WC_onethird_dpyc-150_strat2.5e-4_aU0.85_aV0.85_bU0.85_bV0.85_dT2.5_noA23';
+
+% expname = 'WC_onethird_aU0.5_aV0.5';
+% expname = 'WC_onethird_dpyc-150_strat1e-4_aU0.5_aV0.5';
 
 %%% Julia's control experiments
 % expname = 'n_34452';

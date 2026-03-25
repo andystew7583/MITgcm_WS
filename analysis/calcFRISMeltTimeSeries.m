@@ -5,7 +5,11 @@
 %%% experiments.
 %%%
 
-function [tt,SHImelt,SIprod,SHImelt_mean,SIprod_mean,XC,YC,bathy,SHELFICEtopo,SHImelt_eff,SHImelt_tend,SHImelt_diff,SHImelt_tflux,SHImelt_conv] = calcFRISMeltTimeSeries (expdir,expname,compute_eff_melt) 
+function [tt,SHImelt,SIprod,SHImelt_mean, ...
+  SIprod_mean,XC,YC,bathy,SHELFICEtopo, ...
+  SHImelt_eff,SHImelt_tend,SHImelt_diff, ...
+  SHImelt_tflux,SHImelt_conv,FWupstream] ...
+  = calcFRISMeltTimeSeries (expdir,expname,compute_eff_melt,compute_upstream) 
 
   %%% This needs to be set to ensure we are using the correct output
   %%% frequency
@@ -15,7 +19,15 @@ function [tt,SHImelt,SIprod,SHImelt_mean,SIprod_mean,XC,YC,bathy,SHELFICEtopo,SH
 
   Cp = 3.994e3; % J/kg/K
   Lf = 3.34e5; % J/kg;
-  Sref = 34.5; % g/kg
+
+  %%% Reference salinity for freshwater flux calculation
+  Sref = 34.68; %%% Approximately minimizes freshwater fluxes below the pycnocline, empirically
+
+  %%% Bathymetric grid for upstream flux
+  longrid = -28 + (0:1:90)/3;
+  Nl = length(longrid);
+  bgrid = 100:100:4500;
+  Nb = length(bgrid);
 
   %%% Frequency of diagnostic output
   diagnum = 1; %%% Should be arbitrary because all output is provided at the same frequency
@@ -34,13 +46,14 @@ function [tt,SHImelt,SIprod,SHImelt_mean,SIprod_mean,XC,YC,bathy,SHELFICEtopo,SH
   SHImelt_diff = NaN*ones(1,nDumps);
   SHImelt_tflux = NaN*ones(1,nDumps);
   heat_tot = NaN*ones(1,nDumps);
+  FWupstream = NaN*ones(Nl,Nb,nDumps);
   SHImelt_mean = zeros(Nx,Ny);
   SIprod_mean = zeros(Nx,Ny);
   tlen = 0;
   
   % endTime = dumpIters(end)*deltaT
-  endTime = 2*t1year;
-  avg_len = 1*t1year;
+  endTime = 6*t1year;
+  avg_len = 2*t1year;
 
   %%% Indices over which to integrate, i.e. defining the FRIS
   xidx = find(XC(:,1)<-29.9);
@@ -133,6 +146,31 @@ n
     end
 
     
+
+    if (compute_upstream)
+
+      %%% Index of 17W
+
+      UVEL=rdmdsWrapper(fullfile(exppath,'/results/UVEL'),dumpIters(n));
+      SALT=rdmdsWrapper(fullfile(exppath,'/results/SALT'),dumpIters(n));
+      
+
+
+      rhofresh = 1000;
+
+      for i = 1:Nl
+        secidx = find(XC(:,1)>=longrid(i),1);
+        UVELsec = squeeze(UVEL(secidx,:,:));
+        SALTsec = squeeze(SALT(secidx,:,:));
+        phi = (Sref-SALTsec)/Sref;
+        uvelphi = UVELsec.*phi;
+        uvelphi(isnan(uvelphi)) = 0;
+        for m = 1:Nb
+          jmax_fwflx = find((SHELFICEtopo(secidx,:)>bathy(secidx,:)) & (bathy(secidx,:)<-bgrid(m)),1);         
+          FWupstream(i,m,n) = -sum(sum(uvelphi(1:jmax_fwflx,:).*repmat(DYG(secidx,1:jmax_fwflx)',[1 Nr]).*squeeze(hFacC(secidx,1:jmax_fwflx,:)).*repmat(squeeze(DRF)',[jmax_fwflx 1])))*rhofresh;
+        end
+      end
+    end
 
 
 

@@ -14,9 +14,10 @@ mac_plots = false;
 loadexp;
 
 %%% Vertical level to which potential density should be referenced
-k_pot_dens = 123;
+% k_pot_dens = 123;
 % k_pot_dens = 94;
-% k_pot_dens = 61;
+% % k_pot_dens = 61;
+k_pot_dens = 39;
 % k_pot_dens = 1;
 
 %%% Data index in the output data files
@@ -24,7 +25,7 @@ outfidx = 1;
 
 %%% If set true, plots a top-down view of the field in a given layer.
 %%% Otherwise plots a side-on view of the zonally-averaged field.
-xyplot = 0;
+xyplot = 1;
 
 %%% Vertical layer index to use for top-down plots
 xylayer = 1;
@@ -56,9 +57,10 @@ yzlayer = 112;
 
 %%% Specify color range
 set_crange = 1;
-crange = [45.5 46.5];
+% crange = [45.5 46.5];
 % crange = [36.9 37.6];
 % crange = [32.0 33.0];
+crange = [29.75 30.75];
 % crange = [27.5 28.2];
 cmap = cmocean('dense',40);
 
@@ -194,7 +196,7 @@ Amax = [];
 % for n = 34a
 % for n=48:length(dumpIters)
 % for n=2:length(dumpIters)
-for n = 8*12:length(dumpIters)
+for n = 17*12:length(dumpIters)
   dumpIters(n);
     
   t = dumpIters(n)*deltaT/t1year;

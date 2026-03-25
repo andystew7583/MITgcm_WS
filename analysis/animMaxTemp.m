@@ -1,10 +1,8 @@
 %%%
-%%% animVort.m
+%%% animMaxTemp.m
 %%%
-%%% Makes a movie of the vorticity.
+%%% Makes a movie of the maximum temperature in the water column.
 %%%
-%%% NOTE: Doesn't account for u/v gridpoint locations, and doesn't handle
-%%% partial cells.
 %%%
 
 %%% Read experiment data
@@ -47,11 +45,6 @@ dumpStep = 43200/60;
 nDumps = 731;
 dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
 
-DXC3D = repmat(DXC(2:Nx,:),[1 1 Nr]);
-DYC3D = repmat(DYC(:,2:Ny),[1 1 Nr]);
-% vort = zeros(Nx,Ny,Nr);
-Omega = 2*pi*366/365/86400;
-ff = 2*Omega*sind(YG);
 g = 9.81;
   
 %%% Loop through iterations
@@ -64,88 +57,10 @@ for n=1:length(dumpIters)
   tt(n)
   
   %%% Attempt to load either instantaneous velocities or their squares
-  uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_12hourly'),dumpIters(n)) ;      
-  vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_12hourly'),dumpIters(n));
-%   uvel = rdmdsWrapper(fullfile(exppath,'/results/SIuice_12hourly'),dumpIters(n)) ;      
-%   vvel = rdmdsWrapper(fullfile(exppath,'/results/SIvice_12hourly'),dumpIters(n));
-%   uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_daily'),dumpIters(n)) ;      
-%   vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_daily'),dumpIters(n)); 
-  % uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_inst'),dumpIters(n));      
-  % vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_inst'),dumpIters(n));    
-%   uvel = rdmdsWrapper(fullfile(exppath,'/results/U'),dumpIters(n)) ;      
-%   vvel = rdmdsWrapper(fullfile(exppath,'/results/V'),dumpIters(n)); 
-  % eta = rdmdsWrapper(fullfile(exppath,'/results/ETAN_inst'),dumpIters(n));
-  % eta = rdmdsWrapper(fullfile(exppath,'/results/SIarea_inst'),dumpIters(n));
-  % eta = rdmdsWrapper(fullfile(exppath,'/results/ETAN'),dumpIters(n));
-  % if (isempty(uvel) || isempty(vvel))   
-  %   break;
-  % end
-  
-  %%% Plot the vorticity  
+  theta = rdmdsWrapper(fullfile(exppath,'/results/THETA_12hourly'),dumpIters(n)) ; 
+  theta(hFacC==0) = NaN;
+  thetamax = max(theta(:,:,16:end),[],3);
 
-  %%% Vorticity on a z-level
-%   vort = zeros(Nx,Ny);
-%   zlev = 1;
-% %   zlev = 25;
-%   % zlev = 44;
-%   uvel = uvel(:,:,zlev);
-%   vvel = vvel(:,:,zlev);
-%   uvel(hFacW(:,:,zlev)==0) = NaN;
-%   vvel(hFacS(:,:,zlev)==0) = NaN;
-%   vort(:,2:Ny) = - (uvel(:,2:Ny)-uvel(:,1:Ny-1))./DYC(:,2:Ny);
-%   vort(2:Nx,:) = vort(2:Nx,:) + (vvel(2:Nx,:)-vvel(1:Nx-1,:))./DXC(2:Nx,:);
-
-
-  %%% Geostrophic relative vorticity
-  % eta(hFacC(:,:,1)==0) = NaN;
-  % vvel = 0*eta;
-  % uvel = 0*eta;
-  % vvel(2:end,1:end) = g * (diff(eta,1,1) ./ DXC(2:end,1:end)) ./ ff(2:end,1:end);
-  % uvel(1:end,2:end) = -g * diff(eta,1,2) ./ DYC(1:end,2:end) ./ ff(1:end,2:end);   
-  % vort = 0*eta;
-  % vort(2:end-1,2:end-1) = (vvel(3:end,2:end-1) - vvel(2:end-1,2:end-1)) ./ DXG(2:end-1,2:end-1) ...
-  %                       - (uvel(2:end-1,3:end) - uvel(2:end-1,2:end-1)) ./ DYG(2:end-1,2:end-1);
-    
-  
-  %%% Okubo-Weiss on a z-level
- 
-  % zlev = 1;
-  % uvel = uvel(:,:,zlev);
-  % vvel = vvel(:,:,zlev);
-  % uvel(hFacW(:,:,zlev)==0) = NaN;
-  % vvel(hFacS(:,:,zlev)==0) = NaN;
-  % dudx = (uvel([2:Nx 1],:) - uvel(1:Nx,:)) ./ DXG; %%% du/dx on cell centers
-  % dvdy = (vvel(:,[2:Ny 1]) - vvel(:,1:Ny)) ./ DYG; %%% dv/dy on cell centers  
-  % dvdx = (vvel(1:Nx,:) - vvel([Nx 1:Nx-1],:)) ./ DXC; %%% dv/dx on cell corners
-  % dudy = (uvel(:,1:Ny) - uvel(:,[Ny 1:Ny-1])) ./ DYC; %%% du/du on cell corners
-  % Sn = dudx - dvdy;
-  % Ss = dudy + dvdx;
-  % omega = dvdx - dudy;
-  % OW = Ss.^2 - omega.^2 + 0.25*(Sn(1:Nx,1:Ny).^2 + Sn([Nx 1:Nx-1],1:Ny).^2 + Sn(1:Nx,[Ny 1:Ny-1]).^2 + Sn([Nx 1:Nx-1],[Ny 1:Ny-1]).^2);
-  
-  
-  %%% Divergence on a z-level
-%   vort = zeros(Nx,Ny);
-%   zlev = 44;
-%   uvel(hFacW==0) = NaN;
-%   vvel(hFacS==0) = NaN;
-%   vort(:,1:Ny-1) = (vvel(:,2:Ny,zlev)-vvel(:,1:Ny-1,zlev))./DYG(:,1:Ny-1);
-%   vort(1:Nx-1,:) = vort(2:Nx,:) + (uvel(2:Nx,:,zlev)-uvel(1:Nx-1,:,zlev))./DXG(1:Nx-1,:);
-
-  %%% Barotropic vorticity
-  % vort = zeros(Nx,Ny);
-  % ubt = sum(uvel.*DZ.*hFacW,3) ./ sum(DZ.*hFacW,3);
-  % vbt = sum(vvel.*DZ.*hFacS,3) ./ sum(DZ.*hFacS,3);
-  % vort(:,2:Ny) = - (ubt(:,2:Ny)-ubt(:,1:Ny-1))./DYC(:,2:Ny);
-  % vort = vort + (vbt([2:Nx 1],:)-vbt(:,:))./DXC; 
-
-  %%% Depth-averaged vorticity
-  vort = 0*uvel;
-  uvel(hFacW==0) = NaN;
-  vvel(hFacS==0) = NaN;  
-  vort(:,2:Ny,:) = - (uvel(:,2:Ny,:)-uvel(:,1:Ny-1,:))./DYC3D;
-  vort(2:Nx,:,:) = vort(2:Nx,:,:) + (vvel(2:Nx,:,:)-vvel(1:Nx-1,:,:))./DXC3D;
-  vort = nansum(vort.*DRF,3) ./ nansum(~isnan(vort).*DRF,3); %%% Approximate depth-average
 
   %%% Water column thickness to plot
   thick_plot =SHELFICEtopo-bathy;
@@ -195,16 +110,19 @@ for n=1:length(dumpIters)
   setm(gca,'MLabelParallel',-20)
 
 
-  pcolorm(YG,XG,vort./abs(ff));
-  % pcolorm(YG,XG,OW./ff.^2);
+  pcolorm(YC,XC,thetamax);  
   shading interp
-  colormap(cmocean('balance'));
+  cmap1 = cmocean('thermal',50);
+  cmap1 = cmap1(1:40,:);
+  cmap2 = cmocean('thermal',400);
+  cmap2 = cmap2(321:400,:);
+  cmap = [cmap1 ; cmap2];
+  colormap(ax,cmap);
 
   
 
   hold on;
   
-  % [cs,C]=contourm(YC,XC,thick_plot,[100 500 1000 2000 3000 4000],'EdgeColor','k');
   [cs,C]=contourm(YC,XC,thick_plot,[500 1000 2000 3000 4000],'EdgeColor','k');
   chandle = clabelm(cs,C);
   set(chandle,'fontsize',14,'Color','k','BackgroundColor','none','Edgecolor','none') 
@@ -213,8 +131,7 @@ for n=1:length(dumpIters)
   %%% Add colorbar and title
   h = colorbar;  
   set(h,'Position',[0.92 0.33 0.01 .26])  
-  % caxis([-.8 .8]);
-  caxis([-.4 .4]);
+  caxis([-2 1]);
   
   set(gca,'FontSize',18);    
   tightmap;
@@ -244,7 +161,7 @@ for n=1:length(dumpIters)
   set(ax3,'Position',axpos);
   
   land_plot = ones(Nx,Ny);
-  land_plot(~isnan(vort)) = NaN;
+  land_plot(sum(hFacC,3)>0) = NaN;
   pcolorm(YG,XG,land_plot);
   shading interp
   colormap(ax3,[.8 .8 .8]);
@@ -292,7 +209,7 @@ for n=1:length(dumpIters)
 
   thedate = datenum('2008-01-00')+floor(tt(n));
   %%% Add title
-    h = title(['\zeta/|f| on ',datestr(thedate)],'FontSize',18);
+    h = title(['Potential temperature (^oC) on ',datestr(thedate)],'FontSize',18);
 %   h = title(['\zeta/|f| at t= ',num2str(round(tt(n)),'%3d'),' days']);
 %   h = title(['\delta/|f| at t= ',num2str(round(tt(n)),'%3d'),' days']);
   %  h = title(['\zeta/f at t= ',num2str(tt(n)/365,'%.1f'),' years']);  

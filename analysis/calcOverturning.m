@@ -33,7 +33,7 @@ loadexp;
 calc_psi_eddy = true;
 
 %%% Set true to deform coordinates in the cavity
-deform_cavity = false;
+deform_cavity = true;
 
 %%% Set true to use barotropic streamfunction as the coordinate system
 use_PsiBT = false;
@@ -44,7 +44,7 @@ use_PsiBT = false;
 use_layers = true;
 
 %%% Set true to use a coordinate system that aligns with the ice front
-gl_coord = true;
+gl_coord = false;
 
 %%% Select density variable in which to compute isopycnal fluxes
 densvar = 'PD0';

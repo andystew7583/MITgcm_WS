@@ -16,10 +16,10 @@ expname = 'WC_onethird_dpyc-150_strat3e-4';
 
 %%% Options (see calcOverturning)
 calc_psi_eddy = true;
-deform_cavity = false;
+deform_cavity = true;
 use_PsiBT = false;
 use_layers = true;
-gl_coord = true;
+gl_coord = false;
 densvar = 'PD0';
 psimax = 4;
 % psistep = 0.5;
@@ -57,8 +57,8 @@ load(fullfile('products',outfname));
 
 psi_plot = mean(psi_mean+psi_eddy,3)/1e6;
 psi_plot = sign(psi_plot).*min(abs(psi_plot),psimax);
-psi_plot(91,:) = [];
-eta(91) = [];
+% psi_plot(91,:) = [];
+% eta(91) = [];
 figure(1);
 clf;
 set(gcf,'Position',[325         460        1023         398]);

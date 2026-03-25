@@ -37,9 +37,16 @@ gl_coord = true;
 %%% Set true to decompose eddy fluxes
 calc_eddy_decomp = false;
 
+%%% Set true to compute at high reso
+high_GL_res = true;
+
 %%% Define coordinate system for integrating to compute streamfunction
 ETA = defineMOCgrid(XC,YC,SHELFICEtopo,bathy,deform_cavity,gl_coord);
-eta = -9:.05:11;
+if (high_GL_res)
+  eta = [-9:0.05:-0.1 -0.05:0.001:0.05 0.1:0.05:11];
+else
+  eta = -9:.05:11;
+end
 Neta = length(eta);
 
 %%% Frequency of diagnostic output - should match that specified in
@@ -223,6 +230,9 @@ if (deform_cavity)
   outfname = [outfname,'_deform'];
 elseif (gl_coord)
   outfname = [outfname,'_GLcoord'];
+end
+if (high_GL_res)
+  outfname = [outfname,'_hiGLres'];
 end
 outfname = [outfname,'.mat'];
 save(fullfile('products',outfname), ...

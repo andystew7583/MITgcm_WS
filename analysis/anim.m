@@ -22,17 +22,17 @@ outfname =diag_fileNames{1,diagnum};
 % outfname = 'Eta';
 
 %%% Starting year for animation
-startyr = 18;
+startyr = 4;
 
 %%% Data index in the output data files
 outfidx = 1;
 
 %%% If set true, plots a top-down view of the field in a given layer.
 %%% Otherwise plots a side-on view of the zonally-averaged field.
-xyplot = 0;
+xyplot = 1;
 
 %%% Vertical layer index to use for top-down plots
-xylayer = 15;
+xylayer = 1;
 
 %%% Set true to plot the field in the lowest active cell at each horizontal
 %%% location
@@ -53,8 +53,8 @@ yzavg = 0;
 %%%for 1/3 DEGREE yzlayer = 126; 1/6 = 404;
 % yzlayer = 246;
 % yzlayer = 141; %%% Filchner trough at 1/3 grid
-% yzlayer = 194; %%% Kap Norvegia at 1/3 grid 
-yzlayer = 97;
+yzlayer = 194; %%% Kap Norvegia at 1/3 grid 
+% yzlayer = 97;
 % yzlayer = Nx-spongethickness;
 % yzlayer = 1;
 
@@ -70,13 +70,19 @@ set_crange = 1;
 switch (diagnum)
 
   case 4
-    crange = [-2.5 1]; %/%% Filchner temp
+    % crange = [-2.5 1]; %/%% Filchner temp
+    crange = [-2 -1]; %/%% Filchner temp
     cmap = cmocean('thermal',20);
 
   case 5
 
     crange = [33.6 34.9]; %%% salinity
     cmap = cmocean('haline',20);
+
+  case 7
+
+    crange = [0 3];
+    cmap = cmocean('amp',20);
 
 end
 

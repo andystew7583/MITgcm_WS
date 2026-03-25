@@ -29,6 +29,9 @@ min_ice_thickness = 10;
 remove_embayment = false;
 embayment_lat = -74; %%% Max latitude to search for the SW embayment. Original was -74.2.
 
+%%% Set true to remove iceberg A23
+remove_A23 = false;
+
 
 
 
@@ -111,6 +114,22 @@ Mthickness = Mice_draft-MDepth;
 
 
 
+
+
+
+%%% Remove A23 if required
+if (remove_A23)
+  lonmin_A23 = -44;
+  lonmax_A23 = -38;
+  latmin_A23 = -77;
+  latmax_A23 = -75;
+  xidx_A23 = find((xmc>lonmin_A23) & (xmc<lonmax_A23));
+  yidx_A23 = find((ymc>latmin_A23) & (ymc<latmax_A23));
+  Mice_draft(yidx_A23,xidx_A23) = 0;
+  Mice_elev(yidx_A23,xidx_A23) = 0;
+  Mthickness = Mice_draft-MDepth;
+end
+    
 
 
 

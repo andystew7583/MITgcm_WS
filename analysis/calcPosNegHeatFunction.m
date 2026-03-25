@@ -25,10 +25,13 @@ expdir = '../experiments';
 % expname = 'hires_seq_onetwelfth_RTOPO2';
 % tmin = 1.05;
 % tmax = 9.05;
-expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-tmin = 1.05;
-% tmax = 1.1;
-tmax = 7.05;
+% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+% tmin = 1.05;
+% % tmax = 1.1;
+% tmax = 7.05;
+expname = 'WC_onethird_dpyc-150_strat1e-4_aU0.5_aV0.5';
+tmin = 0.05;
+tmax = 18.05;
 loadexp;
 
 %%% Reference surface freezing temperature

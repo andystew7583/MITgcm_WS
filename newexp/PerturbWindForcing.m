@@ -24,10 +24,14 @@ ETA = defineMOCgrid (EXF_XMC',EXF_YMC',[],[],false,false);
 %%% Parameters defining forcing perturbations
 eta_trans_max = 4;
 eta_trans_min = 3;
-alpha_u = 0.5;
-alpha_v = 0.5;
-beta_u = 1;
-beta_v = 1;
+% alpha_u = 0.7; %%% 0.7 corresponds approximately to SSP585, see Neme et al. 2022
+% alpha_v = 0.7;
+% beta_u = 0.7;
+% beta_v = 0.7;
+alpha_u = 0.85; %%% Reduced by factor of 2 in an attempt to approximately halve buoyancy flux pert in combination with wind pert
+alpha_v = 0.85;
+beta_u = 0.85;
+beta_v = 0.85;
 
 %%% Matrices for applying forcing perturbations
 %%% Linear variation of wind speed fraction from alpha_x for eta < eta_trans_min 

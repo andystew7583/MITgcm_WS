@@ -13,6 +13,8 @@
 %%%
 function extendRun (expdir,expname,newEndTime,use_shelfice_diags,use_flux_diags,use_eddy_diags,use_layers_diags)
 
+  addpath ../newexp_utils
+
   %%% Define data format
   defineGrid;
 
@@ -227,6 +229,41 @@ function extendRun (expdir,expname,newEndTime,use_shelfice_diags,use_flux_diags,
   delete(tmpparamsfile_path);
   delete(diagparamsfile_path);
   delete(layersparamsfile_path);
+
+
+
+  %%% Upload command for extended run
+  ofid = fopen(fullfile(expdir,expname,'upload_to_cluster.sh'));
+  if (ofid == -1)
+    error('Could not open upload script file for reading');
+  end
+  ostr = fgetl(ofid);
+  fclose(ofid);
+  fidx = strfind(ostr,'--update'); 
+  nstr = [ostr(1:fidx+8),'--files-from=ext_files.txt ',ostr(fidx+9:end),'/',expname]; 
+  fid = fopen(fullfile(expdir,expname,'upload_ext_to_cluster.sh'),'w');
+  if (fid == -1)
+    error('Could not open upload script for writing');
+  end
+  fprintf(fid,nstr);
+  fclose(fid);
+
+  %%% Text file specifying files to upload for extended simulations
+  fid = fopen(fullfile(expdir,expname,'ext_files.txt'),'w');
+  if (fid == -1)
+    error('Could not open upload file list for writing');
+  end
+  fprintf(fid,'build_and_run.sh\n');
+  fprintf(fid,'build/\n');
+  fprintf(fid,'input/\n');
+  fprintf(fid,'code/\n');
+  fprintf(fid,'results/run.sh\n');
+  fprintf(fid,'results/run_mitgcm\n');
+  fprintf(fid,['results/pickup.',num2str(newStartIter,'%.10d'),'.data\n']);
+  fprintf(fid,['results/pickup.',num2str(newStartIter,'%.10d'),'.meta\n']);
+  fprintf(fid,['results/pickup_seaice.',num2str(newStartIter,'%.10d'),'.data\n']);
+  fprintf(fid,['results/pickup_seaice.',num2str(newStartIter,'%.10d'),'.meta\n']);
+  fclose(fid);
 
     
 end

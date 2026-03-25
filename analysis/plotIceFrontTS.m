@@ -7,17 +7,17 @@
 
 %%% Read experiment data
 setExpname;
-expname = 'n_34452';
+expname = 'hires_seq_onethird_RTOPO2';
 loadexp;
 
 %%% Set time range
-tmin = 9*86400*365;
-tmax = 18*86400*365;
+tmin = 19.05*t1year;
+tmax = 19.3*t1year;
 
 %%% Frequency of diagnostic output
 dumpFreq = abs(diag_frequency(15));
 % nIter0 = 0;
-nTimeSteps = 1843855;
+% nTimeSteps = 1843855;s
 nDumps = round(nTimeSteps*(deltaT/dumpFreq));
 dumpIters = round((1:nDumps)*dumpFreq/deltaT);
 dumpIters = dumpIters(dumpIters > nIter0);
@@ -25,13 +25,13 @@ nDumps = length(dumpIters);
  
 
 %%% Load mean T and S
-exppath5 = '/data3/MITgcm_WS/experiments/n_34452';
+exppath5 = '/data/data3/MITgcm_WS/experiments/hires_seq_onethird_RTOPO2';
 thetawc = readIters(exppath5,'THETA',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
 saltwc = readIters(exppath5,'SALT',dumpIters,deltaT,tmin,tmax,Nx,Ny,Nr);
 
 %%% Define section
-saltwc(saltwc==0) = NaN;
-thetawc(thetawc==0) = NaN;
+saltwc(hFacC==0) = NaN;
+thetawc(hFacC==0) = NaN;
 
 figure(3);
 [YY,XX] = meshgrid(yy,xx);

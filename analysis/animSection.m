@@ -24,7 +24,18 @@ loadexp;
 % secLats = startLat:dLat:endLat;
 % secLons = startLon:dLon:endLon;
 
-%%% Define grid to extract data sections - front of RL and SWIT
+%%% Define grid to extract data sections
+% startLat = -82.3;
+% endLat = -72;
+% startLon = -62;
+% endLon = -40;
+% Nsec = 401;
+% dLat = (endLat-startLat)/(Nsec-1);
+% dLon = (endLon-startLon)/(Nsec-1);
+% secLats = startLat:dLat:endLat;
+% secLons = startLon:dLon:endLon;
+
+%%% Define grid to extract data sections 
 stat_lat = [-83.35, -81.83, -81.38, -81.06, -80.38, -78.77, -77.24, -75.45, -74.28 -73.00];
 stat_lon = [-60.25, -57.17, -51.36, -43.83, -41.43, -39.07, -37.33, -33.22, -32.20 -31.80];
 Nsec = 401;
@@ -48,7 +59,7 @@ outfidx = 1;
 set_crange = 1;
 
 %%% Year to start animnation
-startyr = 9;
+startyr = 17;
 
 switch (diagnum)
    case 1   
@@ -108,7 +119,7 @@ years = 2007:1:2015;
 % nIter0 = 587520;
 % nIter0 = 394509; 
 
-%%% Default
+%% Default
 dumpFreq = abs(diag_frequency(diagnum));
 nDumps = round(endTime/dumpFreq);
 dumpIters = round((1:nDumps)*dumpFreq/deltaT);
@@ -116,8 +127,7 @@ dumpIters = dumpIters(dumpIters > nIter0);
 
 %%% For daily/12-hourly outputs
 % dumpStart = 1578240;
-% % dumpStart = 1945440;
-% dumpStep = 86400/2/60;
+% dumpStep = 43200/60;
 % nDumps = 731;
 % dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
 
@@ -194,11 +204,12 @@ cb_pos = [0.95 0.07 0.01 0.9];
 icecolor = [186 242 239]/255;
 
 %%% Set up the figure
-handle = figure(22);
+handle = figure(23);
 set(handle,'Position',framepos);
 M = moviein(length(dumpIters));
 
 for n=startyr*12:length(dumpIters) 
+% for n=1:length(dumpIters)
 
   dumpIters(n);
     

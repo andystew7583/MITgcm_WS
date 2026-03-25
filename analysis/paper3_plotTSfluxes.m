@@ -1,52 +1,82 @@
-%%%
-%%% paper3_plotTSfluxes.m
-%%%
-%%% Plots heat/salt fluxes in quasi-latitude coordinates
-%%%
-
-%%% Load experiment
-expdir = '../experiments';
-expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-% loadexp;
-
-%%% Options (see calcTSfluxes)
-deform_cavity = false;
-gl_coord = true;
-outfname = ['','_TSfluxes'];
-if (deform_cavity)
-  outfname = [outfname,'_deform'];
-elseif (gl_coord)
-  outfname = [outfname,'_GLcoord'];
-end
-outfname = [outfname,'.mat'];
-outfname = [expname,outfname];
-
-%%% Latent heat of freezing
-Lf = 3.34e5;
-
-%%% Load pre-computed fluxes
-load(fullfile('products',outfname),'thflux_stand','thflux_fluc','thflux_eddy','tflux_tavg','SHIfwFlx_tavg','eta','ETA');
-thflux_mean_plot = thflux_stand;
-thflux_fluc_plot = thflux_fluc;
-thflux_eddy_plot = mean(thflux_eddy,2);
-thflux_tot_plot = thflux_stand+thflux_fluc+mean(thflux_eddy,2);
-
-surfQflux = tflux_tavg;
-surfQflux(hFacC(:,:,1)==0) = SHIfwFlx_tavg(hFacC(:,:,1)==0) * Lf;
-surfQflux(sum(hFacC,3)==0) = 0;
-
-%%% Load positive and negative heatfunction components
-outfname = [expname,'_PosNegHeatFunction'];
-if (gl_coord)
-  outfname = [outfname,'_GLcoord'];
-end
-outfname = [outfname,'.mat'];
-load(fullfile('products',outfname),'psiT_pos_mean','psiT_neg_mean');
-
-%%% Depth-integrated heat fluxes due to positive and negative heat function
-%%% components
-thflux_pos = mean(psiT_pos_mean(:,1,:),3);
-thflux_neg = mean(psiT_neg_mean(:,1,:),3);
+% %%%
+% %%% paper3_plotTSfluxes.m
+% %%%
+% %%% Plots heat/salt fluxes in quasi-latitude coordinates
+% %%%
+% 
+% %%% Load experiment
+% expdir = '../experiments';
+% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+% % loadexp;
+% 
+% 
+% 
+% %%% Latent heat of freezing
+% Lf = 3.34e5;
+% 
+% %%% Load pre-computed fluxes with high GL resolution
+% deform_cavity = false; %%% Options (see calcTSfluxes)
+% gl_coord = true;
+% outfname = ['','_TSfluxes'];
+% if (deform_cavity)
+%   outfname = [outfname,'_deform'];
+% elseif (gl_coord)
+%   outfname = [outfname,'_GLcoord'];
+% end
+% outfname = [outfname,'_hiGLres.mat'];
+% outfname = [expname,outfname];
+% load(fullfile('products',outfname),'thflux_eddy','eta','ETA');
+% thflux_mean_hires = thflux_stand;
+% thflux_fluc_hires = thflux_fluc;
+% thflux_eddy_hires = mean(thflux_eddy,2);
+% thflux_tot_hires = thflux_stand+thflux_fluc+mean(thflux_eddy,2);
+% eta_hires = eta;
+% ETA_hires = ETA;
+% 
+% %%% Compute nominal distance from grounding line
+% dist_eta = 0*eta;
+% msk_wet = sum(hFacC,3)>0;
+% for n=1:length(eta)
+%   msk_eta = ETA<=eta(n);
+%   dist_eta(n) = sum(sum(RAC.*msk_wet.*msk_eta));
+% end
+% dist_eta = (dist_eta - dist_eta(find(eta==0,1)));
+% dist_eta(eta>0) = dist_eta(eta>0)/800000;
+% dist_eta(eta<=0) = dist_eta(eta<=0)/800000;
+% 
+% %%% Load pre-computed fluxes
+% deform_cavity = false; %%% Options (see calcTSfluxes)
+% gl_coord = true;
+% outfname = ['','_TSfluxes'];
+% if (deform_cavity)
+%   outfname = [outfname,'_deform'];
+% elseif (gl_coord)
+%   outfname = [outfname,'_GLcoord'];
+% end
+% outfname = [outfname,'.mat'];
+% outfname = [expname,outfname];
+% load(fullfile('products',outfname),'thflux_stand','thflux_fluc','thflux_eddy','tflux_tavg','SHIfwFlx_tavg','eta','ETA');
+% thflux_mean_plot = thflux_stand;
+% thflux_fluc_plot = thflux_fluc;
+% thflux_eddy_plot = mean(thflux_eddy,2);
+% thflux_tot_plot = thflux_stand+thflux_fluc+mean(thflux_eddy,2);
+% 
+% surfQflux = tflux_tavg;
+% surfQflux(hFacC(:,:,1)==0) = SHIfwFlx_tavg(hFacC(:,:,1)==0) * Lf;
+% surfQflux(sum(hFacC,3)==0) = 0;
+% 
+% %%% Load positive and negative heatfunction components
+% outfname = [expname,'_PosNegHeatFunction'];
+% if (gl_coord)
+%   outfname = [outfname,'_GLcoord'];
+% end
+% outfname = [outfname,'.mat'];
+% load(fullfile('products',outfname),'psiT_pos_mean','psiT_neg_mean');
+% 
+% %%% Depth-integrated heat fluxes due to positive and negative heat function
+% %%% components
+% thflux_pos = mean(psiT_pos_mean(:,1,:),3);
+% thflux_neg = mean(psiT_neg_mean(:,1,:),3);
 
 
 
@@ -55,7 +85,7 @@ thflux_neg = mean(psiT_neg_mean(:,1,:),3);
 %%%%%%%%%%%%%%%%%%
 
 %%% Plotting options
-fontsize = 14;
+fontsize = 18;
 bathycntrs = [0 250 500 1000 2000 3000 4000];
 axpos = zeros(4,4);
 axpos(1,:) = [0 0.45 .5 .5];
@@ -118,7 +148,7 @@ bathycntrs = [0 250 500 1000 2000 3000 4000 5000];
 %%% Set up map plot
 subplot('Position',axpos(1,:)+[.1 0 0 0]);
 axesm('eqaconicstd',...
-  'fontsize',13,...
+  'fontsize',fontsize,...
   'Grid','on', ...    
   'Frame','off', ...
   'MapLatLimit',[latMin_b latMax_b], ...
@@ -150,8 +180,8 @@ title(h,'W/m$^2$','Fontsize',fontsize,'interpreter','latex');
 %%% Add bathymetry contours
 hold on;
 [cs,C] = contourm(YC,XC,SHELFICEtopo-bathy,bathycntrs,'EdgeColor',[.25 .25 .25]); 
-hh = clabelm(cs,C);
-set(hh,'fontsize',8,'Color',[.05 .05 .05],'BackgroundColor','none','Edgecolor','none')       
+hh = clabelm(cs,C,'LabelSpacing',300);
+set(hh,'fontsize',fontsize-4,'Color',[.3 .3 .3],'BackgroundColor','none','Edgecolor','none')       
 % Nlon = 101;
 % dLon = (lonMax_c-lonMin_c)/(Nlon-1);
 % plotm([latMin_c*ones(1,Nlon) latMax_c*ones(1,Nlon) latMin_c],[lonMin_c:dLon:lonMax_c lonMax_c:-dLon:lonMin_c lonMin_c],'r--','LineWidth',2);
@@ -180,6 +210,7 @@ annotation(gcf,'textbox',...
 
 %%% Plotting options
 clim = [-9 11];
+xlim = [-8.5 4.5];
 % cmap = cmocean('balance',50);
 cmap = flip(haxby(20),1);
 % cmap = cmap(8:23,:);
@@ -192,7 +223,7 @@ bathycntrs = [0 250 500 1000 2000 3000 4000 5000];
 %%% Set up map plot
 subplot('Position',axpos(2,:)+[.1 0 0 0]);
 axesm('eqaconicstd',...
-  'fontsize',13,...
+  'fontsize',fontsize,...
   'Grid','on', ...    
   'Frame','off', ...
   'MapLatLimit',[latMin_b latMax_b], ...
@@ -223,8 +254,8 @@ tightmap;
 %%% Add bathymetry contours
 hold on;
 [cs,C] = contourm(YC,XC,SHELFICEtopo-bathy,bathycntrs,'EdgeColor',[.25 .25 .25]); 
-hh = clabelm(cs,C);
-set(hh,'fontsize',8,'Color',[.05 .05 .05],'BackgroundColor','none','Edgecolor','none')       
+hh = clabelm(cs,C,'LabelSpacing',300);
+set(hh,'fontsize',fontsize-4,'Color',[.3 .3 .3],'BackgroundColor','none','Edgecolor','none')       
 % Nlon = 101;
 % dLon = (lonMax_c-lonMin_c)/(Nlon-1);
 % plotm([latMin_c*ones(1,Nlon) latMax_c*ones(1,Nlon) latMin_c],[lonMin_c:dLon:lonMax_c lonMax_c:-dLon:lonMin_c lonMin_c],'r--','LineWidth',2);
@@ -262,17 +293,18 @@ plot(eta,-rho0*Cp*thflux_eddy_plot/1e12,'Color',colororder(5,:),'LineWidth',line
 plot(eta,-rho0*Cp*thflux_tot_plot/1e12,'Color',colororder(4,:),'LineWidth',linewidth);
 % plot(eta,-surfQint/1e12,'Color',colororder(4,:),'LineWidth',linewidth);
 % plot(eta,0*eta,'k--');
-plot([3.5 3.5],[-5 15],'--','Color',[.3 .3 .3],'LineWidth',1.5);
-plot([0 0],[-5 15],'--','Color',[.3 .3 .3],'LineWidth',1.5);
+plot([3.5 3.5],[-5 15],'--','Color',[.3 .3 .3],'LineWidth',.5);
+plot([0 0],[-5 15],'--','Color',[.3 .3 .3],'LineWidth',.5);
+plot([-.3 0.1 0.1 -.3 -.3],[0 0 1.5 1.5 0],'k:','LineWidth',1.5);
 hold off;
 ylabel('Shoreward heat flux (TW)');
 xlabel('\eta');
-axis([-9 5 -3.5 7]);
+axis([-9 5 -2.5 8]);
 set(gca,'FontSize',fontsize);
-leghandle = legend('Mean','Eddy','Total','Location','NorthWest');
+leghandle = legend('Mean','Eddy','Total','Location','SouthWest');
 set(leghandle,'FontSize',fontsize);
-text(-4.5,-3,'FRIS','FontSize',fontsize);
-text(1.3,-3,'Shelf','FontSize',fontsize);
+text(-4.5,-2,'FRIS','FontSize',fontsize);
+text(1.3,-2,'Shelf','FontSize',fontsize);
 grid on;
 box off;
 
@@ -289,6 +321,29 @@ set(ax3,'XLim',xlim-77);
 set(ax3,'FontSize',fontsize);
 set(get(ax3,'XLabel'),'String','Reference latitude');
 
+%%% Add inset
+axes('Position',[0.1170    0.2791    0.1880    0.1615]);
+plot(dist_eta/1000,-rho0*Cp*(thflux_mean_hires+thflux_fluc_hires)/1e12,'Color',colororder(6,:),'LineWidth',linewidth);
+hold on;
+% plot(eta,-rho0*Cp*thflux_fluc_plot/1e12,'Color',colororder(3,:),'LineWidth',linewidth);
+plot(dist_eta/1000,-rho0*Cp*thflux_eddy_hires/1e12,'Color',colororder(5,:),'LineWidth',linewidth);
+plot(dist_eta/1000,-rho0*Cp*thflux_tot_hires/1e12,'Color',colororder(4,:),'LineWidth',linewidth);
+% plot(eta,-surfQint/1e12,'Color',colororder(4,:),'LineWidth',linewidth);
+% plot(eta,0*eta,'k--');
+hold off;
+%ylabel('Shoreward heat flux (TW)');
+xlabel('Distance from ice front (km)');
+axis([-30 30 0 1.5]);
+set(gca,'FontSize',fontsize);
+grid on;
+box on;
+
+
+
+
+
+
+
 %%% Positive/negative heat flux
 axes('Position',axpos(4,:));
 plot(eta,-rho0*Cp*thflux_tot_plot/1e12,'Color',colororder(4,:),'LineWidth',linewidth);
@@ -297,17 +352,17 @@ plot(eta,-rho0*Cp*thflux_pos/1e12,'Color',colororder(2,:),'LineWidth',linewidth)
 plot(eta,-rho0*Cp*thflux_neg/1e12,'Color',colororder(1,:),'LineWidth',linewidth);
 % plot(eta,-rho0*Cp*(thflux_pos+thflux_neg)/1e12,'--','Color',colororder(4,:),'LineWidth',linewidth);
 % plot(eta,0*eta,'k--')
-plot([3.5 3.5],[-5 15],'--','Color',[.3 .3 .3],'LineWidth',1.5);
-plot([0 0],[-5 15],'--','Color',[.3 .3 .3],'LineWidth',1.5);
+plot([3.5 3.5],[-5 15],'--','Color',[.3 .3 .3],'LineWidth',.5);
+plot([0 0],[-5 15],'--','Color',[.3 .3 .3],'LineWidth',.5);
 hold off;
 % ylabel('Heat flux (TW)');
 xlabel('\eta');
-axis([-9 5 -3.5 7]);
+axis([-9 5 -2.5 8]);
 set(gca,'FontSize',fontsize);
 leghandle = legend('Total','``Warm'''' component','``Cold'''' component','Location','NorthWest');
 set(leghandle,'FontSize',fontsize);
-text(-4.5,-3,'FRIS','FontSize',fontsize);
-text(1.3,-3,'Shelf','FontSize',fontsize);
+text(-4.5,-2,'FRIS','FontSize',fontsize);
+text(1.3,-2,'Shelf','FontSize',fontsize);
 grid on;
 box off;
 

@@ -61,21 +61,21 @@ shift_lat_min = -71; %%% Original value -70
 shift_lat_ref = -70; %%% 11/2025 ALS: Added to extend pyc shift into cavity
 % shift_lat_ref = -69.5; %%% 11/2025 ALS: Added to extend pyc shift into cavity
 shift_lat_max = -68.5; %%% Original value -68.5
-shift_depth_max = -150; %%% Original value 200, new reference value 100
-% shift_N2 = 5e-6; %%% Stratification above the shifted pycnocline - reference 5e-6
-shift_N2 = 2.5e-4; %%% Stratification above the shifted pycnocline - reference 5e-6
-if (shift_depth_max > 0)
-  shift_N2_pyc = 1e-5; %%% Stratification threshold used to identify the pycnocline 
+shift_depth_max = 50; %%% Original value 200, new default value 100
+% shift_N2 = 5e-6; %%% Stratification above the shifted pycnocline - default 5e-6
+shift_N2 = 7.5e-5; 
+if (shift_depth_max > 0) %%% Stratification threshold used to identify the pycnocline 
+  shift_N2_pyc = 1e-5; 
 else
-  shift_N2_pyc = .5e-5; %%% Stratification threshold used to identify the pycnocline 
+  shift_N2_pyc = .5e-5; 
 end
 pyc_search_min = 0; %%% Controls how far down to search for weak 
-                      %%% stratification above the pycnocline. Basically 
-                      %%% setting this to 0 means the upper ocean
-                      %%% stratification north of the slope front is 
-                      %%% unchanged. Setting it to e.g. 100 replaces weak 
-                      %%% stratification above the pycnocline north of the 
-                      %%% ASF with shift_N2.
+                    %%% stratification above the pycnocline. Basically 
+                    %%% setting this to 0 means the upper ocean
+                    %%% stratification north of the slope front is 
+                    %%% unchanged. Setting it to e.g. 100 replaces weak 
+                    %%% stratification above the pycnocline north of the 
+                    %%% ASF with shift_N2.
 
 
 

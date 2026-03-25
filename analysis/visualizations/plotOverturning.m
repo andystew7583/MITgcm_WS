@@ -11,15 +11,15 @@ expdir = '../experiments';
 % expname = 'hires_seq_onethird_RTOPO2';
 % expname = 'hires_seq_onetwelfth_RTOPO2';
 % expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-% expname = 'WC_onethird_ref';
-expname = 'WC_onethird_dpyc-150_strat3e-4';
+expname = 'WC_onethird_ref';
+% expname = 'WC_onethird_dpyc-150_strat3e-4';
 
 %%% Options (see calcOverturning)
 calc_psi_eddy = true;
-deform_cavity = true;
+deform_cavity = false;
 use_PsiBT = false;
 use_layers = true;
-gl_coord = false;
+gl_coord = true;
 densvar = 'PD0';
 psimax = 4;
 % psistep = 0.5;

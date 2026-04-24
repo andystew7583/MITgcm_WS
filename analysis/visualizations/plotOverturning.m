@@ -11,14 +11,17 @@ expdir = '../experiments';
 % expname = 'hires_seq_onethird_RTOPO2';
 % expname = 'hires_seq_onetwelfth_RTOPO2';
 % expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-expname = 'WC_onethird_ref';
+% expname = 'WC_onethird_ref';
 % expname = 'WC_onethird_dpyc-150_strat3e-4';
+expname = 'WC_onethird_dpyc300_strat5e-5';
+
+proddir = 'products_WCbatch';
 
 %%% Options (see calcOverturning)
-calc_psi_eddy = true;
+calc_psi_eddy = false;
 deform_cavity = false;
 use_PsiBT = false;
-use_layers = true;
+use_layers = false;
 gl_coord = true;
 densvar = 'PD0';
 psimax = 4;
@@ -53,7 +56,7 @@ outfname = [outfname,'.mat'];
 
 
 %%% Load MOC data file
-load(fullfile('products',outfname));
+load(fullfile('products_WCbatch',outfname));
 
 psi_plot = mean(psi_mean+psi_eddy,3)/1e6;
 psi_plot = sign(psi_plot).*min(abs(psi_plot),psimax);

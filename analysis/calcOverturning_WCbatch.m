@@ -34,11 +34,45 @@ T = T(T.completed_=="Y" & T.downloaded_=="Y",:);
 
 %%% Loop through experiments and compute MOC
 Nexps = size(T,1);
-for n = 20:Nexps
+for n = 1:Nexps
   expname = T.Name(n);
   expname = expname{1};
   tmax = T.EndTime_yr_(n) + 0.05;
   tmin = tmax - 3; %%% Last 3 years
+
+  %%% If we can't overwrite output files then we need to check whether they
+  %%% already exist
+  if (~overwrite)
+
+    %%% Construct output file name to check whether it exists
+    outfname = [expname,'_MOC_PD0'];
+    if (calc_psi_eddy)
+      if (use_layers)
+        estr = '_layers';
+      else
+        estr = '_TRM';
+      end
+    else
+      estr = '_noeddy';
+    end
+    outfname = [outfname,estr];
+    if (use_PsiBT)
+      outfname = [outfname,'_PsiBT'];
+    else
+      if (deform_cavity)
+        outfname = [outfname,'_deform'];
+      elseif (gl_coord)
+        outfname = [outfname,'_GLcoord'];
+      end
+    end
+    outfname = [outfname,'.mat'];
+
+    if (exist(fullfile(outdir,outfname)))
+      continue;
+    end
+
+  end
+
   calcOverturning (expdir,expname,outdir,tmin,tmax,calc_psi_eddy,deform_cavity,use_PsiBT,use_layers,gl_coord)
 end
 

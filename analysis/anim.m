@@ -13,19 +13,23 @@ mac_plots = false;
 %%% Read experiment data
 loadexp;
 
-%%% Vertical level to which potential density should be referenced
-% k_pot_dens = 123;
-% k_pot_dens = 94;
-% % k_pot_dens = 61;
-% k_pot_dens = 39;
-k_pot_dens = 1;
+%%% Select diagnostic variable to animate
+% diagnum = 66;
+% diagnum = 46;
+diagnum = 4;
+outfname =diag_fileNames{1,diagnum};
+% outfname = 'THETA_12hourly';
+% outfname = 'Eta';
+
+%%% Starting year for animation
+startyr = 10;
 
 %%% Data index in the output data files
 outfidx = 1;
 
 %%% If set true, plots a top-down view of the field in a given layer.
 %%% Otherwise plots a side-on view of the zonally-averaged field.
-xyplot = 0;
+xyplot = 1;
 
 %%% Vertical layer index to use for top-down plots
 xylayer = 1;
@@ -47,7 +51,12 @@ yzavg = 0;
 
 %%% Layer to plot in the y/z plane
 %%%for 1/3 DEGREE yzlayer = 126; 1/6 = 404;
-yzlayer = 112;
+% yzlayer = 246;
+% yzlayer = 141; %%% Filchner trough at 1/3 grid
+yzlayer = 194; %%% Kap Norvegia at 1/3 grid 
+% yzlayer = 97;
+% yzlayer = Nx-spongethickness;
+% yzlayer = 1;
 
 % load ../newexp/ELEV.mat
 % 
@@ -57,19 +66,61 @@ yzlayer = 112;
 
 %%% Specify color range
 set_crange = 1;
-% crange = [45.5 46.5];
-% crange = [36.9 37.6];
-% crange = [32.0 33.0];
-% crange = [29.75 30.75];
-crange = [251.5 28.2];
-cmap = cmocean('dense',40);
 
+switch (diagnum)
+
+  case 4
+    % crange = [-2.5 1]; %/%% Filchner temp
+    crange = [-2 -1.8]; %/%% Filchner temp
+    cmap = cmocean('thermal',20);
+
+  case 5
+
+    crange = [33.6 34.9]; %%% salinity
+    cmap = cmocean('haline',20);
+
+  case 7
+
+    crange = [0 3];
+    cmap = cmocean('amp',20);
+
+  case 8
+
+    crange = [0 1];
+    cmap = cmocean('amp',20);
+
+end
+
+% crange = [-3 3]; %%%temp
+% crange = [33.6 34.65]; %%% salinity
+% crange = [0 10]; %%%% for KPP hbl
+% crange = [0 1]; %%% For sea ice area
+% crange = [-.6 .6]; %%% For velocities or stresses
+% crange = [-1 1]*1e-4; %%% For freshwater fluxes
+% crange =[-100 100]; %%% Qnet
+% crange = [-300 300]; %%% swnet
+% crange =[-.1 .1]; %%% SFLUX
+% crange =[-1 1]*1e-3; %%% WVEL
+% crange = [0 3];
+% crange = [-0.5 0.5];
+% crange = [0.3 1]; %% SSH
+% crange = [-0.3 0.3]; %%% Melt rate 
+% crange = [-.05 .05]; %%% Surface stress
+
+% cmap = pmkmp(100,'Swtth');
+% cmap = cmocean('ice',100);
+% cmap = haxby(56);
+% cmap = jet(200);
+% cmap = redblue(20);
+% cmap = cmocean('amp',100);
+% %
 % titlestr = 'Salinity (g/kg)';
 % titlestr = 'Surface salinity (g/kg)';
 % titlestr = 'Temperature ($^\circ$C)';
+% titlestr = 'Zonal velocity (m/s)';
 % titlestr = 'Surface temperature ($^\circ$C)';
-titlestr = 'Sea floor density (kg/m$^3$)';
-% titlestr = '';
+% titlestr = 'Sea ice concentration';
+titlestr = '';
 
 months = {'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'};
 years = 2007:1:2015;
@@ -82,8 +133,8 @@ years = 2007:1:2015;
 % nIter0 = 587520;
 % nIter0 = 394509; 
 
-%%% For 1/24 run with tides
-dumpFreq = abs(diag_frequency(1));
+%%% Default
+dumpFreq = abs(diag_frequency(diagnum));
 nDumps = round(endTime/dumpFreq);
 dumpIters = round((1:nDumps)*dumpFreq/deltaT);
 dumpIters = dumpIters(dumpIters > nIter0);
@@ -174,14 +225,13 @@ if (mac_plots)
   plotloc = [0.17 0.3 0.62 0.7];
 else
 %   plotloc = [0.0855    0.0888    0.7916    0.8624];  
-  plotloc = [0.04  0.02   0.84  0.9];
+  plotloc = [0.07  0.07   0.84  0.9];
 %   framepos = [100   306   936   676];
-%   framepos = [100   462   810   520];
-  framepos = [441         253        1529         994];
+  framepos = [100   462   810   520];
 end
 
 %%% Set up the figure
-handle = figure(22);
+handle = figure(23);
 set(handle,'Position',framepos);
 M = moviein(length(dumpIters));
 
@@ -189,31 +239,28 @@ Amean = [];
 Amax = [];
 
 % for n = 15*12:length(dumpIters)
-% for n = 1:length(dumpIters)
-% for n = 1:366
+% for n = 1500:length(dumpIters)
+% for n = 107
+% for n = 3*730+565;
 % for n=5*12
 % for n=7*12:8*12
 % for n = 34a
-% for n=48:length(dumpIters)
-% for n=2:length(dumpIters)
-for n = 10*12:length(dumpIters)
+% for n=1:26
+  % for n=2:length(dumpIters)
+for n =startyr*12:length(dumpIters)
   dumpIters(n);
     
   t = dumpIters(n)*deltaT/t1year;
-  
+  n
   
   tyears(n) = t;
   tdays(n) = dumpIters(n)*deltaT/t1day;
   
-  % suff = '_12hourly';
-  suff = '';
-  T = rdmdsWrapper(fullfile(exppath,'results',['THETA',suff]),dumpIters(n));          
-  S = rdmdsWrapper(fullfile(exppath,'results',['SALT',suff]),dumpIters(n));          
-  if (isempty(S) || isempty(T))
+  A = rdmdsWrapper(fullfile(exppath,'results',outfname),dumpIters(n));
+  if (isempty(A))
+%     continue;
     error(['Ran out of data at t=,',num2str(tyears(n)),' years']);
-  end    
-  A = densjmd95(S,T,-RC(k_pot_dens)*gravity*rhonil/1e4*ones(Nx,Ny,Nr))-1000;
-
+  end     
   
   if (~isempty(find(isnan(A))))
     error(['Found NaNs at iter=',num2str(dumpIters(n))]);
@@ -225,8 +272,9 @@ for n = 10*12:length(dumpIters)
   
 
    [idx1 idx2] = find(isnan(A));
+   
 
-   if (size(A,3)>1)
+   if (size(A,3)==size(hFacC,3))
      A(hFacC==0) = NaN;
    end
    
@@ -265,6 +313,7 @@ for n = 10*12:length(dumpIters)
 %       if (strcmp(outfname,'
           FF = squeeze(A(:,:,xylayer,outfidx));        
           FF(hFacC(:,:,xylayer)==0) = NaN;
+%           FF = sum(A(:,:,xylayer:end,outfidx),3);
     end
       
       
@@ -306,26 +355,26 @@ for n = 10*12:length(dumpIters)
     'MapLatLimit',[latMin latMax], ...
     'MapLonLimit',[lonMin lonMax], ... 
     'MapParallels',[-85 -65], ...
-    'PLineLocation', 5, ...
-    'MLineLocation', 10,...
+    'PLineLocation', 1, ...
+    'MLineLocation', 2,...
     'MeridianLabel', 'on', ...
     'ParallelLabel', 'on');    %, ...
     %           'origin',[yc(round(size(yc,1)/2),round(size(yc,2)/2)),xc(round(size(xc,1)/2),round(size(xc,2)/2))])
     axis off;
     setm(gca,'MLabelParallel',-20)
     pcolorm(YC,XC,FF);
-%     pcolorm(YC,XC,FF/920/35*86400*365);
+%     pcolorm(YC,XC,-FF/920/35*86400*365);
     shading interp
     
+    
     hold on;
-    [cs,C]=contourm(YC,XC,SHELFICEtopo-bathy,[100 500 1000 2000 3000 4000],'EdgeColor','k');
-    chandle = clabelm(cs,C);
-    set(chandle,'fontsize',12,'Color','k','BackgroundColor','none','Edgecolor','none') 
+    % [cs,C] = contourm(YC,XC,bathy,[-5000:1000:-1000 -600 -200],'EdgeColor','k');
+    [cs,C] = contourm(YC,XC,bathy,[-5000:1000:-1000 -500],'EdgeColor','k');
     hold off;
 
     %%% Add colorbar and title
     h = colorbar;
-    set(gca,'FontSize',14);
+    set(gca,'FontSize',10);
     set(h,'Position',[0.92 0.33 0.02 .26])
     tightmap;
 
@@ -335,8 +384,8 @@ for n = 10*12:length(dumpIters)
   %%% y/z zonally-averaged plot
  
  else
-    
-    
+    yzlayer
+    clf;
 %     if (yzavg)
       Ayz = ((squeeze(A(yzlayer,:,:))));    
 %     else
@@ -344,6 +393,7 @@ for n = 10*12:length(dumpIters)
 %     end
 %     Ayz =  squeeze(Ayz(jrange,:,:));
     Ayz(Ayz==0)=NaN;
+
     jrange = 1:Ny;
 %     [C h] = contourf(YY(jrange,:),ZZ(jrange,:)/1000,Ayz,200,'EdgeColor','None');              
     pcolor(YY(jrange,:),ZZ(jrange,:)/1000,Ayz(jrange,:));
@@ -363,8 +413,10 @@ for n = 10*12:length(dumpIters)
     hold off;
     xlabel('Offshore $y$ (latitude)','interpreter','latex','fontsize',15);
     ylabel('Height $z$ (km)','interpreter','latex','fontsize',15);
-    set(gca,'YLim',[-1.3 0]);
-    set(gca,'XLim',[-83 -64]);    
+    set(gca,'YLim',[-2 0]);
+    % set(gca,'XLim',[YC(1,1) YC(1,end)]);    
+    % set(gca,'XLim',[-71 -67]);
+    set(gca,'XLim',[-78 -70]);
     handle=colorbar;
     set(handle,'FontSize',fontsize);
 
@@ -380,7 +432,7 @@ for n = 10*12:length(dumpIters)
 %     title([titlestr,', $t=',num2str(tdays(n),'%.1f'),'$ days'],'interpreter','latex');
     thedate = datenum('2008-01-01')+floor(tdays(n));
 %     annotation('textbox',[0.3 0.95 0.5 0.05],'String',[titlestr,', ',months{mod(n-1,12)+1},' ',num2str(years(floor((n-1)/12)+1))],'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');   
-    annotation('textbox',[0.4 0.95 0.5 0.05],'String',[titlestr,', ',datestr(thedate)],'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');   
+    annotation('textbox',[0.3 0.95 0.5 0.05],'String',[titlestr,', ',datestr(thedate)],'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');   
   end
   if (set_crange)  
     caxis(crange);

@@ -9,7 +9,7 @@ function [tt,SHImelt,SIprod,SHImelt_mean, ...
   SIprod_mean,XC,YC,bathy,SHELFICEtopo, ...
   SHImelt_eff,SHImelt_tend,SHImelt_diff, ...
   SHImelt_tflux,SHImelt_conv,FWupstream] ...
-  = calcFRISMeltTimeSeries (expdir,expname,compute_eff_melt,compute_upstream) 
+  = calcFRISMeltTimeSeries (expdir,expname,compute_eff_melt,compute_upstream,avg_end,avg_len) 
 
   %%% This needs to be set to ensure we are using the correct output
   %%% frequency
@@ -52,8 +52,8 @@ function [tt,SHImelt,SIprod,SHImelt_mean, ...
   tlen = 0;
   
   % endTime = dumpIters(end)*deltaT
-  endTime = 6*t1year;
-  avg_len = 2*t1year;
+  avg_end = avg_end*t1year;
+  avg_len = avg_len*t1year;
 
   %%% Indices over which to integrate, i.e. defining the FRIS
   xidx = find(XC(:,1)<-29.9);
@@ -82,7 +82,7 @@ function [tt,SHImelt,SIprod,SHImelt_mean, ...
     
     
     %%% Mean local melt rate
-    if (tt(n) > endTime-avg_len)
+    if ((tt(n) > avg_end-avg_len) && (tt(n) <= avg_end))
       
       SHImelt_mean = SHImelt_mean + SHIfwFlx;
 

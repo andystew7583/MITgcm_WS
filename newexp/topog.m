@@ -32,6 +32,11 @@ embayment_lat = -74; %%% Max latitude to search for the SW embayment. Original w
 %%% Set true to remove iceberg A23
 remove_A23 = false;
 
+%%% Set true to add "curtain"
+add_FT_curtain = false;
+curtain_lat = -75.05;
+curtain_elev = -450;
+
 
 
 
@@ -424,6 +429,20 @@ if (remove_embayment)
     end
   end
 
+end
+
+
+
+%%% Add a wall/curtain across the Filchner trough
+if (add_FT_curtain)
+  X_ft = -32.5;
+  yidx_ref = find(ymc<=curtain_lat,1,'last');
+  for yidx = yidx_ref-1:yidx_ref %%% 2-gridcell wide wall
+    xidx_mid = find(xmc>=X_ft,1);
+    xidx_w = find(bathy(1:xidx_mid,yidx)>curtain_elev,1,'last')+1;
+    xidx_e = xidx_mid + find(bathy((xidx_mid+1):end,yidx)>curtain_elev,1,'first')-1;
+    Depth_smooth(xidx_w:xidx_e,yidx) = curtain_elev;
+  end
 end
       
       

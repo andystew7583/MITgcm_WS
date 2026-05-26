@@ -26,7 +26,7 @@ T = T(T.production_=="Y",:);
 T = T(T.completed_=="Y" & T.downloaded_=="Y",:);
 
 %%% Restrict to a specific batch of experiments
-T = T(T.batch >= 0 & T.batch<11,:);
+T = T(T.batch >= 0 & T.batch<=12,:);
 
 %%% Pre-allocate storage
 strat = zeros(1,size(T,1));
@@ -95,13 +95,67 @@ ylabel('$F_{\mathrm{melt}}$ (Gt/yr)','interpreter','latex','FontSize',16);
 set(gca,'FontSize',16);
 legend('Weddell Catastrophe','No Weddell Catastrophe','Intermediate State','Location','NorthWest');
 
-
-batchnum_plot = 0;
-
 figure(2);
 clf;
-plot(strat(batchnum==batchnum_plot),FRISmelt_batch(batchnum==batchnum_plot),'o-');
+legstr = {};
+for n=[1:6 7 8 9 10:12]
+  legstr = {legstr{:},['Batch ',num2str(n)]};
+  plot(FWnet(batchnum==n),FRISmelt_batch(batchnum==n),'o-');
+  if (n == 1)
+    hold on;
+  end
+end
+hold off;
+xlabel('$F_{\mathrm{upstream}} + F_{\mathrm{melt}}^{\mathrm{ref}} - F_{\mathrm{polynya}}$ (Gt/yr)','interpreter','latex','FontSize',16);
+ylabel('$F_{\mathrm{melt}}$ (Gt/yr)','interpreter','latex','FontSize',16);
+set(gca,'FontSize',16);
+legend(legstr,'Location','NorthWest');
+
+
+batchnum_plot = 1;
 
 figure(3);
 clf;
+plot(strat(batchnum==batchnum_plot),FRISmelt_batch(batchnum==batchnum_plot),'o-');
+ylabel('$F_{\mathrm{melt}}$ (Gt/yr)','interpreter','latex','FontSize',16);
+xlabel('Upstream stratification (s$^{-2}$)','interpreter','latex','FontSize',16);
+set(gca,'FontSize',16);
+
+figure(4);
+clf;
+plot(SIprod_batch(batchnum==batchnum_plot),FRISmelt_batch(batchnum==batchnum_plot),'o-');
+ylabel('$F_{\mathrm{melt}}$ (Gt/yr)','interpreter','latex','FontSize',16);
+xlabel('$F_{\mathrm{polynya}}$ (Gt/yr)','interpreter','latex','FontSize',16);
+set(gca,'FontSize',16);
+
+figure(5);
+clf;
 plot(FWnet(batchnum==batchnum_plot),FRISmelt_batch(batchnum==batchnum_plot),'o-');
+xlabel('$F_{\mathrm{upstream}} + F_{\mathrm{melt}}^{\mathrm{ref}} - F_{\mathrm{polynya}}$ (Gt/yr)','interpreter','latex','FontSize',16);
+ylabel('$F_{\mathrm{melt}}$ (Gt/yr)','interpreter','latex','FontSize',16);
+set(gca,'FontSize',16);
+
+
+
+figure(6)
+for n = 1:Nexps
+  expname = T.Name(n);
+  expname = expname{1};
+  tmax = T.EndTime_yr_(n) + 0.05;
+  tmin = tmax - 3; %%% Last 3 years
+
+  %%% Load pre-computed melt rates
+  datafname = [expname,'_FRISMeltRate.mat'];
+  load(fullfile(proddir,datafname));
+  tt = tt / t1year;
+
+  plot (tt,smooth(-SHImelt*t1year/1e12,24));
+  if (n == 1)
+    hold on;
+  end
+
+end
+hold off;
+xlabel('Time (years)')
+ylabel('$F_{\mathrm{melt}}$ (Gt/yr)','interpreter','latex','FontSize',16);
+set(gca,'FontSize',16);

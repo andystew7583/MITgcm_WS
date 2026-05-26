@@ -13,7 +13,8 @@ expdir = '../experiments';
 % expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
 % expname = 'WC_onethird_ref';
 % expname = 'WC_onethird_dpyc-150_strat3e-4';
-expname = 'WC_onethird_dpyc300_strat5e-5';
+% expname = 'WC_onethird_dpyc300_strat5e-5';
+expname = 'WC_onethird_C450';
 
 proddir = 'products_WCbatch';
 

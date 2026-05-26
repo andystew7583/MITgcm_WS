@@ -12,7 +12,7 @@ expdir = '../experiments';
 outdir = './products_WCbatch';
 
 %%% Set true to overwrite existing files
-overwrite = false;
+overwrite = true;
 
 %%% Set true to compute effective melt rate (heat flux into the cavity)
 compute_eff_melt = false;
@@ -32,7 +32,7 @@ T = T(T.production_=="Y",:);
 %%% Narrow down to experiments that are complete and downloaded
 T = T(T.completed_=="Y" & T.downloaded_=="Y",:);
 
-%%% Loop through experiments and compute MOC
+%%% Loop through experiments and compute FRIS melt rates
 Nexps = size(T,1);
 for n = 1:Nexps
   expname = T.Name(n);

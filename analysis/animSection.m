@@ -59,7 +59,7 @@ outfidx = 1;
 set_crange = 1;
 
 %%% Year to start animnation
-startyr = 10;
+startyr = 6;
 
 switch (diagnum)
    case 1   

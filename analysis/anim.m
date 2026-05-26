@@ -22,7 +22,7 @@ outfname =diag_fileNames{1,diagnum};
 % outfname = 'Eta';
 
 %%% Starting year for animation
-startyr = 10;
+startyr = 6;
 
 %%% Data index in the output data files
 outfidx = 1;

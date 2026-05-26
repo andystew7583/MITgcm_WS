@@ -36,10 +36,18 @@ eta_trans_min = 3;
 % alpha_v = 0.55;
 % beta_u = 0.55;
 % beta_v = 0.55;
-alpha_u = 0.4; %%% Multiplied by factor of 2 in an attempt to produce 2x buoyancy flux pert. in combination with wind pert
-alpha_v = 0.4;
-beta_u = 0.4;
-beta_v = 0.4;
+% alpha_u = 0.4; %%% Multiplied by factor of 2 in an attempt to produce 2x buoyancy flux pert. in combination with wind pert
+% alpha_v = 0.4;
+% beta_u = 0.4;
+% beta_v = 0.4;
+alpha_u = 0.25; %%% Multiplied by factor of 2.5 in an attempt to produce 2.5x buoyancy flux pert. in combination with wind pert
+alpha_v = 0.25;
+beta_u = 0.25;
+beta_v = 0.25;
+% alpha_u = 0.1; %%% Multiplied by factor of 3.0 in an attempt to produce 3x buoyancy flux pert. in combination with wind pert
+% alpha_v = 0.1;
+% beta_u = 0.1;
+% beta_v = 0.1;
 
 %%% Matrices for applying forcing perturbations
 %%% Linear variation of wind speed fraction from alpha_x for eta < eta_trans_min 

@@ -13,7 +13,9 @@ defineGrid;
 % deltaTemp = 5; %%% Roughly SSP585 based on https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2024GL112662
 % deltaTemp = 2.5; %%% Reduced by factor of 2 in an attempt to ~halve buoyancy flux pert. when combined with wind pert
 % deltaTemp = 7.5; %%% Multiplied by factor of 1.5 in an attempt to produce 1.5x buoyancy flux pert. when combined with wind pert
-deltaTemp = 10; %%% Multiplied by factor of 2 in an attempt to produce 2x buoyancy flux pert. when combined with wind pert
+% deltaTemp = 10; %%% Multiplied by factor of 2 in an attempt to produce 2x buoyancy flux pert. when combined with wind pert
+deltaTemp = 12.5; %%% Multiplied by factor of 2.5 in an attempt to produce 2.5x buoyancy flux pert. when combined with wind pert
+% deltaTemp = 15; %%% Multiplied by factor of 3 in an attempt to produce 3.0x buoyancy flux pert. when combined with wind pert
 
 %%% Define range of days to operate on
 days_end = 3287;

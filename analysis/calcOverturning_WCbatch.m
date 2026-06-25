@@ -12,10 +12,10 @@ expdir = '../experiments';
 outdir = './products_WCbatch';
 
 %%% MOC calculation options: 
-calc_psi_eddy = false; %%% just compute mean MOC
+calc_psi_eddy = true; %%% just compute mean MOC
 deform_cavity = false; %%% Don't use coordinate system centered on Ronne polynya
 use_PsiBT = false; %%% Don't use barotropic streamfunction coordinats
-use_layers = false; %%% Don't use LAYERS diagnostics 
+use_layers = true; %%% Don't use LAYERS diagnostics 
 gl_coord = true; %%% Do use coordinate system aligned with ice front
 
 %%% Set true to overwrite existing files
@@ -29,8 +29,9 @@ T = readtable(url);
 %%% Narrow down to production experiments
 T = T(T.production_=="Y",:);
 
-%%% Narrow down to experiments that are complete and downloaded
-T = T(T.completed_=="Y" & T.downloaded_=="Y",:);
+%%% Narrow down to experiments that are complete and downloaded and have
+%%% MOC diagnostics
+T = T(T.completed_=="Y" & T.downloaded_=="Y" & ~isnan(T.DiagStart_yr_),:);
 
 %%% Loop through experiments and compute MOC
 Nexps = size(T,1);
@@ -38,7 +39,7 @@ for n = 1:Nexps
   expname = T.Name(n);
   expname = expname{1};
   tmax = T.EndTime_yr_(n) + 0.05;
-  tmin = tmax - 3; %%% Last 3 years
+  tmin = tmax - 9; %%% Last 9 years i.e. one full cycle of forcing
 
   %%% If we can't overwrite output files then we need to check whether they
   %%% already exist

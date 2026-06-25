@@ -20,7 +20,7 @@ load(fullfile(proddir,"curtain_diags.mat"));
 %%% PLOT MELT TIME SERIES %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-figure(6)
+figure(20)
 colororder = get(gca,'ColorOrder');
 for m = 1:length(expnames)
   expname = expnames{m}; 
@@ -37,11 +37,11 @@ hold off;
 xlabel('Time (years)')
 ylabel('$F_{\mathrm{melt}}$ (Gt/yr)','interpreter','latex','FontSize',16);
 set(gca,'FontSize',16);
-axis([0 36 0 600]);
+axis([0 36 0 800]);
 legend(titles,'Location','Best');
 
 %%% Print to file
-print('-dpng','-r150',fullfile('figures','curtain',['melt_timeseries.png']));
+print('-dpng','-r150',fullfile('Figures','curtain',['melt_timeseries.png']));
 
 
 
@@ -193,7 +193,7 @@ for m = 1:length(expnames)
   annotation('textbox',[0.1 0.9 0.5 0.05],'String',[titlestr],'interpreter','latex','FontSize',fontsize+4,'LineStyle','None');   
   
   %%% Print to file
-  print('-dpng','-r150',fullfile('figures','curtain',[expname,'_FTsection.png']));
+  print('-dpng','-r150',fullfile('Figures','curtain',[expname,'_FTsection.png']));
 
 
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -222,7 +222,7 @@ for m = 1:length(expnames)
   annotation('textbox',[0.1 0.9 0.5 0.05],'String',[titlestr],'interpreter','latex','FontSize',fontsize+4,'LineStyle','None');   
 
   %%% Print to file
-  print('-dpng','-r150',fullfile('figures','curtain',[expname,'_columnthickness.png']));
+  print('-dpng','-r150',fullfile('Figures','curtain',[expname,'_columnthickness.png']));
 
 end
  

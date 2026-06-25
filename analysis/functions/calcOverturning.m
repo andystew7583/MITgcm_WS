@@ -37,16 +37,41 @@ function calcOverturning (expdir,expname,outdir,tmin,tmax,calc_psi_eddy,deform_c
   % densvar = 'ND1';
   % densvar = 'ND2';
   % densvar = 'PT';
-  
+ % densvar = 'PD0.5'; 
+
   %%% Density bins for MOC calculation  
   if (use_layers)
     densvar = 'PD0';
     dens_levs = layers_bounds;
+    p_ref = -rhoConst*gravity*RC(1)/1e4;
   else
     switch (densvar)
       case 'PD0'
         % dens_levs = [30.5:1:36.5 36.6:0.1:36.8 36.9:0.01:37.4 37.42:0.02:37.6];
-        dens_levs = [30.5:1:36.5 36.6:0.1:36.8 36.9:0.01:37.4 37.42:0.02:37.6] - 9.38; 
+        % dens_levs = [30.5:1:36.5 36.6:0.1:36.8 36.9:0.01:37.4 37.42:0.02:37.6] - 9.38; 
+        dens_levs = [21:1:24 ...
+                   24.5:25 ...
+                   25.1:.1:27 ...
+                   27.05:0.05:27.5 ...
+                   27.51:.01:27.75 ...
+                   27.755:0.005:27.83 ...
+                   27.8325:0.0025:27.9 ...
+                   27.91:0.01:28 ...
+                   28.02:0.02:28.2 ...
+                   28.25:0.05:28.4];
+        p_ref = -rhoConst*gravity*RC(1)/1e4; %%% Reference pressure for surface-referenced potential density
+      case 'PD0.5'
+        dens_levs = [21:1:24 ...
+                   24.5:25 ...
+                   25.1:.1:27 ...
+                   27.05:0.05:27.5 ...
+                   27.51:.01:27.75 ...
+                   27.755:0.005:27.83 ...
+                   27.8325:0.0025:27.9 ...
+                   27.91:0.01:28 ...
+                   28.02:0.02:28.2 ...
+                   28.25:0.05:28.4] + 2.30;
+        p_ref = -rhoConst*gravity*RC(38)/1e4; %%% Reference pressure for surface-referenced potential density        
       case 'PT'
         dens_levs = [-3:.1:2];
       case 'ND1'
@@ -55,8 +80,7 @@ function calcOverturning (expdir,expname,outdir,tmin,tmax,calc_psi_eddy,deform_c
         dens_levs = [21:1:27 27.1:.1:27.5 27.52:.02:28.7 28.74:0.04:29.1];      
     end
   end
-  Nd = length(dens_levs)-1;
-  p_ref = -rhoConst*gravity*RC(1)/1e4; %%% Reference pressure for surface-referenced potential density
+  Nd = length(dens_levs)-1;  
   
   %%% Define coordinate system for integrating to compute streamfunction
   if (use_PsiBT)
@@ -332,6 +356,16 @@ function calcOverturning (expdir,expname,outdir,tmin,tmax,calc_psi_eddy,deform_c
     switch (densvar)
   
       case 'PD0'
+        %%% Calculate density
+        theta = rdmdsWrapper(fullfile(exppath,'/results/THETA'),itersToRead(n));
+        salt  = rdmdsWrapper(fullfile(exppath,'/results/SALT'),itersToRead(n)); 
+        if (isempty(theta) || isempty(salt))
+          ['Ran out of data at n=',num2str(n),'/',num2str(nDumps),' t=',num2str(tyears),' days.']
+          break;
+        end
+        dens = densjmd95(salt,theta,p_ref*ones(Nx,Ny,Nr))-1000;
+
+      case 'PD0.5'
         %%% Calculate density
         theta = rdmdsWrapper(fullfile(exppath,'/results/THETA'),itersToRead(n));
         salt  = rdmdsWrapper(fullfile(exppath,'/results/SALT'),itersToRead(n)); 

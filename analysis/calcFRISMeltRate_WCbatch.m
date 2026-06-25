@@ -38,7 +38,7 @@ for n = 1:Nexps
   expname = T.Name(n);
   expname = expname{1};
   tmax = T.EndTime_yr_(n) + 0.05;
-  tmin = tmax - 3; %%% Last 3 years
+  tmin = tmax - 9; %%% Last 3 years
 
   %%% Keep track of progress
   disp(expname);

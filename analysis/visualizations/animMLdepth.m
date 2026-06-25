@@ -10,7 +10,7 @@
 mac_plots = false;
 
 %%% Read experiment data
-% loadexp;
+loadexp;
 
 %%% Vertical level to which potential density should be referenced
 k_pot_dens = 1;
@@ -52,8 +52,8 @@ yzlayer = 322;
 
 %%% Specify color range
 set_crange = 1;
-crange = [0 600];
-cmap = cmocean('amp',30);
+crange = [10 1000];
+cmap = cmocean('amp',100);
 
 % titlestr = 'Salinity (g/kg)';
 % titlestr = 'Surface salinity (g/kg)';
@@ -74,17 +74,17 @@ years = 2007:1:2015;
 % nIter0 = 394509; 
 
 %%% For 1/24 run with tides
-% dumpFreq = abs(diag_frequency(diagnum));
-% nDumps = round(endTime/dumpFreq);
-% dumpIters = round((1:nDumps)*dumpFreq/deltaT);
-% dumpIters = dumpIters(dumpIters > nIter0);
+dumpFreq = abs(diag_frequency(diagnum));
+nDumps = round(endTime/dumpFreq);
+dumpIters = round((1:nDumps)*dumpFreq/deltaT);
+dumpIters = dumpIters(dumpIters > nIter0);
 
 %%% For daily/12-hourly outputs
-dumpStart = 1578240;
-% dumpStart = 1945440;
-dumpStep = 86400/2/60;
-nDumps = 731;
-dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
+% dumpStart = 1578240;
+% % dumpStart = 1945440;
+% dumpStep = 86400/2/60;
+% nDumps = 731;
+% dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
 
 
 
@@ -100,7 +100,8 @@ else
   plotloc = [0.04  0.02   0.84  0.9];
 %   framepos = [100   306   936   676];
 %   framepos = [100   462   810   520];
-  framepos = [441         253        1529         994];
+  % framepos = [441         253        1529         994];
+  framepos = [441         226        1205        1021];
 end
 
 %%% Set up the figure
@@ -119,7 +120,8 @@ Amax = [];
 % for n = 34a
 % for n=48:length(dumpIters)
 % for n=2:length(dumpIters)
-for n =1:length(dumpIters)
+for n = 1:643
+% for n =1:length(dumpIters)
 % for n = 400
   dumpIters(n);
     
@@ -129,7 +131,8 @@ for n =1:length(dumpIters)
   tyears(n) = t;
   tdays(n) = dumpIters(n)*deltaT/t1day;
   
-  suff = '_12hourly';
+  % suff = '_12hourly';
+  suff = '_inst';
   T = rdmdsWrapper(fullfile(exppath,'results',['THETA',suff]),dumpIters(n));          
   S = rdmdsWrapper(fullfile(exppath,'results',['SALT',suff]),dumpIters(n));          
   if (isempty(S) || isempty(T))
@@ -309,6 +312,7 @@ for n =1:length(dumpIters)
  
   %%% Finish the plot
   colormap(cmap);
+   set(gca,'ColorScale','log')
   if (~isempty(titlestr))
 %     title([titlestr,', $t=',num2str(tdays(n),'%.1f'),'$ days'],'interpreter','latex');
     thedate = datenum('2008-01-01')+floor(tdays(n));

@@ -43,7 +43,7 @@ for n = 1:Nexps
   expname = T.Name(n);
   expname = expname{1};
   tmax = T.EndTime_yr_(n) + 0.05;
-  tmin = tmax - 3; %%% Last 3 years
+  tmin = tmax - 9; %%% Last 9 years
 
   %%% Record upstream stratification and pycnocline depth
   strat(n) = T.strat(n);
@@ -112,7 +112,7 @@ set(gca,'FontSize',16);
 legend(legstr,'Location','NorthWest');
 
 
-batchnum_plot = 1;
+batchnum_plot = 0;
 
 figure(3);
 clf;

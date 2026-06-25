@@ -14,22 +14,35 @@ expdir = '../experiments';
 % expname = 'WC_onethird_ref';
 % expname = 'WC_onethird_dpyc-150_strat3e-4';
 % expname = 'WC_onethird_dpyc300_strat5e-5';
-expname = 'WC_onethird_C450';
+% expname = 'WC_onethird_strat1e-4_C450';
+% expname = 'WC_onethird_strat6e-5';
+% expname = 'WC_onethird_dpyc250_strat5e-5';
+% expname = 'WC_onethird_dpyc300_strat4e-5';
+% expname = 'WC_onethird_dpyc0_strat1.5e-4';
+% expname = 'WC_onethird_dpyc-150_strat2.5e-4';
+% expname = 'WC_onethird_dpyc-100_strat1.875e-4';
+% expname = 'WC_onethird_dpyc50_strat7.5e-5';
+% expname = 'WC_onethird_dpyc-150_strat4e-4';
+% expname = 'WC_onethird_dpyc-150_strat1.5e-4_aU0.7_aV0.7_bU0.7_bV0.7_dT5_noA23';
+expname = 'WC_onethird_aU0.55_aV0.55_bU0.55_bV0.55_dT7.5_noA23';
+% expname = 'WC_onethird_aU0.7_aV0.7_bU0.7_bV0.7_dT5_noA23' ;
 
 proddir = 'products_WCbatch';
 
 %%% Options (see calcOverturning)
-calc_psi_eddy = false;
+calc_psi_eddy = true;
 deform_cavity = false;
 use_PsiBT = false;
-use_layers = false;
+use_layers = true;
 gl_coord = true;
 densvar = 'PD0';
+% densvar = 'PD0.5';
 psimax = 4;
 % psistep = 0.5;
 % psimax = 2;
 psistep = 0.1;
 ylim = [25 28.2];
+% ylim = [25 28.2]+2.30;
 % ylim = [27.3 29];
 
 %%% Construct output file name

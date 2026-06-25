@@ -1,112 +1,112 @@
-% %%%
-% %%% paper3_plotTSfluxes.m
-% %%%
-% %%% Plots heat/salt fluxes in quasi-latitude coordinates
-% %%%
-% 
-% %%% Load experiment
-% expdir = '../experiments';
-% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-% loadexp;
-% 
-% %%% Reference surface freezing temperature
-% theta0 = -1.9;
-% 
-% %%% Reference salinity
-% salt0 = 34.6;
-% % salt0 = 34.72;
-% 
-% %%% Set true to deform coordinates in the cavity
-% deform_cavity = false;
-% 
-% %%% Set true to use barotropic streamfunction as the coordinate system
-% use_PsiBT = false;
-% 
-% %%% Set true to use grounding line coordinate
-% gl_coord = true;
-% 
-% %%% Set true to use depth-averaged temperature as the coordinate system
-% use_meanT = false;
-% 
-% %%% Set true to decompose eddy fluxes
-% calc_eddy_decomp = false;
-% 
-% %%% Parameters
-% rho0 = 1000;
-% Cp = 4000;
-% 
-% %%% Load HeatFunction data file
-% outfname = [expname,'_HeatFunction'];
-% if (use_PsiBT)
-%   outfname = [outfname,'_PsiBT'];
-% else 
-%   if (use_meanT)
-%     outfname = [outfname,'_meanT'];
-%   else 
-%     if (deform_cavity)
-%       outfname = [outfname,'_deform'];
-%     elseif (gl_coord)
-%       outfname = [outfname,'_GLcoord'];
-%     end
-%   end
-% end
-% load(fullfile('products',outfname));
-% Neta = length(eta);
-% 
-% %%% Load positive and negative heatfunction components
-% outfname = [expname,'_PosNegHeatFunction'];
-% if (use_PsiBT)
-%   outfname = [outfname,'_PsiBT'];
-% else
-%   if (use_meanT)
-%     outfname = [outfname,'_meanT'];
-%   else 
-%     if (deform_cavity)
-%       outfname = [outfname,'_deform'];
-%     elseif (gl_coord)
-%       outfname = [outfname,'_GLcoord'];
-%     end
-%   end
-% end
-% outfname = [outfname,'.mat'];
-% load(fullfile('products',outfname));
-% 
-% %%% Mask for ice/land
-% psiT_tot_mean = mean(psiT_tot-psi_tot*theta0,3)* rho0*Cp/1e12;
-% msk = ones(size(psiT_tot_mean));
+%%%
+%%% paper3_plotTSfluxes.m
+%%%
+%%% Plots heat/salt fluxes in quasi-latitude coordinates
+%%%
+
+%%% Load experiment
+expdir = '../experiments';
+expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+loadexp;
+
+%%% Reference surface freezing temperature
+theta0 = -1.9;
+
+%%% Reference salinity
+salt0 = 34.6;
+% salt0 = 34.72;
+
+%%% Set true to deform coordinates in the cavity
+deform_cavity = false;
+
+%%% Set true to use barotropic streamfunction as the coordinate system
+use_PsiBT = false;
+
+%%% Set true to use grounding line coordinate
+gl_coord = true;
+
+%%% Set true to use depth-averaged temperature as the coordinate system
+use_meanT = false;
+
+%%% Set true to decompose eddy fluxes
+calc_eddy_decomp = false;
+
+%%% Parameters
+rho0 = 1000;
+Cp = 4000;
+
+%%% Load HeatFunction data file
+outfname = [expname,'_HeatFunction'];
+if (use_PsiBT)
+  outfname = [outfname,'_PsiBT'];
+else 
+  if (use_meanT)
+    outfname = [outfname,'_meanT'];
+  else 
+    if (deform_cavity)
+      outfname = [outfname,'_deform'];
+    elseif (gl_coord)
+      outfname = [outfname,'_GLcoord'];
+    end
+  end
+end
+load(fullfile('products',outfname));
+Neta = length(eta);
+
+%%% Load positive and negative heatfunction components
+outfname = [expname,'_PosNegHeatFunction'];
+if (use_PsiBT)
+  outfname = [outfname,'_PsiBT'];
+else
+  if (use_meanT)
+    outfname = [outfname,'_meanT'];
+  else 
+    if (deform_cavity)
+      outfname = [outfname,'_deform'];
+    elseif (gl_coord)
+      outfname = [outfname,'_GLcoord'];
+    end
+  end
+end
+outfname = [outfname,'.mat'];
+load(fullfile('products',outfname));
+
+%%% Mask for ice/land
+psiT_tot_mean = mean(psiT_tot-psi_tot*theta0,3)* rho0*Cp/1e12;
+msk = ones(size(psiT_tot_mean));
+msk_ice = NaN*msk;
+for j=1:Neta  
+  idx = find(psiT_tot_mean(j,:)==psiT_tot_mean(j,1));
+  idx(end) = [];
+  msk(j,idx) = NaN;
+  if (~isempty(idx))
+    msk_ice(j,1:idx(end)) = 1;
+  end
+  idx = find(abs(psiT_tot_mean(j,:))<1e-12,1,'first');
+  msk(j,idx+1:end) = NaN;
+end
+
+
+psiT_tot_plot = -mean(psiT_tot-psi_tot*theta0,3) * rho0*Cp/1e12 .* msk;
+psiT_mean_plot = -mean(psiT_mean-psi_tot*theta0,3) * rho0*Cp/1e12 .* msk;
+
+% msk = ones(size(psiT_neg_mean));
 % msk_ice = NaN*msk;
 % for j=1:Neta  
-%   idx = find(psiT_tot_mean(j,:)==psiT_tot_mean(j,1));
+%   idx = find(psiT_neg_mean(j,:)==psiT_neg_mean(j,1));
 %   idx(end) = [];
 %   msk(j,idx) = NaN;
 %   if (~isempty(idx))
 %     msk_ice(j,1:idx(end)) = 1;
 %   end
-%   idx = find(abs(psiT_tot_mean(j,:))<1e-12,1,'first');
+%   idx = find(abs(psiT_neg_mean(j,:))<1e-12,1,'first');
 %   msk(j,idx+1:end) = NaN;
 % end
-% 
-% 
-% psiT_tot_plot = -mean(psiT_tot-psi_tot*theta0,3) * rho0*Cp/1e12 .* msk;
-% psiT_mean_plot = -mean(psiT_mean-psi_tot*theta0,3) * rho0*Cp/1e12 .* msk;
-% 
-% % msk = ones(size(psiT_neg_mean));
-% % msk_ice = NaN*msk;
-% % for j=1:Neta  
-% %   idx = find(psiT_neg_mean(j,:)==psiT_neg_mean(j,1));
-% %   idx(end) = [];
-% %   msk(j,idx) = NaN;
-% %   if (~isempty(idx))
-% %     msk_ice(j,1:idx(end)) = 1;
-% %   end
-% %   idx = find(abs(psiT_neg_mean(j,:))<1e-12,1,'first');
-% %   msk(j,idx+1:end) = NaN;
-% % end
-% 
-% 
-% psiT_pos_plot = -mean(psiT_pos_mean,3) * rho0*Cp/1e12 .* msk;
-% psiT_neg_plot = -mean(psiT_neg_mean,3) * rho0*Cp/1e12 .* msk;
-% 
+
+
+psiT_pos_plot = -mean(psiT_pos_mean,3) * rho0*Cp/1e12 .* msk;
+psiT_neg_plot = -mean(psiT_neg_mean,3) * rho0*Cp/1e12 .* msk;
+
 
 
 %%%%%%%%%%%%%%%%%%
@@ -177,6 +177,7 @@ ylabel('Depth (m)');
 % title('Total heat function');
 set(gca,'FontSize',fontsize);
 caxis([0 psimax]);
+% grid on;
 
 ax1 = gca;
 ax2 = axes('Position',get(ax1,'Position'));
@@ -189,6 +190,7 @@ set(ax2,'YLim',ylim);
 set(ax2,'YDir','reverse');
 set(ax2,'XLim',xlim);
 set(ax2,'Color','None')
+% grid on;
 
 %%% Add reference latitudes
 ax3 = axes('Position',get(ax1,'Position'));
@@ -201,6 +203,7 @@ box off;
 set(ax3,'XLim',xlim-77);
 set(ax3,'FontSize',fontsize);
 set(get(ax3,'XLabel'),'String','Reference latitude');
+% grid on;
 
 
 %%% Positive heat function

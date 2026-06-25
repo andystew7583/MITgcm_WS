@@ -8,7 +8,7 @@
 %%% Options
 expdir = '../experiments';
 expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-% loadexp;
+loadexp;
 
 %%% Iteration number of model output to plot
 % iter = 1949760;
@@ -33,54 +33,54 @@ secLons = startLon:dLon:endLon;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LOAD TEMPERATURE SLICE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
-% %%% Load temperature snapshot
-% T = rdmdsWrapper(fullfile(exppath,'results','THETA_12hourly'),iter);
-% 
-% %%% For interpolating to mid-depth
-% kmax = ones(Nx,Ny);
-% kmin = ones(Nx,Ny);
-% for i=1:Nx
-%   for j=1:Ny
-%     idx = find(squeeze(hFacC(i,j,:))>0);
-%     if (~isempty(idx))
-%       kmin(i,j) = min(idx);
-%       kmax(i,j) = max(idx);
-%     end
-%   end
-% end
-% kn = ones(Nx,Ny);
-% kp= ones(Nx,Ny);
-% wn = 0.5*ones(Nx,Ny);
-% wp = 0.5*ones(Nx,Ny);
-% for i=1:Nx
-%   for j=1:Ny
-%     if (sum(hFacC(i,j,:),3)==0)
-%       continue;
-%     end
-%     zmid = 0.5 * (SHELFICEtopo(i,j) + bathy(i,j));
-%     kmid = max(find(squeeze(zz)>zmid));
-%     if (isempty(kmid))
-%       continue;
-%     end
-%     kp(i,j) = kmid;
-%     kn(i,j) = kp(i,j) + 1;
-%     wp(i,j) = (zmid-zz(kn(i,j))) / (zz(kp(i,j))-zz(kn(i,j)));
-%     wn(i,j) = 1 - wp(i,j);
-%   end
-% end
-% 
-% %%% Interpolate to mid-depth
-% FF = zeros(Nx,Ny);
-% for i=1:Nx
-%   for j=1:Ny
-%     FF(i,j) = wp(i,j)*T(i,j,kp(i,j)) + wn(i,j)*T(i,j,kn(i,j));
-%   end
-% end
-% FF(sum(hFacC,3)==0) = NaN;
-% 
-% %%% Free up memory
-% clear('T');
+
+%%% Load temperature snapshot
+T = rdmdsWrapper(fullfile(exppath,'results','THETA_12hourly'),iter);
+
+%%% For interpolating to mid-depth
+kmax = ones(Nx,Ny);
+kmin = ones(Nx,Ny);
+for i=1:Nx
+  for j=1:Ny
+    idx = find(squeeze(hFacC(i,j,:))>0);
+    if (~isempty(idx))
+      kmin(i,j) = min(idx);
+      kmax(i,j) = max(idx);
+    end
+  end
+end
+kn = ones(Nx,Ny);
+kp= ones(Nx,Ny);
+wn = 0.5*ones(Nx,Ny);
+wp = 0.5*ones(Nx,Ny);
+for i=1:Nx
+  for j=1:Ny
+    if (sum(hFacC(i,j,:),3)==0)
+      continue;
+    end
+    zmid = 0.5 * (SHELFICEtopo(i,j) + bathy(i,j));
+    kmid = max(find(squeeze(zz)>zmid));
+    if (isempty(kmid))
+      continue;
+    end
+    kp(i,j) = kmid;
+    kn(i,j) = kp(i,j) + 1;
+    wp(i,j) = (zmid-zz(kn(i,j))) / (zz(kp(i,j))-zz(kn(i,j)));
+    wn(i,j) = 1 - wp(i,j);
+  end
+end
+
+%%% Interpolate to mid-depth
+FF = zeros(Nx,Ny);
+for i=1:Nx
+  for j=1:Ny
+    FF(i,j) = wp(i,j)*T(i,j,kp(i,j)) + wn(i,j)*T(i,j,kn(i,j));
+  end
+end
+FF(sum(hFacC,3)==0) = NaN;
+
+%%% Free up memory
+clear('T');
 
 %%% Load RTOPO data
 datadir = '../data/RTOPO';
@@ -320,41 +320,41 @@ annotation(gcf,'textbox',...
 iter = 1949760 - 50*86400/60;
 % iter = 1949760 - 250*86400/60;
 
-% %%% Extract data along defined sections
-% S = rdmdsWrapper(fullfile(exppath,'results','SALT_12hourly'),iter);
-% T = rdmdsWrapper(fullfile(exppath,'results','THETA_12hourly'),iter);
-% S(hFacC==0) = NaN;
-% T(hFacC==0) = NaN;
-% secS = zeros(Nsec,Nr);
-% secT = zeros(Nsec,Nr);
-% secB = zeros(Nsec,1);
-% secI = zeros(Nsec,1);
-% secH = zeros(Nsec,Nr);
-% for n=1:Nsec
-%   jm = find(secLats(n)>=YC(1,:),1,'last');
-%   im = find(secLons(n)>=XC(:,1),1,'last');
-%   jp = jm+1;
-%   ip = im+1;
-%   wp_y = (secLats(n)-YC(1,jm))/(YC(1,jp)-YC(1,jm));
-%   wm_y = 1-wp_y;
-%   wp_x = (secLons(n)-XC(im,1))/(XC(ip,1)-XC(im,1));
-%   wm_x = 1-wp_x;
-%   if (wp_x > wm_x)
-%     xidx = ip;
-%   else
-%     xidx = im;
-%   end
-%   if (wp_y > wm_y)
-%     yidx = jp;
-%   else
-%     yidx = jm;
-%   end
-%   secS(n,:) = squeeze(S(xidx,yidx,:));
-%   secT(n,:) = squeeze(T(xidx,yidx,:));  
-%   secH(n,:) = squeeze(hFacC(xidx,yidx,:));
-%   secB(n) = bathy(xidx,yidx);
-%   secI(n) = SHELFICEtopo(xidx,yidx);
-% end
+%%% Extract data along defined sections
+S = rdmdsWrapper(fullfile(exppath,'results','SALT_12hourly'),iter);
+T = rdmdsWrapper(fullfile(exppath,'results','THETA_12hourly'),iter);
+S(hFacC==0) = NaN;
+T(hFacC==0) = NaN;
+secS = zeros(Nsec,Nr);
+secT = zeros(Nsec,Nr);
+secB = zeros(Nsec,1);
+secI = zeros(Nsec,1);
+secH = zeros(Nsec,Nr);
+for n=1:Nsec
+  jm = find(secLats(n)>=YC(1,:),1,'last');
+  im = find(secLons(n)>=XC(:,1),1,'last');
+  jp = jm+1;
+  ip = im+1;
+  wp_y = (secLats(n)-YC(1,jm))/(YC(1,jp)-YC(1,jm));
+  wm_y = 1-wp_y;
+  wp_x = (secLons(n)-XC(im,1))/(XC(ip,1)-XC(im,1));
+  wm_x = 1-wp_x;
+  if (wp_x > wm_x)
+    xidx = ip;
+  else
+    xidx = im;
+  end
+  if (wp_y > wm_y)
+    yidx = jp;
+  else
+    yidx = jm;
+  end
+  secS(n,:) = squeeze(S(xidx,yidx,:));
+  secT(n,:) = squeeze(T(xidx,yidx,:));  
+  secH(n,:) = squeeze(hFacC(xidx,yidx,:));
+  secB(n) = bathy(xidx,yidx);
+  secI(n) = SHELFICEtopo(xidx,yidx);
+end
 
 
 
@@ -466,26 +466,26 @@ annotation(figure1,'line',[0.555 0.586],...
 % Create textbox
 annotation(figure1,'textbox',...
   [0.755000000000001 0.126969762419007 0.13 0.0242980561555076],...
-  'Interpreter','latex',...
+  'Interpreter','none',...
   'FontSize',fontsize,...
   'FitBoxToText','off',...
   'EdgeColor','none',...
-  'String',{'Circumpolar Deep Water'});
+  'String',{'Circumpolar Deep Water (CDW)'});
 
 % Create textbox
 annotation(figure1,'textbox',...
   [0.546000000000001 0.243600431965443 0.1295 0.0242980561555076],...
-  'Interpreter','latex',...
+  'Interpreter','none',...
   'FontSize',fontsize,...
   'FitBoxToText','off',...
   'EdgeColor','none',...
-  'String',{'High Salinity Shelf Water'});
+  'String',{'High Salinity Shelf Water (HSSW)'});
 
 % Create textbox
 annotation(figure1,'textbox',...
   [0.138 0.236041036717063 0.087 0.0242980561555076],...
-  'Interpreter','latex',...
+  'Interpreter','none',...
   'FontSize',fontsize,...
   'FitBoxToText','off',...
   'EdgeColor','none',...
-  'String',{'Ice Shelf Water'});
+  'String',{'Ice Shelf Water (ISW)'});

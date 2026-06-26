@@ -14,7 +14,8 @@ defineGrid;
 
 %%% Load low-resolution grid
 expdir_lo = '../experiments/';
-expname_lo = 'hires_seq_onetwelfth_notides_RTOPO2';
+% expname_lo = 'hires_seq_onetwelfth_notides_RTOPO2';
+expname_lo = 'hires_seq_onetwentyfourth_notides_RTOPO2';
 inputdir = fullfile(expdir_lo,expname_lo,'results');
 XC_lo = rdmds(fullfile(inputdir,'XC'));
 YC_lo = rdmds(fullfile(inputdir,'YC'));
@@ -36,12 +37,14 @@ hFacC_lo = rdmds(fullfile(inputdir,'hFacC'));
 % outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onetwentyfourth_RTOPO2/results';
 % outputdir = '/data3/MITgcm_WS/experiments/hires_seq_onetwelfth_notides_RTOPO2/results'
 % outputdir = '/data3/MITgcm_WS/experiments/hires_nest_onethirtieth_notides_RTOPO2/results';
-outputdir = '/data3/MITgcm_WS/experiments/hires_nest_onethirtysecond_notides_RTOPO2/results';
+% outputdir = '/data3/MITgcm_WS/experiments/hires_nest_onethirtysecond_notides_RTOPO2/results';
+outputdir = '/data/data3/MITgcm_WS/experiments/hires_nest_oneseventysecond_notides_RTOPO2/results';
 
 % expiter_in = 1183320;
 % expiter_in = 2366640;
 % expiter_in = 591660;
-expiter_in = 262960; %%% 1 years into 1/12 run, i.e. start of 2008
+% expiter_in = 262960; %%% 1 years into 1/12 run, i.e. start of 2008
+expiter_in = 1578034; %%% 3 years into 1/24 run, i.e. start of 2011
 expiter_out = 1;
 Nx_out = Nx;
 Ny_out = Ny;

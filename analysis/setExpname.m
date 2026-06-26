@@ -50,6 +50,8 @@ expdir = basedir;
 % expname = 'hires_nest_onethirtieth_notides_RTOPO2';
 
 % expname = 'hires_nest_onethirtysecond_notides_RTOPO2';
+
+expname = 'hires_nest_oneseventysecond_notides_RTOPO2';
 % 
 % expname = 'WC_seq_onethird_notides_RTOPO2';
 
@@ -156,7 +158,7 @@ expdir = basedir;
 % expname = 'WC_onethird_aU0.85_aV0.85_bU0.85_bV0.85_dT2.5_noA23';
 % expname = 'WC_onethird_dpyc-150_strat2e-4_aU0.85_aV0.85_bU0.85_bV0.85_dT2.5_noA23';
 % expname = 'WC_onethird_dpyc-150_strat2.25e-4_aU0.85_aV0.85_bU0.85_bV0.85_dT2.5_noA23';
-expname = 'WC_onethird_dpyc-150_strat2.5e-4_aU0.85_aV0.85_bU0.85_bV0.85_dT2.5_noA23';
+% expname = 'WC_onethird_dpyc-150_strat2.5e-4_aU0.85_aV0.85_bU0.85_bV0.85_dT2.5_noA23';
 % 
 
 % expname = 'WC_onethird_aU0.55_aV0.55_bU0.55_bV0.55_dT7.5_noA23';

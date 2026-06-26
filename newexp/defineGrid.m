@@ -5,7 +5,7 @@
 %%%
 
 %%% Choose resolution
-res_fac = 3;
+res_fac = 72;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% MPI parameters %%%%%
@@ -59,6 +59,16 @@ switch (res_fac)
     nPy_max = 96; %%% max. no. of processors in y-direction
     nPx = 18; %%% no. of processors in x-direction
     nPy = 12; %%% no. of processors in y-direction
+  case 72
+    nPx_max = 72; %%% max. no. of processors in x-direction
+    nPy_max = 48; %%% max. no. of processors in y-direction
+    nPx = 18; %%% no. of processors in x-direction
+    nPy = 12; %%% no. of processors in y-direction
+  case 96
+    nPx_max = 72; %%% max. no. of processors in x-direction
+    nPy_max = 48; %%% max. no. of processors in y-direction
+    nPx = 18; %%% no. of processors in x-direction
+    nPy = 12; %%% no. of processors in y-direction
 end
 
 
@@ -76,8 +86,7 @@ FinerVerticalGrid = 0;
 %%%% which directory to use
 gendir = '/data/data3';
 
-%%% Set true for open southern/western boundaries
-use_OB_SW = false;
+use_OB_SW = false; %%% Set true for open southern/western boundaries
 
 %%% Set true to set SSH on boundaries (ONLY IF USING NONLINEAR FREE
 %%% SURFACE)
@@ -112,6 +121,14 @@ switch (res_fac)
     obcs_nest = true;
   case 48
     grid_name = 'one_fortyeighth';
+  case 72
+    grid_name = 'one_seventysecond';
+    use_OB_SW = true;
+    obcs_nest = true;
+  case 96
+    grid_name = 'one_ninetysixth';
+    use_OB_SW = true;
+    obcs_nest = true;
 end
 
 
@@ -153,6 +170,16 @@ switch (res_fac)
     %%% Southern WS subdomain
     xmax = -20;
     ymax = -70;
+  case 72
+    ymax = -75;
+    ymin = -79;
+    xmin = -47;
+    xmax = -29;
+  case 96
+    ymax = -75;
+    ymin = -79;
+    xmin = -47;
+    xmax = -29;
   otherwise
     %%% Full MITgcm_WS domain
     xmax = 21;
@@ -201,6 +228,12 @@ switch (res_fac)
   case 48
     start_year = 2011;
     endyr = 2012;
+  case 72
+    start_year = 2011;
+    endyr = 2011;
+  case 96
+    start_year = 2011;
+    endyr = 2011;
   otherwise
     start_year = 2007;
     endyr = 2015;

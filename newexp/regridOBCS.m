@@ -10,35 +10,62 @@ addpath ../newexp_utils
 addpath ../utils/matlab
 addpath ../analysis
 
+%%% If set true, use monthly mean outputs from the parent simulation,
+%%% otherwise use instantaneous outputs
+use_monthly_data = false;
+
 %%% Load core simulation parameters
 defineGrid;
 
 %%% Defines date range over which to extract data - N.B. need to ensure
 %%% overlaps so that entire hi-res simulation period has boundary data
-startdate_obcs = datenum([num2str(start_year-1),'-12-15']);
-enddate_obcs = datenum([num2str(endyr+1),'-02-15']);
+if (use_monthly_data)
+  startdate_obcs = datenum([num2str(start_year-1),'-12-15']);
+  enddate_obcs = datenum([num2str(endyr+1),'-02-15']);
+else
+  startdate_obcs = datenum([num2str(start_year),'-01-01']);
+  enddate_obcs = datenum([num2str(endyr),'-01-01']);
+end
 
 %%% Load low-resolution grid
-expdir_lo = '../experiments/';
-expname_lo = 'hires_seq_onetwelfth_RTOPO2';
+if (use_monthly_data)
+  expdir_lo = '../experiments/';
+  expname_lo = 'hires_seq_onetwelfth_RTOPO2';
+else
+  expdir_lo = '/data/jbod/astewart/MITgcm_WS_backup/MITgcm_WS/experiments/';
+  expname_lo = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+end
 resultspath_lo = fullfile(expdir_lo,expname_lo,'results');
 XC_lo = rdmds(fullfile(resultspath_lo,'XC'));
 YC_lo = rdmds(fullfile(resultspath_lo,'YC'));
 RC_lo = rdmds(fullfile(resultspath_lo,'RC'));
 hFacC_lo = rdmds(fullfile(resultspath_lo,'hFacC'));
+hFacW_lo = rdmds(fullfile(resultspath_lo,'hFacW'));
+hFacS_lo = rdmds(fullfile(resultspath_lo,'hFacS'));
 
 %%% Temporal parameters for low-res run
-startdate_lo = datenum('2007-01-01');
-diag_frequency_lo = 2.62960000e+06;
-endTime_lo = 283996920;
-deltaT_lo = 1.20000000e+02;
+if (use_monthly_data)
+  startdate_lo = datenum('2007-01-01');
+  diag_frequency_lo = 2.62960000e+06;
+  endTime_lo = 283996920;
+  deltaT_lo = 1.20000000e+02;
+else
+  startdate_lo = datenum('2008-01-01');
+  diag_frequency_lo = 43200;
+  endTime_lo = 220924800;
+  deltaT_lo = 60;
+end
 nIter0_lo = 1;
 dumpFreq_lo = abs(diag_frequency_lo);
 nDumps_lo = round(endTime_lo/dumpFreq_lo);
 dumpIters_lo = round((1:nDumps_lo)*dumpFreq_lo/deltaT_lo);
 dumpIters_lo = dumpIters_lo(dumpIters_lo > nIter0_lo);
 dumpTimes_lo = startdate_lo + dumpIters_lo*deltaT_lo/t1day;
-idx_obcs = find((dumpTimes_lo>startdate_obcs) & (dumpTimes_lo<enddate_obcs));
+if (use_monthly_data)
+  idx_obcs = find((dumpTimes_lo>startdate_obcs) & (dumpTimes_lo<enddate_obcs));
+else
+  idx_obcs = find((dumpTimes_lo>=startdate_obcs) & (dumpTimes_lo<=enddate_obcs));
+end
 Nt_obcs = length(idx_obcs);
 
 %%% Find slices from which to extract data from low-res run
@@ -48,11 +75,11 @@ if (use_OB_SW)
   yidx_S = find(YC_lo(1,:)<ymin,1,'last');
   xidx_W = find(XC_lo(:,1)<xmin,1,'last');
 end
-landidx_N = find(hFacC_lo(:,yidx_N,1)==0);
-landidx_E = find(hFacC_lo(xidx_E,:,1)==0);
+landidx_N = find(sum(hFacC_lo(:,yidx_N,:),3)==0);
+landidx_E = find(sum(hFacC_lo(xidx_E,:,:),3)==0);
 if (use_OB_SW)
-  landidx_S = find(hFacC_lo(:,yidx_S,1)==0);
-  landidx_W = find(hFacC_lo(xidx_W,:,1)==0);
+  landidx_S = find(sum(hFacC_lo(:,yidx_S,:),3)==0);
+  landidx_W = find(sum(hFacC_lo(xidx_W,:,:),3)==0);
 end
 
 %%% Interpolation grids
@@ -63,6 +90,7 @@ end
 
 %%% Lists of 2D and 1D OB variables and file names on each boundary
 vars_2D = {'THETA','SALT','UVEL','VVEL'};
+face_2D = {'C','C','W','S'};
 vars_1D = {'ETAN','SIuice','SIvice','SIarea','SIheff','SIhsnow','SIhsalt'};
 obcsFilesN_2D = {OBNtFile,OBNsFile,OBNuFile,OBNvFile};
 obcsFilesE_2D = {OBEtFile,OBEsFile,OBEuFile,OBEvFile};
@@ -79,9 +107,9 @@ end
 
 %%% Loop over 2D OB variables
 for m = 1:length(vars_2D)
-  
+
   disp(vars_2D{m});
-  
+
   %%% Initialize 3D OB arrays
   OBNarray = zeros(Nx,Nr,Nt_obcs);
   OBEarray = zeros(Ny,Nr,Nt_obcs);
@@ -89,13 +117,26 @@ for m = 1:length(vars_2D)
     OBSarray = zeros(Nx,Nr,Nt_obcs);
     OBWarray = zeros(Ny,Nr,Nt_obcs);
   end
-  
+
   %%% Loop through snapshots and interpolate to hi-res model grid
   for n = 1:Nt_obcs
-    
+
     disp(n);
-    
-    tmp = rdmdsWrapper(fullfile(resultspath_lo,vars_2D{m}),dumpIters_lo(idx_obcs(n)));
+
+    lofname = fullfile(resultspath_lo,vars_2D{m});
+    if (~use_monthly_data)
+      lofname = [lofname,'_12hourly'];
+    end
+    tmp = rdmdsWrapper(lofname,dumpIters_lo(idx_obcs(n)));
+    switch (face_2D{m})
+      case 'C'
+        tmp(hFacC_lo==0) = 0;
+      case 'W'
+        tmp(hFacW_lo==0) = 0;
+      case 'S'
+        tmp(hFacS_lo==0) = 0;
+    end
+
     tmpN = squeeze(tmp(:,yidx_N,:));
     tmpE = squeeze(tmp(xidx_E,:,:));
     OBNarray(:,:,n) = interpBdyData2(tmpN,XX_xz_lo,ZZ_xz_lo,XX_xz,ZZ_xz);    
@@ -106,9 +147,9 @@ for m = 1:length(vars_2D)
       OBSarray(:,:,n) = interpBdyData2(tmpS,XX_xz_lo,ZZ_xz_lo,XX_xz,ZZ_xz);    
       OBWarray(:,:,n) = interpBdyData2(tmpW,YY_yz_lo,ZZ_yz_lo,YY_yz,ZZ_yz);    
     end
-    
+
   end
-  
+
   %%% Write to OB files
   writeDataset(OBNarray,fullfile(inputconfigdir,obcsFilesN_2D{m}),ieee,prec);
   writeDataset(OBEarray,fullfile(inputconfigdir,obcsFilesE_2D{m}),ieee,prec);
@@ -116,7 +157,7 @@ for m = 1:length(vars_2D)
     writeDataset(OBSarray,fullfile(inputconfigdir,obcsFilesS_2D{m}),ieee,prec);
     writeDataset(OBWarray,fullfile(inputconfigdir,obcsFilesW_2D{m}),ieee,prec);
   end
-  
+
 end
 
 %%% Loop over 1D OB variables 
@@ -137,7 +178,11 @@ for m = 1:length(vars_1D)
     
     disp(n);
     
-    tmp = rdmdsWrapper(fullfile(resultspath_lo,vars_1D{m}),dumpIters_lo(idx_obcs(n)));
+    lofname = fullfile(resultspath_lo,vars_1D{m});
+    if (~use_monthly_data)
+      lofname = [lofname,'_12hourly'];
+    end
+    tmp = rdmdsWrapper(lofname,dumpIters_lo(idx_obcs(n)));
     tmpN = squeeze(tmp(:,yidx_N));
     tmpE = squeeze(tmp(xidx_E,:));
     OBNarray(:,n) = interpBdyData1(tmpN,XC_lo(:,1),xmc,landidx_N);    

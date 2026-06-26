@@ -16,13 +16,13 @@ loadexp;
 %%% Select diagnostic variable to animate
 % diagnum = 66;
 % diagnum = 46;
-diagnum = 4;
+diagnum = 28;
 outfname =diag_fileNames{1,diagnum};
 % outfname = 'THETA_12hourly';
 % outfname = 'Eta';
 
 %%% Starting year for animation
-startyr = 26;
+startyr = 1;
 
 %%% Data index in the output data files
 outfidx = 1;
@@ -36,7 +36,7 @@ xylayer = 1;
 
 %%% Set true to plot the field in the lowest active cell at each horizontal
 %%% location
-botplot = 1;
+botplot = 0;
 
 %%% Set true to plot the field in the topmost wet cell at each horizontal
 %%% location
@@ -89,6 +89,10 @@ switch (diagnum)
     crange = [0 1];
     cmap = cmocean('amp',20);
 
+  case 28
+
+    crange = [0 1];
+    cmap = cmocean('amp',20);
 end
 
 % crange = [-3 3]; %%%temp
@@ -246,8 +250,8 @@ Amax = [];
 % for n=7*12:8*12
 % for n = 34a
 % for n=1:26
-  % for n=2:length(dumpIters)
-for n =startyr*12:length(dumpIters)
+for n=1:length(dumpIters)
+% for n =startyr*12:length(dumpIters)
   dumpIters(n);
     
   t = dumpIters(n)*deltaT/t1year;

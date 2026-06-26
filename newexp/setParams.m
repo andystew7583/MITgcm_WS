@@ -22,7 +22,8 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   use_flux_diags = false;
   use_eddy_diags = false;  
   use_layers = false;
-  use_tides = true;
+  % use_tides = true;
+  use_tides = false;
   useRBCS = false; %%% For restoring cavity properties
   use_quad_heat_transfer = true; %%% Set true for velocity-dependent turbulent heat transfer to ice shelf bases
   
@@ -172,9 +173,10 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
 %   parm03.addParm('chkptFreq',0.01*t1year,PARM_REAL);
 %   parm03.addParm('chkptFreq',0.1*t1year,PARM_REAL);
 %   parm03.addParm('pChkptFreq',1*t1year,PARM_REAL);
-  parm03.addParm('chkptFreq',t1month,PARM_REAL);
-  parm03.addParm('pChkptFreq',t1year,PARM_REAL);
-%   parm03.addParm('pChkptFreq',t1month,PARM_REAL);
+  % parm03.addParm('chkptFreq',t1month,PARM_REAL); %%% Default for hires_seq_ and WC_ experiments
+  % parm03.addParm('pChkptFreq',t1year,PARM_REAL); %%% Default for hires_seq_ and WC_ exp
+  parm03.addParm('chkptFreq',t1day,PARM_REAL);
+  parm03.addParm('pChkptFreq',30*t1day,PARM_REAL);
   parm03.addParm('taveFreq',0,PARM_REAL);
   parm03.addParm('dumpFreq',0,PARM_REAL);
   parm03.addParm('monitorFreq',t1year,PARM_REAL);
@@ -576,12 +578,13 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   
   obcs_parm01.addParm('useOBCStides',useOBCStides,PARM_BOOL);
   
-  obcs_parm01.addParm('tidalPeriod',tidalPeriod,PARM_INTS);    
-
-  obcs_parm01.addParm('OBNamFile',OBNamFile,PARM_STR);  
-  obcs_parm01.addParm('OBNphFile',OBNphFile,PARM_STR); 
-  obcs_parm01.addParm('OBEamFile',OBEamFile,PARM_STR); 
-  obcs_parm01.addParm('OBEphFile',OBEphFile,PARM_STR); 
+  if (useOBCStides)
+    obcs_parm01.addParm('tidalPeriod',tidalPeriod,PARM_INTS);    
+    obcs_parm01.addParm('OBNamFile',OBNamFile,PARM_STR);  
+    obcs_parm01.addParm('OBNphFile',OBNphFile,PARM_STR); 
+    obcs_parm01.addParm('OBEamFile',OBEamFile,PARM_STR); 
+    obcs_parm01.addParm('OBEphFile',OBEphFile,PARM_STR); 
+  end
 
   
   
@@ -833,19 +836,18 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
     
 %%%%%% sponge thickness - finer in high-res simulation due to placement of
 %%%%%% eastern boundary, increased number of gridpoints
-  if (res_fac == 24)
-    spongethickness = 48;
-  else
-    if (res_fac == 30)
+  switch (res_fac)
+    case 24
+      spongethickness = 48;
+    case 30
       spongethickness = 30;
-    else      
-      if (res_fac == 32)
-        spongethickness = 32;
-      else
-        spongethickness = round(10*res_fac/3);
+    case 32
+      spongethickness = 32;
+    case 72
+      spongethickness = 30;
+    otherwise
+      spongethickness = round(10*res_fac/3);
     %     spongethickness = 5;
-      end
-    end
   end
 
  
@@ -1149,8 +1151,10 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %%% Nested configuration uses monthly means from lower-res simulations
   if (obcs_nest)
         
-    obcsPeriod = round(t1month);
-    obcsstartdate =  datenum([num2str(start_year),'-01-01'])-t1month/2/t1day;
+    % obcsPeriod = round(t1month); %%% Default for hires_seq_ and WC_ exp
+    % obcsstartdate = datenum([num2str(start_year),'-01-01'])-t1month/2/t1day; %%% Default for hires_seq_ and WC_ exp
+    obcsPeriod = round(t1day/2);
+    obcsstartdate =  datenum([num2str(start_year),'-01-01']);
     obcsstartdate1 = datestr(obcsstartdate,'yyyymmdd');
     obcsstartdate2 = datestr(obcsstartdate,'HHMMSS');
 
@@ -1625,8 +1629,10 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %%%%%%%%%%%%%%%%%%%%%%%
     
   %%% Diagnostic output frequencies
-  diag_freq_avg = t1month;
-  diag_freq_inst = t1day;
+  % diag_freq_avg = t1month; %%% Default for hires_seq_ and WC_ exp
+  % diag_freq_inst = t1day; %%% Default for hires_seq_ and WC_ exp
+  diag_freq_avg = t1day/2;
+  diag_freq_inst = t1day/2;
 
   %%% Configure diagnostic parameter choices
   [DIAG_PARM,DIAG_MATLAB_PARM,ndiags] = setDiagParams(use_shelfice,use_flux_diags,use_eddy_diags,use_layers,diag_freq_avg,diag_freq_inst);

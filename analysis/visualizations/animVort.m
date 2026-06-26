@@ -16,7 +16,8 @@ DZ = repmat(reshape(delR,[1 1 Nr]),[Nx Ny 1]);
 %%% Diagnostic indix corresponding to instantaneous velocity
 diagnum = length(diag_frequency);
 % diagnum = 1;
-diagnum = 69;
+% diagnum = 69;
+diagnum = 19;
 
 %%% This needs to be set to ensure we are using the correct output
 %%% frequency
@@ -42,10 +43,10 @@ icecolor = [186 242 239]/255;
 % dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
 
 %%% TODO
-dumpStart = 1578240;
-dumpStep = 43200/60;
-nDumps = 731;
-dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
+% dumpStart = 1578240;
+% dumpStep = 43200/60;
+% nDumps = 731;
+% dumpIters = dumpStart:dumpStep:dumpStart+(nDumps-1)*dumpStep;
 
 DXC3D = repmat(DXC(2:Nx,:),[1 1 Nr]);
 DYC3D = repmat(DYC(:,2:Ny),[1 1 Nr]);
@@ -64,14 +65,14 @@ for n=1:length(dumpIters)
   tt(n)
   
   %%% Attempt to load either instantaneous velocities or their squares
-  uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_12hourly'),dumpIters(n)) ;      
-  vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_12hourly'),dumpIters(n));
+  % uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_12hourly'),dumpIters(n)) ;      
+  % vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_12hourly'),dumpIters(n));
 %   uvel = rdmdsWrapper(fullfile(exppath,'/results/SIuice_12hourly'),dumpIters(n)) ;      
 %   vvel = rdmdsWrapper(fullfile(exppath,'/results/SIvice_12hourly'),dumpIters(n));
 %   uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_daily'),dumpIters(n)) ;      
 %   vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_daily'),dumpIters(n)); 
-  % uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_inst'),dumpIters(n));      
-  % vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_inst'),dumpIters(n));    
+  uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_inst'),dumpIters(n));      
+  vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_inst'),dumpIters(n));    
 %   uvel = rdmdsWrapper(fullfile(exppath,'/results/U'),dumpIters(n)) ;      
 %   vvel = rdmdsWrapper(fullfile(exppath,'/results/V'),dumpIters(n)); 
   % eta = rdmdsWrapper(fullfile(exppath,'/results/ETAN_inst'),dumpIters(n));
@@ -125,12 +126,12 @@ for n=1:length(dumpIters)
   
   
   %%% Divergence on a z-level
-%   vort = zeros(Nx,Ny);
-%   zlev = 44;
-%   uvel(hFacW==0) = NaN;
-%   vvel(hFacS==0) = NaN;
-%   vort(:,1:Ny-1) = (vvel(:,2:Ny,zlev)-vvel(:,1:Ny-1,zlev))./DYG(:,1:Ny-1);
-%   vort(1:Nx-1,:) = vort(2:Nx,:) + (uvel(2:Nx,:,zlev)-uvel(1:Nx-1,:,zlev))./DXG(1:Nx-1,:);
+  vort = zeros(Nx,Ny);
+  zlev = 1;
+  uvel(hFacW==0) = NaN;
+  vvel(hFacS==0) = NaN;
+  vort(:,1:Ny-1) = (vvel(:,2:Ny,zlev)-vvel(:,1:Ny-1,zlev))./DYG(:,1:Ny-1);
+  vort(1:Nx-1,:) = vort(2:Nx,:) + (uvel(2:Nx,:,zlev)-uvel(1:Nx-1,:,zlev))./DXG(1:Nx-1,:);
 
   %%% Barotropic vorticity
   % vort = zeros(Nx,Ny);
@@ -140,12 +141,12 @@ for n=1:length(dumpIters)
   % vort = vort + (vbt([2:Nx 1],:)-vbt(:,:))./DXC; 
 
   %%% Depth-averaged vorticity
-  vort = 0*uvel;
-  uvel(hFacW==0) = NaN;
-  vvel(hFacS==0) = NaN;  
-  vort(:,2:Ny,:) = - (uvel(:,2:Ny,:)-uvel(:,1:Ny-1,:))./DYC3D;
-  vort(2:Nx,:,:) = vort(2:Nx,:,:) + (vvel(2:Nx,:,:)-vvel(1:Nx-1,:,:))./DXC3D;
-  vort = nansum(vort.*DRF,3) ./ nansum(~isnan(vort).*DRF,3); %%% Approximate depth-average
+  % vort = 0*uvel;
+  % uvel(hFacW==0) = NaN;
+  % vvel(hFacS==0) = NaN;  
+  % vort(:,2:Ny,:) = - (uvel(:,2:Ny,:)-uvel(:,1:Ny-1,:))./DYC3D;
+  % vort(2:Nx,:,:) = vort(2:Nx,:,:) + (vvel(2:Nx,:,:)-vvel(1:Nx-1,:,:))./DXC3D;
+  % vort = nansum(vort.*DRF,3) ./ nansum(~isnan(vort).*DRF,3); %%% Approximate depth-average
 
   %%% Water column thickness to plot
   thick_plot =SHELFICEtopo-bathy;
@@ -153,16 +154,25 @@ for n=1:length(dumpIters)
   % vort(sum(hFacC,3)==0) = NaN;
 
   % latMin = min(min(YC));
+  %  lonMax = max(max(XC));
+  %  latMax = max(max(YC));
+  % lonMin = min(min(XC));
+  % 
+  lonMin = -36;
+  lonMax = -32;
+  latMin = -77;
+  latMax = -76;
   % latMin = YC(1,spongethickness+1);
   % latMin = -75.5;
-  latMin = -78.5;
-  latMax = YC(1,end-spongethickness);
-  % lonMin = min(min(XC));
+  % latMin = -78.5;
+  % latMax = YC(1,end-spongethickness);
+  
   % latMax = -72;
   % lonMin = XC(spongethickness+1,1);
   % lonMin = -44;
-  lonMin = -62;
-  lonMax = XC(end-spongethickness,1);
+  % lonMin = -62;
+  % lonMax = XC(end-spongethickness,1);
+ 
   % lonMax = -28;
 
   % % Desired geographic window (what you *mean*)
@@ -214,7 +224,7 @@ for n=1:length(dumpIters)
   h = colorbar;  
   set(h,'Position',[0.92 0.33 0.01 .26])  
   % caxis([-.8 .8]);
-  caxis([-.4 .4]);
+  caxis([-1 1]);
   
   set(gca,'FontSize',18);    
   tightmap;

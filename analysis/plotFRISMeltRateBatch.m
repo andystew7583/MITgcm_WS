@@ -26,7 +26,7 @@ T = T(T.production_=="Y",:);
 T = T(T.completed_=="Y" & T.downloaded_=="Y",:);
 
 %%% Restrict to a specific batch of experiments
-T = T(T.batch >= 0 & T.batch<=12,:);
+T = T(T.batch >= 1 & T.batch<=10,:);
 
 %%% Pre-allocate storage
 strat = zeros(1,size(T,1));
@@ -79,7 +79,7 @@ f0 = 2*(2*pi*366/365/86400)*sind(65);
 Sref = 34.67;
 rhofresh = 1000;
 Sstrat = strat./(g*beta);
-FWupstream = (1/32)*(g.*beta.*dpyc.^4.*Sstrat.^2)/(12*f0*Sref) * rhofresh * t1year / 1e12;
+FWupstream = (1/26)*(g.*beta.*dpyc.^4.*Sstrat.^2)/(12*f0*Sref) * rhofresh * t1year / 1e12;
 % FWnet = FWupstream + FRISmelt_batch(1) - SIprod_batch;
 FWnet = FWupstream + initFRISmelt_batch(1) - SIprod_batch;
 
@@ -95,21 +95,25 @@ ylabel('$F_{\mathrm{melt}}$ (Gt/yr)','interpreter','latex','FontSize',16);
 set(gca,'FontSize',16);
 legend('Weddell Catastrophe','No Weddell Catastrophe','Intermediate State','Location','NorthWest');
 
+legstr = {'250m','300m','350m','400m','450m','500m','550m','600m','650m','700m'};
 figure(2);
 clf;
-legstr = {};
-for n=[1:6 7 8 9 10:12]
-  legstr = {legstr{:},['Batch ',num2str(n)]};
+% legstr = {};
+for n=[1:10]
+  % legstr = {legstr{:},['Batch ',num2str(n)]};
   plot(FWnet(batchnum==n),FRISmelt_batch(batchnum==n),'o-');
   if (n == 1)
     hold on;
   end
 end
+plot([0 0],[0 800],'k--');
+set(gca,'YLim',[0 800]);
 hold off;
 xlabel('$F_{\mathrm{upstream}} + F_{\mathrm{melt}}^{\mathrm{ref}} - F_{\mathrm{polynya}}$ (Gt/yr)','interpreter','latex','FontSize',16);
 ylabel('$F_{\mathrm{melt}}$ (Gt/yr)','interpreter','latex','FontSize',16);
 set(gca,'FontSize',16);
-legend(legstr,'Location','NorthWest');
+leghandle = legend(legstr,'Location','NorthWest');
+set(leghandle,'Position',[ 0.1482    0.3643    0.1384    0.4369]);
 
 
 batchnum_plot = 0;

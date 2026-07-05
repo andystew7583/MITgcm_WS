@@ -483,6 +483,9 @@ if FinerVerticalGrid == 1
     N4 = 10;
     N5 = 4;
     nn_c = cumsum([N0 N1 N2 N3 N4 N5]);
+
+
+
 end
 if FinerVerticalGrid == 0
     z0 = 0;
@@ -506,6 +509,29 @@ if FinerVerticalGrid == 0
     N4 = 10;
     N5 = 4;
     nn_c = cumsum([1 N1 N2 N3 N4 N5]);
+
+
+    if (res_fac == 72)
+     z0 = 0;
+      z1 = 250;
+      z2 = 1800;
+      z3 = 4000;
+      z4 = 5000;
+      dz0 = 2;
+      dz1 = 4; 
+      dz2 = 7;
+      dz3 = 10;
+      dz4 = 15;
+      dz5 = 20;
+      N0 = 1;
+      N1 = 21; 
+      N2 = 22;
+      N3 = 25;
+      N4 = 25;
+      N5 = 35;
+      nn_c = cumsum([N0 N1 N2 N3 N4 N5]);
+
+    end
 end
 %%% 1/3 degree configuration
 

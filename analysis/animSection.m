@@ -36,8 +36,10 @@ loadexp;
 % secLons = startLon:dLon:endLon;
 
 %%% Define grid to extract data sections 
-stat_lat = [-83.35, -81.83, -81.38, -81.06, -80.38, -78.77, -77.24, -75.45, -74.28 -73.00];
-stat_lon = [-60.25, -57.17, -51.36, -43.83, -41.43, -39.07, -37.33, -33.22, -32.20 -31.80];
+% stat_lat = [-83.35, -81.83, -81.38, -81.06, -80.38, -78.77, -77.24, -75.45, -74.28 -73.00];
+% stat_lon = [-60.25, -57.17, -51.36, -43.83, -41.43, -39.07, -37.33, -33.22, -32.20 -31.80];
+stat_lat = [-78.77, -77.24, -75.45, -75.10];
+stat_lon = [-39.07, -37.33, -33.22, -32.70];
 Nsec = 401;
 dLon = (stat_lon(end)-stat_lon(1))/(Nsec-1);
 secLons = stat_lon(1):dLon:stat_lon(end);
@@ -47,7 +49,7 @@ endLat = secLats(end);
 
 %%% Select diagnostic variable to animate
 
-diagnum = 4;
+diagnum = 22;
 outfname =diag_fileNames{1,diagnum};
 % outfname = 'THETA_12hourly';
 % outfname = 'Eta';
@@ -59,25 +61,42 @@ outfidx = 1;
 set_crange = 1;
 
 %%% Year to start animnation
-startyr = 26;
+startyr = 1;
 
-switch (diagnum)
-   case 1   
+switch (diag_fields{diagnum})
 
-    crange = [-.2 .2]; %%% Zonal velocity
-    cmap = cmocean('balance',20);
-
-  case 4   
-
-    crange = [-2.5 1]; %%% Filchner temp
+  case 'THETA'
+    crange = [-2.5 -1]; %/%% Filchner temp
+    % crange = [-2 -1.8]; %/%% Filchner temp
     cmap = cmocean('thermal',20);
 
-  case 5
+  case 'SALT'
 
-    crange = [32 34.8]; %%% salinity    
-    cmap = cmocean('haline',30);
+    crange = [32 35]; %%% salinity
+    cmap = cmocean('haline',20);
+    titlestr = 'Salinity at 200m depth';
 
+  case 'SIheff'
+
+    crange = [0 3];
+    cmap = cmocean('amp',20);
+
+  case 'SIarea'
+
+    crange = [0 1];
+    cmap = cmocean('ice',20);
+
+  case 'VVEL'
+
+    crange = [-.3 .3];
+    cmap = cmocean('balance',30);
+
+  case 'WVEL'
+
+    crange = [-1 1]*1e-2;
+    cmap = cmocean('balance',20);
 end
+
 % crange = [-3 3]; %%%temp
 % crange = [33.4 34.65]; %%% salinity
 % crange = [0 10]; %%%% for KPP hbl
@@ -208,8 +227,8 @@ handle = figure(23);
 set(handle,'Position',framepos);
 M = moviein(length(dumpIters));
 
-for n=startyr*12:length(dumpIters) 
-% for n=1:length(dumpIters)
+% for n=startyr*12:length(dumpIters) 
+for n=140
 
   dumpIters(n);
     

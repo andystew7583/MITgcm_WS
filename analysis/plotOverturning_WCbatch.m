@@ -69,7 +69,7 @@ for n = 1:Nexps
   %%% Load pre-computed melt rates
   datafname = [expname,'_MOC_PD0_layers_GLcoord.mat'];
   load(fullfile(proddir,datafname));
-  tt = tt / t1year;
+  tt = times / t1year;
   psi_tot_tavg = mean(psi_tot,3)/1e6;
 
   jidx_cavity = find(eta==0);

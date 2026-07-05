@@ -1,20 +1,20 @@
-% %%%
-% %%% paper3_plotEKEprod.m
-% %%%
-% %%% Plots EKE and its production rates
-% %%%
-% 
-% %%% Load experiment
-% expdir = '../experiments';
-% expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
-% % loadexp;
-% 
-% %%% Load shelf heat budget diagnostics
-% outfname = [expname,'_ShelfHeatBudget.mat'];
-% load(fullfile('products',outfname),'usq_eddy_int','vsq_eddy_int','PEtoEKE_int','MKEtoEKE_int');
-% 
-% 
-% 
+%%%
+%%% paper3_plotEKEprod.m
+%%%
+%%% Plots EKE and its production rates
+%%%
+
+%%% Load experiment
+expdir = '../experiments';
+expname = 'hires_seq_onetwentyfourth_notides_RTOPO2';
+loadexp;
+
+%%% Load shelf heat budget diagnostics
+outfname = [expname,'_ShelfHeatBudget.mat'];
+load(fullfile('products',outfname),'usq_eddy_int','vsq_eddy_int','PEtoEKE_int','MKEtoEKE_int');
+
+
+
 %%%%%%%%%%%%%%%%%%
 %%% MAKE PLOTS %%%
 %%%%%%%%%%%%%%%%%%
@@ -90,7 +90,6 @@ axesm('eqaconicstd',...
   'MLineLocation', [-70:10:-30],...
   'MeridianLabel', 'on', ...
   'ParallelLabel', 'on');  
-axis off;
 setm(gca,'MLabelParallel',-20)
 
 %%% Plot surface heat flux
@@ -123,7 +122,7 @@ ylabel('Latitude','interpreter','latex');
 set(gca,'Position',axpos(1,:));
 hold off
 
-
+axis off;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -152,12 +151,11 @@ axesm('eqaconicstd',...
   'PLineLocation', 5, ...
   'MLineLocation', [-70:10:-30],...
   'MeridianLabel', 'on', ...
-  'ParallelLabel', 'on');  
-axis off;
+  'ParallelLabel', 'on'); 
 setm(gca,'MLabelParallel',-20)
 
 %%% Plot surface heat flux
-pcolorm(YC,XC,PEtoEKE_plot*1e7);
+pcolorm(YC,XC,PEtoEKE_plot*1e9);
 shading interp
 caxis(clim);
 colormap(gca,cmap);
@@ -168,7 +166,7 @@ h = colorbar;
 set(gca,'FontSize',fontsize);
 set(h,'Position',cbpos(2,:))
 tightmap;
-title(h,'10$^{-7}$ m$^2$/s$^3$','Fontsize',fontsize,'interpreter','latex');
+title(h,'10$^{-9}$ m$^2$/s$^3$','Fontsize',fontsize,'interpreter','latex');
 
 %%% Add bathymetry contours
 hold on;
@@ -185,6 +183,8 @@ xlabel('Longitude','interpreter','latex');
 ylabel('Latitude','interpreter','latex');
 set(gca,'Position',axpos(2,:));
 hold off
+
+axis off
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -214,11 +214,10 @@ axesm('eqaconicstd',...
   'MLineLocation', [-70:10:-30],...
   'MeridianLabel', 'on', ...
   'ParallelLabel', 'on');  
-axis off;
 setm(gca,'MLabelParallel',-20)
 
 %%% Plot surface heat flux
-pcolorm(YC,XC,MKEtoEKE_plot*1e7);
+pcolorm(YC,XC,MKEtoEKE_plot*1e9);
 shading interp
 caxis(clim);
 colormap(gca,cmap);
@@ -238,6 +237,8 @@ xlabel('Longitude','interpreter','latex');
 ylabel('Latitude','interpreter','latex');
 set(gca,'Position',axpos(3,:));
 hold off
+
+axis off;
 
 
 

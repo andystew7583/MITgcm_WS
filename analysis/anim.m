@@ -14,9 +14,9 @@ mac_plots = false;
 loadexp;
 
 %%% Select diagnostic variable to animate
-% diagnum = 66;
+diagnum = 23;
 % diagnum = 46;
-diagnum = 28;
+% diagnum = 28;
 outfname =diag_fileNames{1,diagnum};
 % outfname = 'THETA_12hourly';
 % outfname = 'Eta';
@@ -67,32 +67,39 @@ yzlayer = 194; %%% Kap Norvegia at 1/3 grid
 %%% Specify color range
 set_crange = 1;
 
-switch (diagnum)
+switch (diag_fields{diagnum})
 
-  case 4
-    % crange = [-2.5 1]; %/%% Filchner temp
-    crange = [-2 -1.8]; %/%% Filchner temp
+  case 'THETA'
+    crange = [-2.5 -1]; %/%% Filchner temp
+    % crange = [-2 -1.8]; %/%% Filchner temp
     cmap = cmocean('thermal',20);
 
-  case 5
+  case 'SALT'
 
-    crange = [33.6 34.9]; %%% salinity
+    crange = [32 35]; %%% salinity
     cmap = cmocean('haline',20);
+    titlestr = 'Salinity at 200m depth';
 
-  case 7
+  case 'SIheff'
 
     crange = [0 3];
     cmap = cmocean('amp',20);
 
-  case 8
+  case 'SIarea'
 
     crange = [0 1];
-    cmap = cmocean('amp',20);
+    cmap = cmocean('ice',20);
+    titlestr = 'Sea ice concentration';
 
-  case 28
+  case 'VVEL'
 
-    crange = [0 1];
-    cmap = cmocean('amp',20);
+    crange = [-.3 .3];
+    cmap = cmocean('balance',30);
+
+  case 'WVEL'
+
+    crange = [-1 1]*1e-2;
+    cmap = cmocean('balance',20);
 end
 
 % crange = [-3 3]; %%%temp
@@ -124,7 +131,7 @@ end
 % titlestr = 'Zonal velocity (m/s)';
 % titlestr = 'Surface temperature ($^\circ$C)';
 % titlestr = 'Sea ice concentration';
-titlestr = '';
+% titlestr = '';
 
 months = {'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'};
 years = 2007:1:2015;
@@ -223,19 +230,19 @@ end
 
 %%% Plotting options
 scrsz = get(0,'ScreenSize');
-fontsize = 14;
+fontsize = 18;
 if (mac_plots)  
   framepos = [0 scrsz(4)/2 scrsz(3)/1.3 scrsz(4)];
   plotloc = [0.17 0.3 0.62 0.7];
 else
 %   plotloc = [0.0855    0.0888    0.7916    0.8624];  
-  plotloc = [0.07  0.07   0.84  0.9];
-%   framepos = [100   306   936   676];
-  framepos = [100   462   810   520];
+  plotloc = [0.07  0   0.84  0.9];
+  framepos = [100   306   1536   876];
+  % framepos = [100   462   810   520];
 end
 
 %%% Set up the figure
-handle = figure(23);
+handle = figure(24);
 set(handle,'Position',framepos);
 M = moviein(length(dumpIters));
 
@@ -250,7 +257,9 @@ Amax = [];
 % for n=7*12:8*12
 % for n = 34a
 % for n=1:26
-for n=1:length(dumpIters)
+% for n=1:length(dumpIters)
+% for n = 1:9*12
+for n = 218
 % for n =startyr*12:length(dumpIters)
   dumpIters(n);
     
@@ -344,46 +353,128 @@ for n=1:length(dumpIters)
 %   handle=colorbar;
 %   set(handle,'FontSize',fontsize);
 
-    latMin = min(min(YC));
-    latMax = YC(1,end-spongethickness);
-    lonMin = min(min(XC));
-%     lonMax = XC(end-spongethickness,1);   
-    lonMax = XC(end,1);
+%     latMin = min(min(YC));
+%     latMax = max(max(YC));
+%     % latMax = YC(1,end-spongethickness);
+%     lonMin = min(min(XC));
+% %     lonMax = XC(end-spongethickness,1);   
+%     lonMax = XC(end,1);
+
+       lonMin = -35;
+  lonMax = -33;
+  latMin = -76.75;
+  latMax = -76.25;
     
-    clf;    
-    set(gcf,'color','w');
+    clf;        
     axesm('eqaconicstd',...
-    'fontsize',13,...
+    'fontsize',fontsize,...
     'Grid','on', ...    
     'Frame','off', ...
     'MapLatLimit',[latMin latMax], ...
     'MapLonLimit',[lonMin lonMax], ... 
     'MapParallels',[-85 -65], ...
-    'PLineLocation', 1, ...
-    'MLineLocation', 2,...
+    'PLineLocation', 2, ...
+    'MLineLocation', 5,...
     'MeridianLabel', 'on', ...
     'ParallelLabel', 'on');    %, ...
     %           'origin',[yc(round(size(yc,1)/2),round(size(yc,2)/2)),xc(round(size(xc,1)/2),round(size(xc,2)/2))])
-    axis off;
+     
     setm(gca,'MLabelParallel',-20)
+    set(gcf,'color','w');
     pcolorm(YC,XC,FF);
 %     pcolorm(YC,XC,-FF/920/35*86400*365);
-    shading interp
+    shading flat
     
     
     hold on;
     % [cs,C] = contourm(YC,XC,bathy,[-5000:1000:-1000 -600 -200],'EdgeColor','k');
-    [cs,C] = contourm(YC,XC,bathy,[-5000:1000:-1000 -500],'EdgeColor','k');
+    bathy_plot = bathy;
+    % bathy_plot(bathy==SHELFICEtopo) = NaN;
+    [cs,C] = contourm(YC,XC,bathy_plot,[-5000:1000:-1000 -500],'EdgeColor','k');
     hold off;
 
     %%% Add colorbar and title
     h = colorbar;
-    set(gca,'FontSize',10);
-    set(h,'Position',[0.92 0.33 0.02 .26])
+    set(gca,'FontSize',fontsize+2);
+    set(h,'Position',[0.94 0.33 0.015 .26])
+    h.Label.String = 'g/kg';
     tightmap;
+    set(gca,'Position',plotloc);
+
+  ax1 = gca;
+   
+
+
+    axis off;  
 
 
 
+    %%% Add Bathymetry
+  axpos = get(gca,'Position');
+  subplot('Position',[0 0 0.01 0.01])  
+  ax3 = axesm('eqaconicstd',...
+  'fontsize',18,...
+  'Grid','on', ...    
+  'Frame','off', ...
+  'MapLatLimit',[latMin latMax], ...
+  'MapLonLimit',[lonMin lonMax], ... 
+  'MapParallels',[-85 -65], ...
+  'PLineLocation', 0, ...
+  'MLineLocation', 0,...
+  'MeridianLabel', 'off', ...
+  'ParallelLabel', 'off');    %, ...
+%           'origin',[yc(round(size(yc,1)/2),round(size(yc,2)/2)),xc(round(size(xc,1)/2),round(size(xc,2)/2))])
+  axis off;
+  setm(ax3,'MLabelParallel',-20)
+  set(ax3,'Position',axpos);
+  
+  land_plot = ones(Nx,Ny);
+  land_plot(~isnan(vort)) = NaN;
+  pcolorm(YG,XG,land_plot);
+  shading interp
+  colormap(ax3,[.8 .8 .8]);
+  tightmap;
+  drawnow;
+  set(ax3,'Position',axpos+[0 0 0 0]);
+
+
+
+
+  %%% Add ice shelves
+
+icecolor = [186 242 239]/255;
+
+  axpos = get(ax1,'Position');
+  subplot('Position',[0 0 0.01 0.01])  
+  ax2 = axesm('eqaconicstd',...
+  'fontsize',get(ax1,'FontSize'),...
+  'Grid','on', ...    
+  'Frame','off', ...
+  'MapLatLimit',[latMin latMax], ...
+  'MapLonLimit',[lonMin lonMax], ... 
+  'MapParallels',[-85 -65], ...
+  'PLineLocation',0, ...
+  'MLineLocation',0,...
+  'MeridianLabel', 'off', ...
+  'ParallelLabel', 'off');    %, ...
+%           'origin',[yc(round(size(yc,1)/2),round(size(yc,2)/2)),xc(round(size(xc,1)/2),round(size(xc,2)/2))])  
+  setm(ax2,'MLabelParallel',-20)
+  set(ax2,'Position',axpos);
+  
+  ice_plot = SHELFICEtopo;
+  ice_plot((ice_plot == 0) | (SHELFICEtopo==bathy)) = NaN;
+  pcolorm(YG,XG,ice_plot);
+  shading flat
+  colormap(ax2,icecolor);
+  tightmap;
+  drawnow;
+  set(ax2,'Position',axpos+[0 0 0 0]);
+
+
+    %%% Add FRIS label
+    textm(-78,-60,'FRIS','FontSize',fontsize)
+
+  axis off;
     
   %%% y/z zonally-averaged plot
  
@@ -421,8 +512,11 @@ for n=1:length(dumpIters)
     % set(gca,'XLim',[YC(1,1) YC(1,end)]);    
     % set(gca,'XLim',[-71 -67]);
     set(gca,'XLim',[-78 -70]);
+      set(gca,'FontSize',fontsize);
     handle=colorbar;
     set(handle,'FontSize',fontsize);
+    set(gca,'Position',plotloc);
+    ax1 = gca;
 
  end
 
@@ -431,19 +525,18 @@ for n=1:length(dumpIters)
 
  
   %%% Finish the plot
-  colormap(cmap);
+  colormap(ax1,cmap);
   if (~isempty(titlestr))
-%     title([titlestr,', $t=',num2str(tdays(n),'%.1f'),'$ days'],'interpreter','latex');
-    thedate = datenum('2008-01-01')+floor(tdays(n));
-%     annotation('textbox',[0.3 0.95 0.5 0.05],'String',[titlestr,', ',months{mod(n-1,12)+1},' ',num2str(years(floor((n-1)/12)+1))],'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');   
-    annotation('textbox',[0.3 0.95 0.5 0.05],'String',[titlestr,', ',datestr(thedate)],'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');   
+    % title([titlestr,', $t=',num2str(tdays(n),'%.1f'),'$ days'],'interpreter','latex');
+    thedate = datenum('2011-01-01')+floor(tdays(n));
+    % annotation('textbox',[0.38 0.9 0.5 0.05],'String',[titlestr,', ',months{mod(n-1,12)+1},' ',num2str(years(floor((n-1)/12)+1))],'interpreter','latex','FontSize',fontsize+4,'LineStyle','None');   
+    annotation('textbox',[0.38 0.9 0.5 0.05],'String',[titlestr,', ',datestr(thedate)],'interpreter','latex','FontSize',fontsize+2,'LineStyle','None');   
   end
   if (set_crange)  
-    caxis(crange);
+    caxis(ax1,crange);
   end
-  
-  set(gca,'Position',plotloc);
-  set(gca,'FontSize',fontsize);
+    
+
 %   annotation('textbox',[0.85 0.05 0.25 0.05],'String','$\overline{\theta}$ ($^\circ$C)','interpreter','latex','FontSize',fontsize+2,'LineStyle','None');
   M(n) = getframe(gcf);
   

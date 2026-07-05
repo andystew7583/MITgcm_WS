@@ -24,7 +24,7 @@ if (use_monthly_data)
   enddate_obcs = datenum([num2str(endyr+1),'-02-15']);
 else
   startdate_obcs = datenum([num2str(start_year),'-01-01']);
-  enddate_obcs = datenum([num2str(endyr),'-01-01']);
+  enddate_obcs = datenum([num2str(endyr+1),'-01-01']);
 end
 
 %%% Load low-resolution grid

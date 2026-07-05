@@ -12,7 +12,7 @@ expdir = '../experiments';
 outdir = './products_WCbatch';
 
 %%% Set true to overwrite existing files
-overwrite = true;
+overwrite = false;
 
 %%% Set true to compute effective melt rate (heat flux into the cavity)
 compute_eff_melt = false;

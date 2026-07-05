@@ -58,8 +58,8 @@ g = 9.81;
 %%% Loop through iterations
 % for n=88:length(dumpIters)
 % for n = 1:88
-% for n = 60:127
-for n=1:length(dumpIters)
+for n = 218
+% for n=1:length(dumpIters)
  
   tt(n) =  dumpIters(n)*deltaT/86400;
   tt(n)
@@ -84,7 +84,7 @@ for n=1:length(dumpIters)
   
   %%% Plot the vorticity  
 
-  %%% Vorticity on a z-level
+%   %%% Vorticity on a z-level
 %   vort = zeros(Nx,Ny);
 %   zlev = 1;
 % %   zlev = 25;
@@ -149,7 +149,8 @@ for n=1:length(dumpIters)
   % vort = nansum(vort.*DRF,3) ./ nansum(~isnan(vort).*DRF,3); %%% Approximate depth-average
 
   %%% Water column thickness to plot
-  thick_plot =SHELFICEtopo-bathy;
+  % thick_plot =SHELFICEtopo-bathy;
+  thick_plot = -bathy;
   % thick_plot(sum(hFacC,3)==0) = NaN;
   % vort(sum(hFacC,3)==0) = NaN;
 
@@ -157,11 +158,17 @@ for n=1:length(dumpIters)
   %  lonMax = max(max(XC));
   %  latMax = max(max(YC));
   % lonMin = min(min(XC));
-  % 
+  % % 
   lonMin = -36;
   lonMax = -32;
   latMin = -77;
   latMax = -76;
+
+   lonMin = -35;
+  lonMax = -33;
+  latMin = -76.75;
+  latMax = -76.25;
+
   % latMin = YC(1,spongethickness+1);
   % latMin = -75.5;
   % latMin = -78.5;
@@ -207,7 +214,7 @@ for n=1:length(dumpIters)
 
   pcolorm(YG,XG,vort./abs(ff));
   % pcolorm(YG,XG,OW./ff.^2);
-  shading interp
+  shading flat
   colormap(cmocean('balance'));
 
   

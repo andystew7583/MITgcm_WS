@@ -73,7 +73,16 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %%%%viscC4Leithd=2.15; %%%%% Modified Leith non-dimensional viscosity factor 
   viscAr = 3e-4; %%% Vertical viscosity
   diffKhT = 0; %%% Horizontal temp diffusion
-  diffKrT = 0; %%% Vertical temp diffusion   
+  diffKrT = 0; %%% Vertical temp diffusion  
+  diffK4T = 0; %%% Biharmonic temp diffusion
+  diffK4S = 0; %%% Biharmonic salt diffusion
+
+  %%% Modified viscous/diffusive parameters for specific configurations
+  if (res_fac == 72)
+    viscAr = 1e-4;
+    diffK4T = 2.3e5;
+    diffK4S = 2.3e5;
+  end
   
   %%% PARM01
   %%% momentum scheme
@@ -100,7 +109,8 @@ function nTimeSteps = setParams (inputpath,codepath,listterm)
   %%% diffusivity
   parm01.addParm('diffKrT',diffKrT,PARM_REAL);
   parm01.addParm('diffKhT',diffKhT,PARM_REAL);
-  parm01.addParm('diffK4T',0,PARM_REAL);  
+  parm01.addParm('diffK4T',diffK4T,PARM_REAL);  
+  parm01.addParm('diffK4S',diffK4S,PARM_REAL);  
   %%% advection schemes
   parm01.addParm('tempAdvScheme',7,PARM_INT);
   parm01.addParm('saltAdvScheme',7,PARM_INT);

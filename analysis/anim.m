@@ -14,7 +14,7 @@ mac_plots = false;
 loadexp;
 
 %%% Select diagnostic variable to animate
-diagnum = 23;
+diagnum = 24;
 % diagnum = 46;
 % diagnum = 28;
 outfname =diag_fileNames{1,diagnum};
@@ -76,8 +76,9 @@ switch (diag_fields{diagnum})
 
   case 'SALT'
 
-    crange = [32 35]; %%% salinity
-    cmap = cmocean('haline',20);
+    % crange = [32 35]; %%% salinity
+    crange = [34.25 34.45];
+    cmap = cmocean('haline',100);
     titlestr = 'Salinity at 200m depth';
 
   case 'SIheff'
@@ -100,6 +101,10 @@ switch (diag_fields{diagnum})
 
     crange = [-1 1]*1e-2;
     cmap = cmocean('balance',20);
+
+  case 'ETAN'
+    crange = [0.2 1.8];
+    cmap = haxby(100);
 end
 
 % crange = [-3 3]; %%%temp
@@ -131,7 +136,7 @@ end
 % titlestr = 'Zonal velocity (m/s)';
 % titlestr = 'Surface temperature ($^\circ$C)';
 % titlestr = 'Sea ice concentration';
-% titlestr = '';
+titlestr = '';
 
 months = {'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'};
 years = 2007:1:2015;
@@ -259,8 +264,8 @@ Amax = [];
 % for n=1:26
 % for n=1:length(dumpIters)
 % for n = 1:9*12
-for n = 218
-% for n =startyr*12:length(dumpIters)
+for n = 242
+  % for n =startyr*12:length(dumpIters)
   dumpIters(n);
     
   t = dumpIters(n)*deltaT/t1year;
@@ -353,17 +358,17 @@ for n = 218
 %   handle=colorbar;
 %   set(handle,'FontSize',fontsize);
 
-%     latMin = min(min(YC));
-%     latMax = max(max(YC));
-%     % latMax = YC(1,end-spongethickness);
-%     lonMin = min(min(XC));
-% %     lonMax = XC(end-spongethickness,1);   
-%     lonMax = XC(end,1);
+    latMin = min(min(YC));
+    latMax = max(max(YC));
+    % latMax = YC(1,end-spongethickness);
+    lonMin = min(min(XC));
+%     lonMax = XC(end-spongethickness,1);   
+    lonMax = XC(end,1);
 
-       lonMin = -35;
-  lonMax = -33;
-  latMin = -76.75;
-  latMax = -76.25;
+  %      lonMin = -35;
+  % lonMax = -33;
+  % latMin = -76.75;
+  % latMax = -76.25;
     
     clf;        
     axesm('eqaconicstd',...
@@ -429,7 +434,7 @@ for n = 218
   set(ax3,'Position',axpos);
   
   land_plot = ones(Nx,Ny);
-  land_plot(~isnan(vort)) = NaN;
+  land_plot(~isnan(FF)) = NaN;
   pcolorm(YG,XG,land_plot);
   shading interp
   colormap(ax3,[.8 .8 .8]);

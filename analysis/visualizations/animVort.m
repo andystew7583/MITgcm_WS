@@ -8,7 +8,7 @@
 %%%
 
 %%% Read experiment data
-% loadexp;
+loadexp;
 
 %%% Vertical grid spacing matrix
 DZ = repmat(reshape(delR,[1 1 Nr]),[Nx Ny 1]);
@@ -31,7 +31,7 @@ dumpIters = dumpIters(dumpIters >= nIter0);
 nDumps = length(dumpIters);
 
 %%% Initialize movie
-figure(2);
+figure(4);
 set(gcf,'Color','w');
 M = moviein(nDumps);
 icecolor = [186 242 239]/255;
@@ -58,7 +58,7 @@ g = 9.81;
 %%% Loop through iterations
 % for n=88:length(dumpIters)
 % for n = 1:88
-for n = 218
+for n = 242
 % for n=1:length(dumpIters)
  
   tt(n) =  dumpIters(n)*deltaT/86400;
@@ -71,11 +71,11 @@ for n = 218
 %   vvel = rdmdsWrapper(fullfile(exppath,'/results/SIvice_12hourly'),dumpIters(n));
 %   uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_daily'),dumpIters(n)) ;      
 %   vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_daily'),dumpIters(n)); 
-  uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_inst'),dumpIters(n));      
-  vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_inst'),dumpIters(n));    
+  % uvel = rdmdsWrapper(fullfile(exppath,'/results/UVEL_inst'),dumpIters(n));      
+  % vvel = rdmdsWrapper(fullfile(exppath,'/results/VVEL_inst'),dumpIters(n));    
 %   uvel = rdmdsWrapper(fullfile(exppath,'/results/U'),dumpIters(n)) ;      
 %   vvel = rdmdsWrapper(fullfile(exppath,'/results/V'),dumpIters(n)); 
-  % eta = rdmdsWrapper(fullfile(exppath,'/results/ETAN_inst'),dumpIters(n));
+  eta = rdmdsWrapper(fullfile(exppath,'/results/ETAN_inst'),dumpIters(n));
   % eta = rdmdsWrapper(fullfile(exppath,'/results/SIarea_inst'),dumpIters(n));
   % eta = rdmdsWrapper(fullfile(exppath,'/results/ETAN'),dumpIters(n));
   % if (isempty(uvel) || isempty(vvel))   
@@ -84,7 +84,7 @@ for n = 218
   
   %%% Plot the vorticity  
 
-%   %%% Vorticity on a z-level
+  %%% Vorticity on a z-level
 %   vort = zeros(Nx,Ny);
 %   zlev = 1;
 % %   zlev = 25;
@@ -98,14 +98,14 @@ for n = 218
 
 
   %%% Geostrophic relative vorticity
-  % eta(hFacC(:,:,1)==0) = NaN;
-  % vvel = 0*eta;
-  % uvel = 0*eta;
-  % vvel(2:end,1:end) = g * (diff(eta,1,1) ./ DXC(2:end,1:end)) ./ ff(2:end,1:end);
-  % uvel(1:end,2:end) = -g * diff(eta,1,2) ./ DYC(1:end,2:end) ./ ff(1:end,2:end);   
-  % vort = 0*eta;
-  % vort(2:end-1,2:end-1) = (vvel(3:end,2:end-1) - vvel(2:end-1,2:end-1)) ./ DXG(2:end-1,2:end-1) ...
-  %                       - (uvel(2:end-1,3:end) - uvel(2:end-1,2:end-1)) ./ DYG(2:end-1,2:end-1);
+  eta(hFacC(:,:,1)==0) = NaN;
+  vvel = 0*eta;
+  uvel = 0*eta;
+  vvel(2:end,1:end) = g * (diff(eta,1,1) ./ DXC(2:end,1:end)) ./ ff(2:end,1:end);
+  uvel(1:end,2:end) = -g * diff(eta,1,2) ./ DYC(1:end,2:end) ./ ff(1:end,2:end);   
+  vort = 0*eta;
+  vort(2:end-1,2:end-1) = (vvel(3:end,2:end-1) - vvel(2:end-1,2:end-1)) ./ DXG(2:end-1,2:end-1) ...
+                        - (uvel(2:end-1,3:end) - uvel(2:end-1,2:end-1)) ./ DYG(2:end-1,2:end-1);
     
   
   %%% Okubo-Weiss on a z-level
@@ -126,12 +126,12 @@ for n = 218
   
   
   %%% Divergence on a z-level
-  vort = zeros(Nx,Ny);
-  zlev = 1;
-  uvel(hFacW==0) = NaN;
-  vvel(hFacS==0) = NaN;
-  vort(:,1:Ny-1) = (vvel(:,2:Ny,zlev)-vvel(:,1:Ny-1,zlev))./DYG(:,1:Ny-1);
-  vort(1:Nx-1,:) = vort(2:Nx,:) + (uvel(2:Nx,:,zlev)-uvel(1:Nx-1,:,zlev))./DXG(1:Nx-1,:);
+  % vort = zeros(Nx,Ny);
+  % zlev = 1;
+  % uvel(hFacW==0) = NaN;
+  % vvel(hFacS==0) = NaN;
+  % vort(:,1:Ny-1) = (vvel(:,2:Ny,zlev)-vvel(:,1:Ny-1,zlev))./DYG(:,1:Ny-1);
+  % vort(1:Nx-1,:) = vort(2:Nx,:) + (uvel(2:Nx,:,zlev)-uvel(1:Nx-1,:,zlev))./DXG(1:Nx-1,:);
 
   %%% Barotropic vorticity
   % vort = zeros(Nx,Ny);
@@ -154,20 +154,20 @@ for n = 218
   % thick_plot(sum(hFacC,3)==0) = NaN;
   % vort(sum(hFacC,3)==0) = NaN;
 
-  % latMin = min(min(YC));
-  %  lonMax = max(max(XC));
-  %  latMax = max(max(YC));
-  % lonMin = min(min(XC));
+  latMin = min(min(YC));
+   lonMax = max(max(XC));
+   latMax = max(max(YC));
+  lonMin = min(min(XC));
   % % 
-  lonMin = -36;
-  lonMax = -32;
-  latMin = -77;
-  latMax = -76;
+  % lonMin = -36;
+  % lonMax = -32;
+  % latMin = -77;
+  % latMax = -76;
 
-   lonMin = -35;
-  lonMax = -33;
-  latMin = -76.75;
-  latMax = -76.25;
+  %  lonMin = -35;
+  % lonMax = -33;
+  % latMin = -76.75;
+  % latMax = -76.25;
 
   % latMin = YC(1,spongethickness+1);
   % latMin = -75.5;
